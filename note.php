@@ -24,6 +24,7 @@
 
 require 'config.php';
 
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/lib/operationorder.lib.php');
 
@@ -57,7 +58,7 @@ if ($id > 0 || !empty($ref)) $upload_dir = $conf->operationorder->multidir_outpu
 $permissionnote = $user->rights->operationorder->write; // Used by the include of actions_setnotes.inc.php
 $permissiontoadd = $user->rights->operationorder->write; // Used by the include of actions_addupdatedelete.inc.php
 
-
+$object->fetch($id, true, $ref);
 
 /*
  * Actions
