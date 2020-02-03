@@ -54,5 +54,8 @@ OperationOrderDelete=Supprimer
 ConfirmValidateOperationOrderTitle=Confirmation d'activation
 ConfirmValidateOperationOrderBody=Souhaitez-vous vraiment activer cet ordre de réparation %s ?
 
-ConfirmDeleteOperationOrderTitle=Confirmation de suppression
-ConfirmDeleteOperationOrderBody=Souhaitez-vous vraiment supprimer cet ordre de réparation %s ?
+ConfirmReopenOperationOrderTitle=Dévalider l'ordre de réparation
+ConfirmReopenOperationOrderBody=Êtes-vous sûr de vouloir restaurer l'ordre de réparation %s au statut brouillon ?
+
+ConfirmDeleteOperationOrderTitle=Supprimer ordre de réparation
+ConfirmDeleteOperationOrderBody=Êtes-vous sûr de vouloir effacer cet ordre de réparation ?

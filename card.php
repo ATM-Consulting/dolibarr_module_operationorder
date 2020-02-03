@@ -164,13 +164,14 @@ if (empty($reshook))
             }
             break;
 		case 'confirm_clone':
-			$object->cloneObject($user);
+            if (!empty($user->rights->operationorder->write))
+            {
+                $object->cloneObject($user);
+                header('Location: '.dol_buildpath('/operationorder/card.php', 1).'?id='.$object->id);
+                exit;
+            }
 
-			header('Location: '.dol_buildpath('/operationorder/card.php', 1).'?id='.$object->id);
-			exit;
-
-		case 'modif':
-		case 'reopen':
+        case 'confirm_reopen':
 			if (!empty($user->rights->operationorder->write)) $object->setDraft($user);
 
 			break;
@@ -766,50 +767,25 @@ else
                 // Modify
                 if (!empty($user->rights->operationorder->write))
                 {
-                    if ($object->status !== OperationOrder::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== OperationOrder::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("OperationOrderModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
-                    }
-
                     // Valid
-                    if ($object->status === OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=accept">'.$langs->trans('OperationOrderAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=refuse">'.$langs->trans('OperationOrderRefuse').'</a></div>'."\n";
-
+                    if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
 
                     // Reopen
-                    if ($object->status === OperationOrder::STATUS_ACCEPTED || $object->status === OperationOrder::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=cancel">'.$langs->trans("OperationOrderCancel").'</a></div>'."\n";
+                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+
+                    // Clone
+                    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
                 }
                 else
                 {
-                    if ($object->status !== OperationOrder::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== OperationOrder::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
-                    }
-
                     // Valid
-                    if ($object->status === OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('OperationOrderAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('OperationOrderRefuse').'</a></div>'."\n";
+                    if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
 
                     // Reopen
-                    if ($object->status === OperationOrder::STATUS_ACCEPTED || $object->status === OperationOrder::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderCancel").'</a></div>'."\n";
+                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+
+                    // Clone
+                    print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
                 }
 
                 if (!empty($user->rights->operationorder->delete))

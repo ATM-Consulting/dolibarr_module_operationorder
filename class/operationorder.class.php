@@ -378,7 +378,7 @@ class OperationOrder extends SeedObject
      */
     public function setDraft($user, $notrigger = 0)
     {
-        if ($this->status === self::STATUS_VALIDATED)
+        if ($this->status == self::STATUS_VALIDATED)
         {
             $this->status = self::STATUS_DRAFT;
             $this->withChild = false;
@@ -397,7 +397,7 @@ class OperationOrder extends SeedObject
      */
     public function setValid($user, $notrigger = 0)
     {
-        if ($this->status === self::STATUS_DRAFT)
+        if ($this->status == self::STATUS_DRAFT)
         {
             $this->ref = $this->getRef();
             $this->fk_user_valid = $user->id;
@@ -417,7 +417,7 @@ class OperationOrder extends SeedObject
      */
     public function setAccepted($user, $notrigger = 0)
     {
-        if ($this->status === self::STATUS_VALIDATED)
+        if ($this->status == self::STATUS_VALIDATED)
         {
             $this->fk_user_cloture = $user->id;
             $this->status = self::STATUS_ACCEPTED;
@@ -436,7 +436,7 @@ class OperationOrder extends SeedObject
      */
     public function setRefused($user, $notrigger = 0)
     {
-        if ($this->status === self::STATUS_VALIDATED)
+        if ($this->status == self::STATUS_VALIDATED)
         {
             $this->status = self::STATUS_REFUSED;
             $this->withChild = false;
@@ -455,9 +455,9 @@ class OperationOrder extends SeedObject
      */
     public function setReopen($user, $notrigger = 0)
     {
-        if ($this->status === self::STATUS_ACCEPTED || $this->status === self::STATUS_REFUSED)
+        if ($this->status == self::STATUS_VALIDATED)
         {
-            $this->status = self::STATUS_VALIDATED;
+            $this->status = self::STATUS_DRAFT;
             $this->withChild = false;
 
             if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'OPERATIONORDER_REOPEN');
