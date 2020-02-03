@@ -1,0 +1,58 @@
+Module104088Name = Ordre de Réparation
+Module104088Desc = OperationOrder Description
+
+ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.fr" target="_blank">ATM Consulting</a><br>Vous pouvez retrouver la documentation sur notre <a href="http://wiki.atm-consulting.fr/index.php/Accueil" target="_blank">wiki</a><br><br>Pour toute question technique ou retour, contactez-nous sur <a href="mailto:support@atm-consulting.fr">support@atm-consulting.fr</a><br><br>Pour toute question commerciale, contactez-nous sur <a href="mailto:contact@atm-consulting.fr">contact@atm-consulting.fr</a> ou au +33 9 77 19 50 70<br><br>Retrouvez nos autres modules sur <a href="http://www.dolistore.com/search.php?orderby=position&orderway=desc&search_query=atm&submit_search=Rechercher" target="_blank">Dolistore</a>
+
+OperationOrderSetup = Configuration du module Ordre de réparation
+OperationOrderAbout = À propos du module Ordre de réparation
+
+OperationOrder=Ordre de réparation
+AbricotNeedUpdate=Le module abricot doit être mis à jour
+LinkToThirparty=Lien vers le tiers
+
+# SETUP
+ParamLabel=Nom du paramètre
+ParamDesc=Une description si besoin
+ParamHelp=Le contenu de l'aide
+
+# MENU
+LeftMenuOperationOrder=Ordre de réparation
+LeftMenuOperationOrderCreate=Nouvel ordre de réparation
+LeftMenuOperationOrderList=Liste
+
+# STATUS
+OperationOrderStatusCanceled=Abandonnée (fermée)
+OperationOrderStatusDraft=Brouillon (à valider)
+OperationOrderStatusValidated=Validée (à accepter)
+OperationOrderStatusRefused=Refusée (fermée)
+OperationOrderStatusAccepted=Acceptée (fermée)
+
+OperationOrderStatusShortCanceled=Abandonnée
+OperationOrderStatusShortDraft=Brouillon
+OperationOrderStatusShortValidated=Validée
+OperationOrderStatusShortRefused=Refusée
+OperationOrderStatusShortAccepted=Acceptée
+
+# LIST
+OperationOrderList=Liste ordre de réparation
+NoOperationOrder=(vide)
+
+# CARD
+NewOperationOrder=Création ordre de réparation
+OperationOrderCard=Fiche ordre de réparation
+DateOperationOrder=Date ordre de réparation
+
+OperationOrderModify=Modifier
+OperationOrderClone=Cloner
+OperationOrderValid=Valider
+OperationOrderAccept=Accepter
+OperationOrderRefuse=Refuser
+OperationOrderReopen=Rouvrir
+OperationOrderCancel=Abandonner
+OperationOrderDelete=Supprimer
+
+ConfirmValidateOperationOrderTitle=Confirmation d'activation
+ConfirmValidateOperationOrderBody=Souhaitez-vous vraiment activer cet ordre de réparation %s ?
+
+ConfirmDeleteOperationOrderTitle=Confirmation de suppression
+ConfirmDeleteOperationOrderBody=Souhaitez-vous vraiment supprimer cet ordre de réparation %s ?
