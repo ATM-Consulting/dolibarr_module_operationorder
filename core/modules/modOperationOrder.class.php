@@ -90,7 +90,6 @@ class modOperationOrder extends DolibarrModules
 		//                        );
 		$this->module_parts = array(
 		    'models' => 1,
-            'tpl' => 1
         );
 
 		// Data directories to create when module is enabled.

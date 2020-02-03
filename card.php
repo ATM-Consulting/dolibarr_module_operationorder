@@ -26,10 +26,13 @@ dol_include_once('operationorder/lib/operationorder.lib.php');
 if(empty($user->rights->operationorder->read)) accessforbidden();
 
 $langs->load('operationorder@operationorder');
+$langs->load('bills');
 
-$action = GETPOST('action');
+$action = GETPOST('action', 'alpha');
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
+$lineid = GETPOST('lineid');
+$confirm = GETPOST('confirm', 'alpha');
 
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -96,6 +99,12 @@ if (empty($reshook))
     $error = 0;
 	switch ($action) {
 		case 'add':
+		    if (!empty($conf->multicurrency->enabled))
+            {
+                require_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
+                $object->fk_multicurrency = MultiCurrency::getIdFromCode($object->db, $conf->currency);
+                $object->multicurrency_code = $conf->currency;
+            }
 		case 'update':
 			$object->setValues($_REQUEST); // Set standard attributes
 
@@ -501,6 +510,7 @@ if (empty($reshook))
                         setEventMessages($mesg, null, 'errors');
                     } else {
                         // Insert line
+//                        var_dump($label);exit;
                         $result = $object->addline($desc, $pu_ht, $qty, $tva_tx, $localtax1_tx, $localtax2_tx, $idprod, $remise_percent, $info_bits, 0, $price_base_type, $pu_ttc, $date_start, $date_end, $type, - 1, 0, GETPOST('fk_parent_line'), $fournprice, $buyingprice, $label, $array_options, $fk_unit, '', 0, $pu_ht_devise);
 
                         if ($result > 0) {
@@ -561,8 +571,179 @@ if (empty($reshook))
             }
 
             break;
+        case 'confirm_deleteline':
+            // Remove a product line
+            if ($confirm == 'yes' && $usercancreate)
+            {
+                $result = $object->removeChild($user, 'OperationOrderDet', $lineid);
+                if ($result)
+                {
+                    // Define output language
+                    $outputlangs = $langs;
+                    $newlang = '';
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                        $newlang = GETPOST('lang_id', 'aZ09');
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+                        $newlang = $object->thirdparty->default_lang;
+                    if (!empty($newlang)) {
+                        $outputlangs = new Translate("", $conf);
+                        $outputlangs->setDefaultLang($newlang);
+                    }
+                    if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+                        $ret = $object->fetch($object->id); // Reload to get new records
+                        $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+                    }
 
+                    header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
+                    exit;
+                }
+                else
+                {
+                    setEventMessages($object->error, $object->errors, 'errors');
+                }
+            }
+            break;
 	}
+
+    /*
+     *  Update a line
+     */
+    if ($action == 'updateline' && $usercancreate && GETPOST('save'))
+    {
+        // Clean parameters
+        $date_start = '';
+        $date_end = '';
+        $date_start = dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), GETPOST('date_startsec'), GETPOST('date_startmonth'), GETPOST('date_startday'), GETPOST('date_startyear'));
+        $date_end = dol_mktime(GETPOST('date_endhour'), GETPOST('date_endmin'), GETPOST('date_endsec'), GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
+        $description = dol_htmlcleanlastbr(GETPOST('product_desc', 'none'));
+        $pu_ht = GETPOST('price_ht');
+        $vat_rate = (GETPOST('tva_tx') ?GETPOST('tva_tx') : 0);
+        $pu_ht_devise = GETPOST('multicurrency_subprice');
+
+        // Define info_bits
+        $info_bits = 0;
+        if (preg_match('/\*/', $vat_rate))
+            $info_bits |= 0x01;
+
+        // Define vat_rate
+        $vat_rate = str_replace('*', '', $vat_rate);
+        $localtax1_rate = get_localtax($vat_rate, 1, $object->thirdparty, $mysoc);
+        $localtax2_rate = get_localtax($vat_rate, 2, $object->thirdparty, $mysoc);
+
+        // Add buying price
+        $fournprice = price2num(GETPOST('fournprice') ? GETPOST('fournprice') : '');
+        $buyingprice = price2num(GETPOST('buying_price') != '' ? GETPOST('buying_price') : ''); // If buying_price is '0', we muste keep this value
+
+        // Extrafields Lines
+        $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
+        $array_options = $extrafields->getOptionalsFromPost($object->table_element_line);
+        // Unset extrafield POST Data
+        if (is_array($extralabelsline)) {
+            foreach ($extralabelsline as $key => $value) {
+                unset($_POST["options_".$key]);
+            }
+        }
+
+        // Define special_code for special lines
+        $special_code = GETPOST('special_code');
+        if (!GETPOST('qty')) $special_code = 3;
+
+        // Check minimum price
+        $productid = GETPOST('productid', 'int');
+        if (!empty($productid)) {
+            $product = new Product($db);
+            $product->fetch($productid);
+
+            $type = $product->type;
+
+            $price_min = $product->price_min;
+            if ((!empty($conf->global->PRODUIT_MULTIPRICES) || !empty($conf->global->PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES)) && !empty($object->thirdparty->price_level))
+                $price_min = $product->multiprices_min[$object->thirdparty->price_level];
+
+            $label = ((GETPOST('update_label') && GETPOST('product_label')) ? GETPOST('product_label') : '');
+
+            if (((!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->produit->ignore_price_min_advance)) || empty($conf->global->MAIN_USE_ADVANCED_PERMS)) && ($price_min && (price2num($pu_ht) * (1 - price2num(GETPOST('remise_percent')) / 100) < price2num($price_min)))) {
+                setEventMessages($langs->trans("CantBeLessThanMinPrice", price(price2num($price_min, 'MU'), 0, $langs, 0, 0, - 1, $conf->currency)), null, 'errors');
+                $error++;
+            }
+        } else {
+            $type = GETPOST('type');
+            $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
+
+            // Check parameters
+            if (GETPOST('type') < 0) {
+                setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Type")), null, 'errors');
+                $error++;
+            }
+        }
+
+        if (!$error) {
+            if (empty($user->rights->margins->creer))
+            {
+                foreach ($object->lines as &$line)
+                {
+                    if ($line->id == GETPOST('lineid'))
+                    {
+                        $fournprice = $line->fk_fournprice;
+                        $buyingprice = $line->pa_ht;
+                        break;
+                    }
+                }
+            }
+            $result = $object->updateline(GETPOST('lineid'), $description, $pu_ht, GETPOST('qty'), GETPOST('remise_percent'), $vat_rate, $localtax1_rate, $localtax2_rate, 'HT', $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), 0, $fournprice, $buyingprice, $label, $special_code, $array_options, GETPOST('units'), $pu_ht_devise);
+
+            if ($result >= 0) {
+                if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+                    // Define output language
+                    $outputlangs = $langs;
+                    $newlang = '';
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                        $newlang = GETPOST('lang_id', 'aZ09');
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+                        $newlang = $object->thirdparty->default_lang;
+                    if (!empty($newlang)) {
+                        $outputlangs = new Translate("", $conf);
+                        $outputlangs->setDefaultLang($newlang);
+                    }
+
+                    $ret = $object->fetch($object->id); // Reload to get new records
+                    $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+                }
+
+                unset($_POST['qty']);
+                unset($_POST['type']);
+                unset($_POST['productid']);
+                unset($_POST['remise_percent']);
+                unset($_POST['price_ht']);
+                unset($_POST['multicurrency_price_ht']);
+                unset($_POST['price_ttc']);
+                unset($_POST['tva_tx']);
+                unset($_POST['product_ref']);
+                unset($_POST['product_label']);
+                unset($_POST['product_desc']);
+                unset($_POST['fournprice']);
+                unset($_POST['buying_price']);
+
+                unset($_POST['date_starthour']);
+                unset($_POST['date_startmin']);
+                unset($_POST['date_startsec']);
+                unset($_POST['date_startday']);
+                unset($_POST['date_startmonth']);
+                unset($_POST['date_startyear']);
+                unset($_POST['date_endhour']);
+                unset($_POST['date_endmin']);
+                unset($_POST['date_endsec']);
+                unset($_POST['date_endday']);
+                unset($_POST['date_endmonth']);
+                unset($_POST['date_endyear']);
+            } else {
+                setEventMessages($object->error, $object->errors, 'errors');
+            }
+        }
+    } elseif ($action == 'updateline' && $usercancreate && GETPOST('cancel', 'alpha') == $langs->trans('Cancel')) {
+    header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id); // Pour reaffichage de la fiche en cours d'edition
+        exit();
+    }
 
     // Actions when printing a doc from card
     include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
@@ -721,9 +902,11 @@ else
 
             print '<div class="div-table-responsive-no-min">';
             print '<table id="tablelines" class="noborder noshadow" width="100%">';
+
+            $defaulttpldir = str_replace(DOL_DOCUMENT_ROOT, '', dol_buildpath('operationorder/core/tpl'));
             // Show object lines
             if (!empty($object->lines))
-                $ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
+                $ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1, $defaulttpldir);
 
             $numlines = count($object->lines);
 

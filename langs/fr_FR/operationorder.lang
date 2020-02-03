@@ -51,8 +51,8 @@ OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
 
-ConfirmValidateOperationOrderTitle=Confirmation d'activation
-ConfirmValidateOperationOrderBody=Souhaitez-vous vraiment activer cet ordre de réparation %s ?
+ConfirmValidateOperationOrderTitle=Valider ordre de réparation
+ConfirmValidateOperationOrderBody=Êtes-vous sûr de vouloir valider cet ordre de réparation sous la référence <b>%s</b> ?
 
 ConfirmReopenOperationOrderTitle=Dévalider l'ordre de réparation
 ConfirmReopenOperationOrderBody=Êtes-vous sûr de vouloir restaurer l'ordre de réparation %s au statut brouillon ?

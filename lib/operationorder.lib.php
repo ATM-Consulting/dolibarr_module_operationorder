@@ -132,7 +132,7 @@ function getFormConfirmOperationOrder($form, $object, $action)
 
     if ($action === 'valid' && !empty($user->rights->operationorder->write))
     {
-        $body = $langs->trans('ConfirmValidateOperationOrderBody', $object->ref);
+        $body = $langs->trans('ConfirmValidateOperationOrderBody', $object->getRef());
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderTitle'), $body, 'confirm_validate', '', 0, 1);
     }
 //    elseif ($action === 'accept' && !empty($user->rights->operationorder->write))
@@ -159,6 +159,10 @@ function getFormConfirmOperationOrder($form, $object, $action)
     {
         $body = $langs->trans('ConfirmCloneOperationOrderBody', $object->ref);
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmCloneOperationOrderTitle'), $body, 'confirm_clone', '', 0, 1);
+    }
+    elseif ($action == 'ask_deleteline')
+    {
+        $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.GETPOST('lineid'), $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
     }
 //    elseif ($action === 'cancel' && !empty($user->rights->operationorder->write))
 //    {

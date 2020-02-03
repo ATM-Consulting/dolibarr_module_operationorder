@@ -305,7 +305,7 @@ if ($outputalsopricetotalwithtax) {
 	$coldisplay++;
 }
 
-if ($this->statut == 0 && ($object_rights->creer) && $action != 'selectlines') {
+if ($this->status == 0 && ($object_rights->write) && $action != 'selectlines') {
 	print '<td class="linecoledit center">';
 	$coldisplay++;
 	if (($line->info_bits & 2) == 2 || !empty($disableedit)) {
