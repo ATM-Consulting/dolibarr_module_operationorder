@@ -135,6 +135,11 @@ function getFormConfirmOperationOrder($form, $object, $action)
         $body = $langs->trans('ConfirmValidateOperationOrderBody', $object->getRef());
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderTitle'), $body, 'confirm_validate', '', 0, 1);
     }
+    elseif ($action === 'close' && !empty($user->rights->operationorder->write))
+    {
+        $body = $langs->trans('ConfirmCloseOperationOrderBody');
+        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmCloseOperationOrderTitle'), $body, 'confirm_close', '', 0, 1);
+    }
 //    elseif ($action === 'accept' && !empty($user->rights->operationorder->write))
 //    {
 //        $body = $langs->trans('ConfirmAcceptOperationOrderBody', $object->ref);
@@ -145,11 +150,16 @@ function getFormConfirmOperationOrder($form, $object, $action)
 //        $body = $langs->trans('ConfirmRefuseOperationOrderBody', $object->ref);
 //        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmRefuseOperationOrderTitle'), $body, 'confirm_refuse', '', 0, 1);
 //    }
-    elseif ($action === 'reopen' && !empty($user->rights->operationorder->write))
+    elseif ($action === 'modify' && !empty($user->rights->operationorder->write))
     {
-        $body = $langs->trans('ConfirmReopenOperationOrderBody', $object->ref);
-        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmReopenOperationOrderTitle'), $body, 'confirm_reopen', '', 0, 1);
+        $body = $langs->trans('ConfirmModifyOperationOrderBody', $object->ref);
+        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmModifyOperationOrderTitle'), $body, 'confirm_modify', '', 0, 1);
     }
+//    elseif ($action === 'reopen' && !empty($user->rights->operationorder->write))
+//    {
+//        $body = $langs->trans('ConfirmReopenOperationOrderBody', $object->ref);
+//        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmReopenOperationOrderTitle'), $body, 'confirm_reopen', '', 0, 1);
+//    }
     elseif ($action === 'delete' && !empty($user->rights->operationorder->write))
     {
         $body = $langs->trans('ConfirmDeleteOperationOrderBody');

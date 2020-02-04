@@ -30,7 +30,7 @@ class OperationOrder extends SeedObject
     /**
      * Canceled status
      */
-    const STATUS_CANCELED = -1;
+    const STATUS_CANCELED = -1; // Not used
     /**
      * Draft status
      */
@@ -42,11 +42,15 @@ class OperationOrder extends SeedObject
 	/**
 	 * Refused status
 	 */
-	const STATUS_REFUSED = 3;
+	const STATUS_REFUSED = 3; // Not used
 	/**
 	 * Accepted status
 	 */
-	const STATUS_ACCEPTED = 4;
+	const STATUS_ACCEPTED = 4; // Not used
+	/**
+	 * Closed status
+	 */
+	const STATUS_CLOSED = 5;
 
 	/** @var array $TStatus Array of translate key for each const */
 	public static $TStatus = array(
@@ -55,6 +59,7 @@ class OperationOrder extends SeedObject
 		,self::STATUS_VALIDATED => 'OperationOrderStatusShortValidated'
 //		,self::STATUS_REFUSED => 'OperationOrderStatusShortRefused'
 //		,self::STATUS_ACCEPTED => 'OperationOrderStatusShortAccepted'
+		,self::STATUS_CLOSED => 'OperationOrderStatusShortClosed'
 	);
 
 	/** @var string $table_element Table name in SQL */
@@ -92,10 +97,10 @@ class OperationOrder extends SeedObject
     public $fields=array(
 //        'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>1, 'position'=>1, 'notnull'=>1, 'visible'=>-1, 'noteditable'=>'1', 'index'=>1, 'comment'=>"Id"),
         'ref' => array('type'=>'varchar(128)', 'label'=>'Ref', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>4, 'noteditable'=>'1', 'default'=>'(PROV)', 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'comment'=>"Reference of object"),
-        'ref_client' => array('type'=>'varchar(128)', 'label'=>'RefClient', 'enabled'=>1, 'position'=>20, 'notnull'=>0, 'visible'=>2),
-        'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'help'=>"LinkToThirparty"),
-        'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>2, 'index'=>1),
-        'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>-1, 'index'=>1,),
+        'ref_client' => array('type'=>'varchar(128)', 'label'=>'RefCustomer', 'enabled'=>1, 'position'=>20, 'notnull'=>0, 'visible'=>1),
+        'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'help'=>"LinkToThirparty"),
+        'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1, 'index'=>1),
+        'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1, 'index'=>1,),
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
         'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
         'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1,),
@@ -416,33 +421,52 @@ class OperationOrder extends SeedObject
      * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
      * @return int
      */
-    public function setAccepted($user, $notrigger = 0)
-    {
-        if ($this->status == self::STATUS_VALIDATED)
-        {
-            $this->fk_user_cloture = $user->id;
-            $this->status = self::STATUS_ACCEPTED;
-            $this->withChild = false;
-
-            $this->update($user);
-        }
-
-        return 0;
-    }
+//    public function setAccepted($user, $notrigger = 0)
+//    {
+//        if ($this->status == self::STATUS_VALIDATED)
+//        {
+//            $this->fk_user_cloture = $user->id;
+//            $this->status = self::STATUS_ACCEPTED;
+//            $this->withChild = false;
+//
+//            $this->update($user);
+//        }
+//
+//        return 0;
+//    }
 
     /**
      * @param User  $user   User object
      * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
      * @return int
      */
-    public function setRefused($user, $notrigger = 0)
+//    public function setRefused($user, $notrigger = 0)
+//    {
+//        if ($this->status == self::STATUS_VALIDATED)
+//        {
+//            $this->status = self::STATUS_REFUSED;
+//            $this->withChild = false;
+//
+//            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_REFUSED, $notrigger, 'OPERATIONORDER_REFUSE');
+//            else return $this->update($user);
+//        }
+//
+//        return 0;
+//    }
+
+    /**
+     * @param User  $user   User object
+     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
+     * @return int
+     */
+    public function setClosed($user, $notrigger = 0)
     {
         if ($this->status == self::STATUS_VALIDATED)
         {
-            $this->status = self::STATUS_REFUSED;
+            $this->status = self::STATUS_CLOSED;
             $this->withChild = false;
 
-            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_REFUSED, $notrigger, 'OPERATIONORDER_REFUSE');
+            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, $this->status, $notrigger, 'OPERATIONORDER_CLOSE');
             else return $this->update($user);
         }
 
@@ -456,12 +480,12 @@ class OperationOrder extends SeedObject
      */
     public function setReopen($user, $notrigger = 0)
     {
-        if ($this->status == self::STATUS_VALIDATED)
+        if ($this->status == self::STATUS_CLOSED)
         {
-            $this->status = self::STATUS_DRAFT;
+            $this->status = self::STATUS_VALIDATED;
             $this->withChild = false;
 
-            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'OPERATIONORDER_REOPEN');
+            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, $this->status, $notrigger, 'OPERATIONORDER_REOPEN');
             else return $this->update($user);
         }
 
@@ -546,9 +570,11 @@ class OperationOrder extends SeedObject
 
         if ($status==self::STATUS_CANCELED) { $statusType='status9'; $statusLabel=$langs->trans('OperationOrderStatusCancel'); $statusLabelShort=$langs->trans('OperationOrderStatusShortCancel'); }
         elseif ($status==self::STATUS_DRAFT) { $statusType='status0'; $statusLabel=$langs->trans('OperationOrderStatusDraft'); $statusLabelShort=$langs->trans('OperationOrderStatusShortDraft'); }
-        elseif ($status==self::STATUS_VALIDATED) { $statusType='status1'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
-        elseif ($status==self::STATUS_REFUSED) { $statusType='status5'; $statusLabel=$langs->trans('OperationOrderStatusRefused'); $statusLabelShort=$langs->trans('OperationOrderStatusShortRefused'); }
-        elseif ($status==self::STATUS_ACCEPTED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusAccepted'); $statusLabelShort=$langs->trans('OperationOrderStatusShortAccepted'); }
+//        elseif ($status==self::STATUS_VALIDATED) { $statusType='status1'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
+        elseif ($status==self::STATUS_VALIDATED) { $statusType='status4'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
+//        elseif ($status==self::STATUS_REFUSED) { $statusType='status5'; $statusLabel=$langs->trans('OperationOrderStatusRefused'); $statusLabelShort=$langs->trans('OperationOrderStatusShortRefused'); }
+//        elseif ($status==self::STATUS_ACCEPTED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusAccepted'); $statusLabelShort=$langs->trans('OperationOrderStatusShortAccepted'); }
+        elseif ($status==self::STATUS_CLOSED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusClosed'); $statusLabelShort=$langs->trans('OperationOrderStatusShortClosed'); }
 
         if (function_exists('dolGetStatus'))
         {

@@ -23,15 +23,17 @@ LeftMenuOperationOrderList=Liste
 # STATUS
 OperationOrderStatusCanceled=Abandonnée (fermée)
 OperationOrderStatusDraft=Brouillon (à valider)
-OperationOrderStatusValidated=Validée (à accepter)
+OperationOrderStatusValidated=Validé
 OperationOrderStatusRefused=Refusée (fermée)
 OperationOrderStatusAccepted=Acceptée (fermée)
+OperationOrderStatusClosed=Traité
 
 OperationOrderStatusShortCanceled=Abandonnée
 OperationOrderStatusShortDraft=Brouillon
-OperationOrderStatusShortValidated=Validée
+OperationOrderStatusShortValidated=Validé
 OperationOrderStatusShortRefused=Refusée
 OperationOrderStatusShortAccepted=Acceptée
+OperationOrderStatusShortClosed=Traité
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -45,6 +47,7 @@ DateOperationOrder=Date ordre de réparation
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
 OperationOrderValid=Valider
+OperationOrderClose=Clôturer
 OperationOrderAccept=Accepter
 OperationOrderRefuse=Refuser
 OperationOrderReopen=Rouvrir
@@ -54,8 +57,11 @@ OperationOrderDelete=Supprimer
 ConfirmValidateOperationOrderTitle=Valider ordre de réparation
 ConfirmValidateOperationOrderBody=Êtes-vous sûr de vouloir valider cet ordre de réparation sous la référence <b>%s</b> ?
 
-ConfirmReopenOperationOrderTitle=Dévalider l'ordre de réparation
-ConfirmReopenOperationOrderBody=Êtes-vous sûr de vouloir restaurer l'ordre de réparation %s au statut brouillon ?
+ConfirmModifyOperationOrderTitle=Dévalider l'ordre de réparation
+ConfirmModifyOperationOrderBody=Êtes-vous sûr de vouloir restaurer l'ordre de réparation %s au statut brouillon ?
 
 ConfirmDeleteOperationOrderTitle=Supprimer ordre de réparation
 ConfirmDeleteOperationOrderBody=Êtes-vous sûr de vouloir effacer cet ordre de réparation ?
+
+ConfirmCloseOperationOrderTitle=Clôturer ordre de réparation
+ConfirmCloseOperationOrderBody=Êtes-vous sûr de vouloir clôturer cet ordre de réparation ?

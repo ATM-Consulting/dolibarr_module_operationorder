@@ -183,12 +183,17 @@ if (empty($reshook))
                 exit;
             }
 
-        case 'confirm_reopen':
+        case 'confirm_modify':
 			if (!empty($user->rights->operationorder->write)) $object->setDraft($user);
 
 			break;
-		case 'confirm_validate':
-			if (!empty($user->rights->operationorder->write)) $object->setValid($user);
+
+        case 'reopen':
+            if (!empty($user->rights->operationorder->write)) $object->setReopen($user);
+
+            break;
+		case 'confirm_close':
+			if (!empty($user->rights->operationorder->write)) $object->setClosed($user);
 
 			header('Location: '.dol_buildpath('/operationorder/card.php', 1).'?id='.$object->id);
 			exit;
@@ -835,6 +840,11 @@ else
     }
     else
     {
+        $object->fields['ref_client']['visible'] = 2;
+        $object->fields['fk_soc']['visible'] = 2;
+        $object->fields['fk_project']['visible'] = 2;
+        $object->fields['fk_contrat']['visible'] = 2;
+
         if (!empty($object->id) && $action === 'edit')
         {
             print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -880,8 +890,8 @@ else
             $morehtmlref='<div class="refidno">';
 
             // Ref bis
-            $morehtmlref.=$form->editfieldkey("RefClient", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
-            $morehtmlref.=$form->editfieldval("RefClient", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
+            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
+            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
 
 //            $morehtmlref.=$form->editfieldkey("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
 //            $morehtmlref.=$form->editfieldval("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
@@ -950,9 +960,6 @@ else
                     if (!empty($object->fk_contrat)) {
                         $contrat = new Contrat($db);
                         $contrat->fetch($object->fk_contrat);
-//                        $morehtmlref .= '<a href="'.DOL_URL_ROOT.'/projet/card.php?id='.$object->fk_project.'" title="'.$langs->trans('ShowProject').'">';
-//                        $morehtmlref .= $proj->ref;
-//                        $morehtmlref .= '</a>';
                         $morehtmlref .= $contrat->getNomUrl();
                     } else {
                         $morehtmlref .= '';
@@ -1058,7 +1065,11 @@ else
                     if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
 
                     // Reopen
-                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=modify">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+                    if ($object->status == OperationOrder::STATUS_CLOSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderReopen').'</a></div>'."\n";
+
+                    // Close
+                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=close">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
 
                     // Clone
                     print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
@@ -1070,6 +1081,9 @@ else
 
                     // Reopen
                     if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+
+                    // Close
+                    if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
 
                     // Clone
                     print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
