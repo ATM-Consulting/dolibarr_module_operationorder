@@ -101,6 +101,18 @@ if (empty($reshook))
 
     $error = 0;
 	switch ($action) {
+        case 'update_attribute':
+            if (!empty($user->rights->operationorder->write))
+            {
+                $values = array();
+                $attribute = GETPOST('attribute');
+                $value = GETPOST($attribute);
+                $values[$attribute] = $value;
+                $object->setValues($values);
+                $object->save($user);
+            }
+
+            break;
 		case 'add':
 		    if (!empty($conf->multicurrency->enabled))
             {
@@ -979,9 +991,11 @@ else
             print '<div class="underbanner clearboth"></div>';
             print '<table class="border tableforfield" width="100%">'."\n";
 
+            $permok = $usercancreate;
             // Common attributes
-            $keyforbreak='total_ht';
-            include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+//            $keyforbreak='total_ht';
+//            include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+            include dol_buildpath('operationorder/core/tpl/commonfields_view.tpl.php');
 
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';

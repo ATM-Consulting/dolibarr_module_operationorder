@@ -103,15 +103,15 @@ class OperationOrder extends SeedObject
         'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1, 'index'=>1,),
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
         'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
-        'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1,),
+        'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 1),
         'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>1, 'position'=>61, 'notnull'=>0, 'visible'=>0),
         'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>0),
 
         'localtax1' => array('type'=>'real', 'label'=>'Localtax1', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>0),
         'localtax2' => array('type'=>'real', 'label'=>'Localtax2', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>0),
-        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1),
-        'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1),
-        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1),
+        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
+        'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
+        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
 
 
         'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),

@@ -49,19 +49,51 @@ foreach ($object->fields as $key => $val)
 
 	$value = $object->$key;
 
-	print '<tr><td';
+	print '<tr><td class="titlefield">';
+    print '<table class="nobordernopadding centpercent">';
+    print '<tr>';
+
+	print '<td';
 	print ' class="titlefield fieldname_'.$key;
 	//if ($val['notnull'] > 0) print ' fieldrequired';     // No fieldrequired on the view output
 	if ($val['type'] == 'text' || $val['type'] == 'html') print ' tdtop';
 	print '">';
 	if (!empty($val['help'])) print $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
 	else print $langs->trans($val['label']);
+
+    if ($object->status == 0 && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
+    {
+        $fieldid = 'id';
+        if ($object->table_element == 'societe') $fieldid = 'socid';
+        print '<td class="right"><a class="reposition editfielda" href="'.$_SERVER['PHP_SELF'].'?'.$fieldid.'='.$object->id.'&action=edit_attribute&attribute='.$key.'&ignorecollapsesetup=1">'.img_edit().'</a></td>';
+    }
+    print '</tr></table>';
+
 	print '</td>';
 	print '<td class="valuefield fieldname_'.$key;
 	if ($val['type'] == 'text') print ' wordbreak';
 	print '">';
 
-	print $object->showOutputField($val, $key, $value, '', '', '', 0);
+    if ($action == 'edit_attribute' && $permok && GETPOST('attribute', 'none') == $key)
+    {
+        $fieldid = 'id';
+        if ($object->table_element == 'societe') $fieldid = 'socid';
+        print '<form enctype="multipart/form-data" action="'.$_SERVER["PHP_SELF"].'" method="post" name="formextra">';
+        print '<input type="hidden" name="action" value="update_attribute">';
+        print '<input type="hidden" name="attribute" value="'.$key.'">';
+        print '<input type="hidden" name="token" value="'.newToken().'">';
+        print '<input type="hidden" name="'.$fieldid.'" value="'.$object->id.'">';
+        print $object->showInputField($val, $key, $value, '', '', '', 0, $object->id, $object->table_element);
+
+        print '<input type="submit" class="button" value="'.dol_escape_htmltag($langs->trans('Modify')).'">';
+
+        print '</form>';
+    }
+    else
+    {
+        print $object->showOutputField($val, $key, $value, '', '', '', 0);
+    }
+
 	//print dol_escape_htmltag($object->$key, 1, 1);
 	print '</td>';
 	print '</tr>';
@@ -97,16 +129,47 @@ foreach ($object->fields as $key => $val)
 
 	$value = $object->$key;
 
-	print '<tr><td';
+    print '<tr><td class="titlefield">';
+    print '<table class="nobordernopadding centpercent">';
+    print '<tr>';
+
+	print '<td';
 	print ' class="titlefield fieldname_'.$key;
 	//if ($val['notnull'] > 0) print ' fieldrequired';		// No fieldrequired inthe view output
 	if ($val['type'] == 'text' || $val['type'] == 'html') print ' tdtop';
 	print '">';
 	if (!empty($val['help'])) print $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
 	else print $langs->trans($val['label']);
+
+	if ($object->status == 0 && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
+    {
+        $fieldid = 'id';
+        if ($object->table_element == 'societe') $fieldid = 'socid';
+        print '<td class="right"><a class="reposition editfielda" href="'.$_SERVER['PHP_SELF'].'?'.$fieldid.'='.$object->id.'&action=edit_attribute&attribute='.$key.'&ignorecollapsesetup=1">'.img_edit().'</a></td>';
+    }
+    print '</tr></table>';
+
 	print '</td>';
 	print '<td>';
-	print $object->showOutputField($val, $key, $value, '', '', '', 0);
+    if ($action == 'edit_attribute' && $permok && GETPOST('attribute', 'none') == $key)
+    {
+        $fieldid = 'id';
+        if ($object->table_element == 'societe') $fieldid = 'socid';
+        print '<form enctype="multipart/form-data" action="'.$_SERVER["PHP_SELF"].'" method="post" name="formextra">';
+        print '<input type="hidden" name="action" value="update_attribute">';
+        print '<input type="hidden" name="attribute" value="'.$key.'">';
+        print '<input type="hidden" name="token" value="'.newToken().'">';
+        print '<input type="hidden" name="'.$fieldid.'" value="'.$object->id.'">';
+        print $object->showInputField($val, $key, $value, '', '', '', 0, $object->id, $object->table_element);
+
+        print '<input type="submit" class="button" value="'.dol_escape_htmltag($langs->trans('Modify')).'">';
+
+        print '</form>';
+    }
+    else
+    {
+        print $object->showOutputField($val, $key, $value, '', '', '', 0);
+    }
 	//print dol_escape_htmltag($object->$key, 1, 1);
 	print '</td>';
 	print '</tr>';
