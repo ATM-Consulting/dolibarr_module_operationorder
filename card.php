@@ -19,7 +19,10 @@ require 'config.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcontract.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
 
@@ -741,8 +744,32 @@ if (empty($reshook))
             }
         }
     } elseif ($action == 'updateline' && $usercancreate && GETPOST('cancel', 'alpha') == $langs->trans('Cancel')) {
-    header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id); // Pour reaffichage de la fiche en cours d'edition
+        header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id); // Pour reaffichage de la fiche en cours d'edition
         exit();
+    }
+    // Link to a project
+    elseif ($action == 'classin' && $usercancreate)
+    {
+        $object->setProject(GETPOST('projectid', 'int'));
+    }
+    // Positionne ref commande client
+    elseif ($action == 'setref_client' && $usercancreate) {
+        $object->ref_client = GETPOST('ref_client');
+        $result = $object->update($user);
+        if ($result < 0)
+        {
+            setEventMessages($object->error, $object->errors, 'errors');
+        }
+    }
+    // Link to a project
+    elseif ($action == 'setcontratin' && $usercancreate)
+    {
+        $object->fk_contrat = GETPOST('fk_contrat');
+        $result = $object->update($user);
+        if ($result < 0)
+        {
+            setEventMessages($object->error, $object->errors, 'errors');
+        }
     }
 
     // Actions when printing a doc from card
@@ -762,6 +789,8 @@ if (empty($reshook))
  */
 $form = new Form($db);
 $formfile = new FormFile($db);
+$formproject = new FormProjets($db);
+$formcontrat = new FormContract($db);
 
 $title=$langs->trans('OperationOrder');
 llxHeader('', $title);
@@ -849,13 +878,88 @@ else
             $linkback = '<a href="' .dol_buildpath('/operationorder/list.php', 1) . '?restore_lastsearch_values=1">' . $langs->trans('BackToList') . '</a>';
 
             $morehtmlref='<div class="refidno">';
-            /*
+
             // Ref bis
-            $morehtmlref.=$form->editfieldkey("RefBis", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
-            $morehtmlref.=$form->editfieldval("RefBis", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
+            $morehtmlref.=$form->editfieldkey("RefClient", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
+            $morehtmlref.=$form->editfieldval("RefClient", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
+
+//            $morehtmlref.=$form->editfieldkey("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
+//            $morehtmlref.=$form->editfieldval("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
             // Thirdparty
-            $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $soc->getNomUrl(1);
-            */
+            $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $object->thirdparty->getNomUrl(1);
+
+            // Project
+            if (!empty($conf->projet->enabled))
+            {
+                $langs->load("projects");
+                $morehtmlref .= '<br>'.$langs->trans('Project').' ';
+                if ($usercancreate)
+                {
+                    if ($action != 'classify')
+                        $morehtmlref .= '<a class="editfielda" href="'.$_SERVER['PHP_SELF'].'?action=classify&amp;id='.$object->id.'">'.img_edit($langs->transnoentitiesnoconv('SetProject')).'</a> : ';
+                    if ($action == 'classify') {
+                        //$morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
+                        $morehtmlref .= '<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
+                        $morehtmlref .= '<input type="hidden" name="action" value="classin">';
+                        $morehtmlref .= '<input type="hidden" name="token" value="'.newToken().'">';
+                        $morehtmlref .= $formproject->select_projects($object->fk_soc, $object->fk_project, 'projectid', $maxlength, 0, 1, 0, 1, 0, 0, '', 1);
+                        $morehtmlref .= '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+                        $morehtmlref .= '</form>';
+                    } else {
+                        $morehtmlref .= $form->form_project($_SERVER['PHP_SELF'].'?id='.$object->id, $object->fk_soc, $object->fk_project, 'none', 0, 0, 0, 1);
+                    }
+                } else {
+                    if (!empty($object->fk_project)) {
+                        $proj = new Project($db);
+                        $proj->fetch($object->fk_project);
+                        $morehtmlref .= '<a href="'.DOL_URL_ROOT.'/projet/card.php?id='.$object->fk_project.'" title="'.$langs->trans('ShowProject').'">';
+                        $morehtmlref .= $proj->ref;
+                        $morehtmlref .= '</a>';
+                    } else {
+                        $morehtmlref .= '';
+                    }
+                }
+            }
+
+            // Contrat
+            if (!empty($conf->contrat->enabled))
+            {
+                $langs->load("contrat");
+                $morehtmlref .= '<br>'.$langs->trans('Contrat').' ';
+                if ($usercancreate)
+                {
+                    if ($action != 'setcontrat')
+                        $morehtmlref .= '<a class="editfielda" href="'.$_SERVER['PHP_SELF'].'?action=setcontrat&amp;id='.$object->id.'">'.img_edit($langs->transnoentitiesnoconv('SetContrat')).'</a> : ';
+                    if ($action == 'setcontrat') {
+                        //$morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
+                        $morehtmlref .= '<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
+                        $morehtmlref .= '<input type="hidden" name="action" value="setcontratin">';
+                        $morehtmlref .= '<input type="hidden" name="token" value="'.newToken().'">';
+                        ob_start();
+                        $formcontrat->select_contract($object->fk_soc, $object->fk_contrat, 'fk_contrat', $maxlength, 1);
+                        $select_contrat = ob_get_clean();
+                        $morehtmlref .= $select_contrat;
+                        $morehtmlref .= '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+                        $morehtmlref .= '</form>';
+                    } else {
+                        $contrat = new Contrat($db);
+                        $contrat->fetch($object->fk_contrat);
+                        $morehtmlref .= $contrat->getNomUrl();
+                    }
+                } else {
+                    if (!empty($object->fk_contrat)) {
+                        $contrat = new Contrat($db);
+                        $contrat->fetch($object->fk_contrat);
+//                        $morehtmlref .= '<a href="'.DOL_URL_ROOT.'/projet/card.php?id='.$object->fk_project.'" title="'.$langs->trans('ShowProject').'">';
+//                        $morehtmlref .= $proj->ref;
+//                        $morehtmlref .= '</a>';
+                        $morehtmlref .= $contrat->getNomUrl();
+                    } else {
+                        $morehtmlref .= '';
+                    }
+                }
+            }
+
             $morehtmlref.='</div>';
 
 
