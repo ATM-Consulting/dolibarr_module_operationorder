@@ -35,3 +35,6 @@ $o->init_db_by_vars();
 
 $o=new OperationOrderDet($db);
 $o->init_db_by_vars();
+
+$o=new OperationOrderDictType($db);
+$o->init_db_by_vars();

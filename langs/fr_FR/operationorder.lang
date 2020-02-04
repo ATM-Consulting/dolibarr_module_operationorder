@@ -10,6 +10,8 @@ OperationOrder=Ordre de réparation
 AbricotNeedUpdate=Le module abricot doit être mis à jour
 LinkToThirparty=Lien vers le tiers
 
+OperationOrderDictTypeLabel=Type d'ordre de réparation
+
 # SETUP
 ParamLabel=Nom du paramètre
 ParamDesc=Une description si besoin
@@ -53,6 +55,8 @@ OperationOrderRefuse=Refuser
 OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
+
+OperationOrderType=Type
 
 ConfirmValidateOperationOrderTitle=Valider ordre de réparation
 ConfirmValidateOperationOrderBody=Êtes-vous sûr de vouloir valider cet ordre de réparation sous la référence <b>%s</b> ?

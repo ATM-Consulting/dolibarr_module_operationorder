@@ -113,6 +113,7 @@ class OperationOrder extends SeedObject
         'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
         'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
 
+        'fk_c_operationorder_type' => array('type'=>'integer:OperationOrderDictType:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrderType', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'c_operationorder_type.rowid',),
 
         'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
         'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
@@ -1169,4 +1170,36 @@ class OperationOrderDet extends SeedObject
     }
 
 
+}
+
+
+class OperationOrderDictType extends SeedObject
+{
+    public $table_element = 'c_operationorder_type';
+
+    public $element = 'operationorder_type';
+
+    public $fields = array(
+        'code' => array('varchar(30)', 'length' => 30),
+        'label' => array('varchar(255)', 'length' => 255, 'showoncombobox' => 1),
+        'position' => array('integer'),
+        'active' => array('integer'),
+        'entity' => array('integer', 'index' => true)
+    );
+
+    /**
+     * OperationOrderDet constructor.
+     * @param DoliDB    $db    Database connector
+     */
+    public function __construct($db)
+    {
+        $this->db = $db;
+
+        $this->init();
+    }
+
+    public function getNomUrl($getnomurlparam = '')
+    {
+        return $this->label;
+    }
 }

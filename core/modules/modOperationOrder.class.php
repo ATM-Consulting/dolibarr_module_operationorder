@@ -147,7 +147,36 @@ class modOperationOrder extends DolibarrModules
         	$conf->operationorder=new stdClass();
         	$conf->operationorder->enabled=0;
         }
-		$this->dictionaries=array();
+		$this->dictionaries=array(
+            'langs' => 'operationorder@operationorder',
+            'tabname' => array(
+                MAIN_DB_PREFIX.'c_operationorder_type'
+            ),
+            'tablib' => array(
+                'OperationOrderDictTypeLabel'
+            ),                                                    // Label of tables
+            'tabsql' => array(
+                'SELECT f.rowid, f.code, f.label, f.position, f.active, f.entity FROM '.MAIN_DB_PREFIX.'c_operationorder_type as f WHERE f.entity IN (0, '.$conf->entity.')'
+            ),
+            'tabsqlsort' => array(
+                'position ASC, label ASC'
+            ),
+            'tabfield' => array(
+                'code,label,position'
+            ),
+            'tabfieldvalue' => array(
+                'code,label,position,entity'
+            ),
+            'tabfieldinsert' => array(
+                'code,label,position,entity'
+            ),
+            'tabrowid' => array(
+                'rowid'
+            ),
+            'tabcond' => array(
+                $conf->operationorder->enabled
+            )
+        );
         /* Example:
         if (! isset($conf->operationorder->enabled)) $conf->operationorder->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
