@@ -108,20 +108,20 @@ class OperationOrder extends SeedObject
         'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>1, 'position'=>61, 'notnull'=>0, 'visible'=>0),
         'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>0),
 
-        'localtax1' => array('type'=>'real', 'label'=>'Localtax1', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>0),
-        'localtax2' => array('type'=>'real', 'label'=>'Localtax2', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>0),
-        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
-        'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
-        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
+//        'localtax1' => array('type'=>'real', 'label'=>'Localtax1', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>0),
+//        'localtax2' => array('type'=>'real', 'label'=>'Localtax2', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>0),
+//        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
+//        'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
+//        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
 
         'fk_c_operationorder_type' => array('type'=>'integer:OperationOrderDictType:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrderType', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'c_operationorder_type.rowid',),
 
-        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
+//        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
         'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
         'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
         'fk_user_valid' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserValid', 'enabled'=>1, 'position'=>512, 'notnull'=>0, 'visible'=>-2,),
@@ -143,12 +143,12 @@ class OperationOrder extends SeedObject
     public $date_operation_order;
     public $note_public;
     public $note_private;
-    public $fk_multicurrency;
-    public $multicurrency_code;
-    public $multicurrency_subprice;
-    public $multicurrency_total_ht;
-    public $multicurrency_total_tva;
-    public $multicurrency_total_ttc;
+//    public $fk_multicurrency;
+//    public $multicurrency_code;
+//    public $multicurrency_subprice;
+//    public $multicurrency_total_ht;
+//    public $multicurrency_total_tva;
+//    public $multicurrency_total_ttc;
     public $fk_user_creat;
     public $fk_user_modif;
     public $fk_user_valid;
@@ -632,49 +632,50 @@ class OperationOrder extends SeedObject
         return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
     }
 
-    public function addline($desc, $pu_ht, $qty, $txtva, $txlocaltax1 = 0, $txlocaltax2 = 0, $fk_product = 0, $remise_percent = 0, $info_bits = 0, $fk_remise_except = 0, $price_base_type = 'HT', $pu_ttc = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $fk_fournprice = null, $pa_ht = 0, $label = '', $array_options = 0, $fk_unit = null, $origin = '', $origin_id = 0, $pu_ht_devise = 0)
+//    public function addline($desc, $pu_ht, $qty, $txtva, $txlocaltax1 = 0, $txlocaltax2 = 0, $fk_product = 0, $remise_percent = 0, $info_bits = 0, $fk_remise_except = 0, $price_base_type = 'HT', $pu_ttc = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $fk_fournprice = null, $pa_ht = 0, $label = '', $array_options = 0, $fk_unit = null, $origin = '', $origin_id = 0, $pu_ht_devise = 0)
+    public function addline($desc, $qty, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
     {
         global $mysoc, $conf, $langs, $user;
 
-        $logtext = "::addline commandeid=$this->id, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_percent=$remise_percent";
-        $logtext .= ", info_bits=$info_bits, fk_remise_except=$fk_remise_except, price_base_type=$price_base_type, pu_ttc=$pu_ttc, date_start=$date_start";
-        $logtext .= ", date_end=$date_end, type=$type special_code=$special_code, fk_unit=$fk_unit, origin=$origin, origin_id=$origin_id, pu_ht_devise=$pu_ht_devise";
-        dol_syslog(get_class($this).$logtext, LOG_DEBUG);
+//        $logtext = "::addline commandeid=$this->id, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_percent=$remise_percent";
+//        $logtext .= ", info_bits=$info_bits, fk_remise_except=$fk_remise_except, price_base_type=$price_base_type, pu_ttc=$pu_ttc, date_start=$date_start";
+//        $logtext .= ", date_end=$date_end, type=$type special_code=$special_code, fk_unit=$fk_unit, origin=$origin, origin_id=$origin_id, pu_ht_devise=$pu_ht_devise";
+//        dol_syslog(get_class($this).$logtext, LOG_DEBUG);
 
         if ($this->status == self::STATUS_DRAFT)
         {
             include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
             // Clean parameters
-            if (empty($remise_percent)) $remise_percent = 0;
+//            if (empty($remise_percent)) $remise_percent = 0;
             if (empty($qty)) $qty = 0;
             if (empty($info_bits)) $info_bits = 0;
             if (empty($rang)) $rang = 0;
-            if (empty($txtva)) $txtva = 0;
-            if (empty($txlocaltax1)) $txlocaltax1 = 0;
-            if (empty($txlocaltax2)) $txlocaltax2 = 0;
+//            if (empty($txtva)) $txtva = 0;
+//            if (empty($txlocaltax1)) $txlocaltax1 = 0;
+//            if (empty($txlocaltax2)) $txlocaltax2 = 0;
             if (empty($fk_parent_line) || $fk_parent_line < 0) $fk_parent_line = 0;
-            if (empty($this->fk_multicurrency)) $this->fk_multicurrency = 0;
+//            if (empty($this->fk_multicurrency)) $this->fk_multicurrency = 0;
 
-            $remise_percent = price2num($remise_percent);
+//            $remise_percent = price2num($remise_percent);
             $qty = price2num($qty);
-            $pu_ht = price2num($pu_ht);
-            $pu_ht_devise = price2num($pu_ht_devise);
-            $pu_ttc = price2num($pu_ttc);
-            $pa_ht = price2num($pa_ht);
-            if (!preg_match('/\((.*)\)/', $txtva)) {
-                $txtva = price2num($txtva); // $txtva can have format '5,1' or '5.1' or '5.1(XXX)', we must clean only if '5,1'
-            }
-            $txlocaltax1 = price2num($txlocaltax1);
-            $txlocaltax2 = price2num($txlocaltax2);
-            if ($price_base_type == 'HT')
-            {
-                $pu = $pu_ht;
-            }
-            else
-            {
-                $pu = $pu_ttc;
-            }
+//            $pu_ht = price2num($pu_ht);
+//            $pu_ht_devise = price2num($pu_ht_devise);
+//            $pu_ttc = price2num($pu_ttc);
+//            $pa_ht = price2num($pa_ht);
+//            if (!preg_match('/\((.*)\)/', $txtva)) {
+//                $txtva = price2num($txtva); // $txtva can have format '5,1' or '5.1' or '5.1(XXX)', we must clean only if '5,1'
+//            }
+//            $txlocaltax1 = price2num($txlocaltax1);
+//            $txlocaltax2 = price2num($txlocaltax2);
+//            if ($price_base_type == 'HT')
+//            {
+//                $pu = $pu_ht;
+//            }
+//            else
+//            {
+//                $pu = $pu_ttc;
+//            }
             $label = trim($label);
             $desc = trim($desc);
 
@@ -690,8 +691,8 @@ class OperationOrder extends SeedObject
             $this->db->begin();
 
             $product_type = $type;
-            if (!empty($fk_product))
-            {
+//            if (!empty($fk_product))
+//            {
 //                $product = new Product($this->db);
 //                $result = $product->fetch($fk_product);
 //                $product_type = $product->type;
@@ -705,24 +706,24 @@ class OperationOrder extends SeedObject
 //                    $this->db->rollback();
 //                    return self::STOCK_NOT_ENOUGH_FOR_ORDER;
 //                }
-            }
+//            }
             // Calcul du total TTC et de la TVA pour la ligne a partir de
             // qty, pu, remise_percent et txtva
             // TRES IMPORTANT: C'est au moment de l'insertion ligne qu'on doit stocker
             // la part ht, tva et ttc, et ce au niveau de la ligne qui a son propre taux tva.
 
-            $localtaxes_type = getLocalTaxesFromRate($txtva, 0, $this->thirdparty, $mysoc);
+//            $localtaxes_type = getLocalTaxesFromRate($txtva, 0, $this->thirdparty, $mysoc);
 
             // Clean vat code
-            $reg = array();
+//            $reg = array();
             $vat_src_code = '';
-            if (preg_match('/\((.*)\)/', $txtva, $reg))
-            {
-                $vat_src_code = $reg[1];
-                $txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
-            }
+//            if (preg_match('/\((.*)\)/', $txtva, $reg))
+//            {
+//                $vat_src_code = $reg[1];
+//                $txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
+//            }
 
-            $tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $product_type, $mysoc, $localtaxes_type, 100, $this->multicurrency_tx, $pu_ht_devise);
+//            $tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $product_type, $mysoc, $localtaxes_type, 100, $this->multicurrency_tx, $pu_ht_devise);
 
             /*var_dump($txlocaltax1);
              var_dump($txlocaltax2);
@@ -732,18 +733,18 @@ class OperationOrder extends SeedObject
              var_dump($tabprice[10]);
              exit;*/
 
-            $total_ht  = $tabprice[0];
-            $total_tva = $tabprice[1];
-            $total_ttc = $tabprice[2];
-            $total_localtax1 = $tabprice[9];
-            $total_localtax2 = $tabprice[10];
-            $pu_ht = $tabprice[3];
+//            $total_ht  = $tabprice[0];
+//            $total_tva = $tabprice[1];
+//            $total_ttc = $tabprice[2];
+//            $total_localtax1 = $tabprice[9];
+//            $total_localtax2 = $tabprice[10];
+//            $pu_ht = $tabprice[3];
 
             // MultiCurrency
-            $multicurrency_total_ht  = $tabprice[16];
-            $multicurrency_total_tva = $tabprice[17];
-            $multicurrency_total_ttc = $tabprice[18];
-            $pu_ht_devise = $tabprice[19];
+//            $multicurrency_total_ht  = $tabprice[16];
+//            $multicurrency_total_tva = $tabprice[17];
+//            $multicurrency_total_ttc = $tabprice[18];
+//            $pu_ht_devise = $tabprice[19];
 
             // Rang to use
             $ranktouse = $rang;
@@ -755,13 +756,13 @@ class OperationOrder extends SeedObject
 
             // TODO A virer
             // Anciens indicateurs: $price, $remise (a ne plus utiliser)
-            $price = $pu;
-            $remise = 0;
-            if ($remise_percent > 0)
-            {
-                $remise = round(($pu * $remise_percent / 100), 2);
-                $price = $pu - $remise;
-            }
+//            $price = $pu;
+//            $remise = 0;
+//            if ($remise_percent > 0)
+//            {
+//                $remise = round(($pu * $remise_percent / 100), 2);
+//                $price = $pu - $remise;
+//            }
 
             // Insert line
             // TODO init le bon objet
@@ -782,23 +783,23 @@ class OperationOrder extends SeedObject
             $this->line->label=$label;
 
 //            $this->line->vat_src_code=$vat_src_code;
-            $this->line->tva_tx=$txtva;
-            $this->line->localtax1_tx=($total_localtax1?$localtaxes_type[1]:0);
-            $this->line->localtax2_tx=($total_localtax2?$localtaxes_type[3]:0);
-            $this->line->localtax1_type=$localtaxes_type[0];
-            $this->line->localtax2_type=$localtaxes_type[2];
+//            $this->line->tva_tx=$txtva;
+//            $this->line->localtax1_tx=($total_localtax1?$localtaxes_type[1]:0);
+//            $this->line->localtax2_tx=($total_localtax2?$localtaxes_type[3]:0);
+//            $this->line->localtax1_type=$localtaxes_type[0];
+//            $this->line->localtax2_type=$localtaxes_type[2];
 //            $this->line->fk_product=$fk_product;
             $this->line->product_type=$product_type;
 //            $this->line->fk_remise_except=$fk_remise_except;
-            $this->line->remise_percent=$remise_percent;
-            $this->line->subprice=$pu_ht;
+//            $this->line->remise_percent=$remise_percent;
+//            $this->line->subprice=$pu_ht;
             $this->line->rang=$ranktouse;
             $this->line->info_bits=$info_bits;
-            $this->line->total_ht=$total_ht;
-            $this->line->total_tva=$total_tva;
-            $this->line->total_localtax1=$total_localtax1;
-            $this->line->total_localtax2=$total_localtax2;
-            $this->line->total_ttc=$total_ttc;
+//            $this->line->total_ht=$total_ht;
+//            $this->line->total_tva=$total_tva;
+//            $this->line->total_localtax1=$total_localtax1;
+//            $this->line->total_localtax2=$total_localtax2;
+//            $this->line->total_ttc=$total_ttc;
 //            $this->line->special_code=$special_code;
             $this->line->origin=$origin;
             $this->line->origin_id=$origin_id;
@@ -812,12 +813,12 @@ class OperationOrder extends SeedObject
 //            $this->line->pa_ht = $pa_ht;
 
             // Multicurrency
-            $this->line->fk_multicurrency			= $this->fk_multicurrency;
-            $this->line->multicurrency_code			= $this->multicurrency_code;
-            $this->line->multicurrency_subprice		= $pu_ht_devise;
-            $this->line->multicurrency_total_ht 	= $multicurrency_total_ht;
-            $this->line->multicurrency_total_tva 	= $multicurrency_total_tva;
-            $this->line->multicurrency_total_ttc 	= $multicurrency_total_ttc;
+//            $this->line->fk_multicurrency			= $this->fk_multicurrency;
+//            $this->line->multicurrency_code			= $this->multicurrency_code;
+//            $this->line->multicurrency_subprice		= $pu_ht_devise;
+//            $this->line->multicurrency_total_ht 	= $multicurrency_total_ht;
+//            $this->line->multicurrency_total_tva 	= $multicurrency_total_tva;
+//            $this->line->multicurrency_total_ttc 	= $multicurrency_total_ttc;
 
             if (is_array($array_options) && count($array_options)>0) {
                 $this->line->array_options=$array_options;
@@ -830,7 +831,7 @@ class OperationOrder extends SeedObject
                 if (! empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
                 // Mise a jour informations denormalisees au niveau de la commande meme
-                $result=$this->update_price(1, 'auto', 0, $mysoc);	// This method is designed to add line from user input so total calculation must be done using 'auto' mode.
+//                $result=$this->update_price(1, 'auto', 0, $mysoc);	// This method is designed to add line from user input so total calculation must be done using 'auto' mode.
                 if ($result > 0)
                 {
                     $this->db->commit();
@@ -858,22 +859,22 @@ class OperationOrder extends SeedObject
     }
 
 
-    public function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1 = 0.0, $txlocaltax2 = 0.0, $price_base_type = 'HT', $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $skip_update_total = 0, $fk_fournprice = null, $pa_ht = 0, $label = '', $special_code = 0, $array_options = 0, $fk_unit = null, $pu_ht_devise = 0, $notrigger = 0)
+    public function updateline($rowid, $desc, $qty, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
     {
         global $conf, $mysoc, $langs, $user;
 
-        dol_syslog(get_class($this)."::updateline id=$rowid, desc=$desc, pu=$pu, qty=$qty, remise_percent=$remise_percent, txtva=$txtva, txlocaltax1=$txlocaltax1, txlocaltax2=$txlocaltax2, price_base_type=$price_base_type, info_bits=$info_bits, date_start=$date_start, date_end=$date_end, type=$type, fk_parent_line=$fk_parent_line, pa_ht=$pa_ht, special_code=$special_code");
-        include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
+//        dol_syslog(get_class($this)."::updateline id=$rowid, desc=$desc, pu=$pu, qty=$qty, remise_percent=$remise_percent, txtva=$txtva, txlocaltax1=$txlocaltax1, txlocaltax2=$txlocaltax2, price_base_type=$price_base_type, info_bits=$info_bits, date_start=$date_start, date_end=$date_end, type=$type, fk_parent_line=$fk_parent_line, pa_ht=$pa_ht, special_code=$special_code");
+//        include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
         if ($this->status == OperationOrder::STATUS_DRAFT)
         {
             // Clean parameters
             if (empty($qty)) $qty = 0;
             if (empty($info_bits)) $info_bits = 0;
-            if (empty($txtva)) $txtva = 0;
-            if (empty($txlocaltax1)) $txlocaltax1 = 0;
-            if (empty($txlocaltax2)) $txlocaltax2 = 0;
-            if (empty($remise_percent)) $remise_percent = 0;
+//            if (empty($txtva)) $txtva = 0;
+//            if (empty($txlocaltax1)) $txlocaltax1 = 0;
+//            if (empty($txlocaltax2)) $txlocaltax2 = 0;
+//            if (empty($remise_percent)) $remise_percent = 0;
             if (empty($special_code) || $special_code == 3) $special_code = 0;
 
             if ($date_start && $date_end && $date_start > $date_end) {
@@ -882,14 +883,14 @@ class OperationOrder extends SeedObject
                 return -1;
             }
 
-            $remise_percent = price2num($remise_percent);
+//            $remise_percent = price2num($remise_percent);
             $qty = price2num($qty);
-            $pu = price2num($pu);
-            $pa_ht = price2num($pa_ht);
-            $pu_ht_devise = price2num($pu_ht_devise);
-            $txtva = price2num($txtva);
-            $txlocaltax1 = price2num($txlocaltax1);
-            $txlocaltax2 = price2num($txlocaltax2);
+//            $pu = price2num($pu);
+//            $pa_ht = price2num($pa_ht);
+//            $pu_ht_devise = price2num($pu_ht_devise);
+//            $txtva = price2num($txtva);
+//            $txlocaltax1 = price2num($txlocaltax1);
+//            $txlocaltax2 = price2num($txlocaltax2);
 
             $this->db->begin();
 
@@ -898,57 +899,57 @@ class OperationOrder extends SeedObject
             // TRES IMPORTANT: C'est au moment de l'insertion ligne qu'on doit stocker
             // la part ht, tva et ttc, et ce au niveau de la ligne qui a son propre taux tva.
 
-            $localtaxes_type = getLocalTaxesFromRate($txtva, 0, $this->thirdparty, $mysoc);
+//            $localtaxes_type = getLocalTaxesFromRate($txtva, 0, $this->thirdparty, $mysoc);
 
             // Clean vat code
-            $vat_src_code = '';
-            if (preg_match('/\((.*)\)/', $txtva, $reg))
-            {
-                $vat_src_code = $reg[1];
-                $txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
-            }
+//            $vat_src_code = '';
+//            if (preg_match('/\((.*)\)/', $txtva, $reg))
+//            {
+//                $vat_src_code = $reg[1];
+//                $txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
+//            }
 
-            $tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $type, $mysoc, $localtaxes_type, 100, $this->multicurrency_tx, $pu_ht_devise);
+//            $tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $type, $mysoc, $localtaxes_type, 100, $this->multicurrency_tx, $pu_ht_devise);
 
-            $total_ht  = $tabprice[0];
-            $total_tva = $tabprice[1];
-            $total_ttc = $tabprice[2];
-            $total_localtax1 = $tabprice[9];
-            $total_localtax2 = $tabprice[10];
-            $pu_ht  = $tabprice[3];
-            $pu_tva = $tabprice[4];
-            $pu_ttc = $tabprice[5];
+//            $total_ht  = $tabprice[0];
+//            $total_tva = $tabprice[1];
+//            $total_ttc = $tabprice[2];
+//            $total_localtax1 = $tabprice[9];
+//            $total_localtax2 = $tabprice[10];
+//            $pu_ht  = $tabprice[3];
+//            $pu_tva = $tabprice[4];
+//            $pu_ttc = $tabprice[5];
 
             // MultiCurrency
-            $multicurrency_total_ht  = $tabprice[16];
-            $multicurrency_total_tva = $tabprice[17];
-            $multicurrency_total_ttc = $tabprice[18];
-            $pu_ht_devise = $tabprice[19];
+//            $multicurrency_total_ht  = $tabprice[16];
+//            $multicurrency_total_tva = $tabprice[17];
+//            $multicurrency_total_ttc = $tabprice[18];
+//            $pu_ht_devise = $tabprice[19];
 
             // Anciens indicateurs: $price, $subprice (a ne plus utiliser)
-            $price = $pu_ht;
-            if ($price_base_type == 'TTC')
-            {
-                $subprice = $pu_ttc;
-            }
-            else
-            {
-                $subprice = $pu_ht;
-            }
-            $remise = 0;
-            if ($remise_percent > 0)
-            {
-                $remise = round(($pu * $remise_percent / 100), 2);
-                $price = ($pu - $remise);
-            }
+//            $price = $pu_ht;
+//            if ($price_base_type == 'TTC')
+//            {
+//                $subprice = $pu_ttc;
+//            }
+//            else
+//            {
+//                $subprice = $pu_ht;
+//            }
+//            $remise = 0;
+//            if ($remise_percent > 0)
+//            {
+//                $remise = round(($pu * $remise_percent / 100), 2);
+//                $price = ($pu - $remise);
+//            }
 
             //Fetch current line from the database and then clone the object and set it in $oldline property
             $k = $this->addChild('OperationOrderDet', $rowid);
             $line = $this->TOperationOrderDet[$k];
 //            $line->fetch_optionals();
 
-            if (!empty($line->fk_product))
-            {
+//            if (!empty($line->fk_product))
+//            {
 //                $product = new Product($this->db);
 //                $result = $product->fetch($line->fk_product);
 //                $product_type = $product->type;
@@ -962,7 +963,7 @@ class OperationOrder extends SeedObject
 //                    $this->db->rollback();
 //                    return self::STOCK_NOT_ENOUGH_FOR_ORDER;
 //                }
-            }
+//            }
 
             $staticline = clone $line;
 
@@ -985,34 +986,34 @@ class OperationOrder extends SeedObject
             $this->line->time_planned = 0; // TODO
             $this->line->time_spent = 0; // TODO
 
-            $this->line->tva_tx         = $txtva;
-            $this->line->localtax1_tx   = $txlocaltax1;
-            $this->line->localtax2_tx   = $txlocaltax2;
-            $this->line->localtax1_type = $localtaxes_type[0];
-            $this->line->localtax2_type = $localtaxes_type[2];
-            $this->line->remise_percent = $remise_percent;
-            $this->line->subprice       = $subprice;
+//            $this->line->tva_tx         = $txtva;
+//            $this->line->localtax1_tx   = $txlocaltax1;
+//            $this->line->localtax2_tx   = $txlocaltax2;
+//            $this->line->localtax1_type = $localtaxes_type[0];
+//            $this->line->localtax2_type = $localtaxes_type[2];
+//            $this->line->remise_percent = $remise_percent;
+//            $this->line->subprice       = $subprice;
             $this->line->info_bits      = $info_bits;
-            $this->line->total_ht       = $total_ht;
-            $this->line->total_tva      = $total_tva;
-            $this->line->total_localtax1 = $total_localtax1;
-            $this->line->total_localtax2 = $total_localtax2;
-            $this->line->total_ttc      = $total_ttc;
+//            $this->line->total_ht       = $total_ht;
+//            $this->line->total_tva      = $total_tva;
+//            $this->line->total_localtax1 = $total_localtax1;
+//            $this->line->total_localtax2 = $total_localtax2;
+//            $this->line->total_ttc      = $total_ttc;
 
             $this->line->date_start     = $date_start;
             $this->line->date_end       = $date_end;
 
             $this->line->product_type   = $type;
             $this->line->fk_parent_line = $fk_parent_line;
-            $this->line->skip_update_total = $skip_update_total;
+//            $this->line->skip_update_total = $skip_update_total;
 
-            $this->line->pa_ht = $pa_ht;
+//            $this->line->pa_ht = $pa_ht;
 
             // Multicurrency
-            $this->line->multicurrency_subprice		= $pu_ht_devise;
-            $this->line->multicurrency_total_ht 	= $multicurrency_total_ht;
-            $this->line->multicurrency_total_tva 	= $multicurrency_total_tva;
-            $this->line->multicurrency_total_ttc 	= $multicurrency_total_ttc;
+//            $this->line->multicurrency_subprice		= $pu_ht_devise;
+//            $this->line->multicurrency_total_ht 	= $multicurrency_total_ht;
+//            $this->line->multicurrency_total_tva 	= $multicurrency_total_tva;
+//            $this->line->multicurrency_total_ttc 	= $multicurrency_total_ttc;
 
             if (is_array($array_options) && count($array_options) > 0) {
                 // We replace values in this->line->array_options only for entries defined into $array_options
@@ -1028,7 +1029,7 @@ class OperationOrder extends SeedObject
                 if (!empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
                 // Mise a jour info denormalisees
-                $this->update_price(1);
+//                $this->update_price(1);
 
                 $this->db->commit();
                 return $result;
@@ -1082,26 +1083,26 @@ class OperationOrderDet extends SeedObject
         'qty' => array('type'=>'real', 'label'=>'Qty', 'enabled'=>1, 'position'=>45, 'notnull'=>0, 'visible'=>1, 'isameasure'=>'1', 'css'=>'maxwidth75imp'),
         'time_planned' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>1),
         'time_spent' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>1),
-        'subprice' => array('type'=>'real', 'label'=>'Subprice', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1),
-        'tva_tx' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1),
-        'localtax1_tx' => array('type'=>'real', 'label'=>'Localtax1Tx', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>1),
-        'localtax1_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>58, 'notnull'=>0, 'visible'=>1),
-        'localtax2_tx' => array('type'=>'real', 'label'=>'Localtax2Tx', 'enabled'=>1, 'position'=>60, 'notnull'=>0, 'visible'=>1),
-        'localtax2_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>1),
-        'remise_percent' => array('type'=>'real', 'label'=>'Discount', 'enabled'=>1, 'position'=>64, 'notnull'=>0, 'visible'=>1),
-        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
-        'total_tva' => array('type'=>'real', 'label'=>'TotalVAT', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>1),
-        'total_localtax1' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1),
-        'total_localtax2' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1),
-        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1),
+//        'subprice' => array('type'=>'real', 'label'=>'Subprice', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1),
+//        'tva_tx' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1),
+//        'localtax1_tx' => array('type'=>'real', 'label'=>'Localtax1Tx', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>1),
+//        'localtax1_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>58, 'notnull'=>0, 'visible'=>1),
+//        'localtax2_tx' => array('type'=>'real', 'label'=>'Localtax2Tx', 'enabled'=>1, 'position'=>60, 'notnull'=>0, 'visible'=>1),
+//        'localtax2_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>1),
+//        'remise_percent' => array('type'=>'real', 'label'=>'Discount', 'enabled'=>1, 'position'=>64, 'notnull'=>0, 'visible'=>1),
+//        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
+//        'total_tva' => array('type'=>'real', 'label'=>'TotalVAT', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>1),
+//        'total_localtax1' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1),
+//        'total_localtax2' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1),
+//        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1),
         'product_type' => array('type'=>'integer', 'label'=>'ProductType', 'enabled'=>1, 'position'=>90, 'notnull'=>1, 'visible'=>0),
         'rang' => array('type'=>'integer', 'label'=>'Rank', 'enabled'=>1, 'position'=>92, 'notnull'=>0, 'visible'=>0),
-        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
-        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
+//        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
+//        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
         'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
         'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
         'import_key' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'ImportId', 'enabled'=>1, 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
@@ -1115,26 +1116,26 @@ class OperationOrderDet extends SeedObject
     public $qty;
     public $time_planned;
     public $time_spent;
-    public $subprice;
-    public $tva_tx;
-    public $localtax1_tx;
-    public $localtax1_type;
-    public $localtax2_tx;
-    public $localtax2_type;
-    public $remise_percent;
-    public $total_ht;
-    public $total_tva;
-    public $total_localtax1;
-    public $total_localtax2;
-    public $total_ttc;
+//    public $subprice;
+//    public $tva_tx;
+//    public $localtax1_tx;
+//    public $localtax1_type;
+//    public $localtax2_tx;
+//    public $localtax2_type;
+//    public $remise_percent;
+//    public $total_ht;
+//    public $total_tva;
+//    public $total_localtax1;
+//    public $total_localtax2;
+//    public $total_ttc;
     public $product_type;
     public $rang;
-    public $fk_multicurrency;
-    public $multicurrency_code;
-    public $multicurrency_subprice;
-    public $multicurrency_total_ht;
-    public $multicurrency_total_tva;
-    public $multicurrency_total_ttc;
+//    public $fk_multicurrency;
+//    public $multicurrency_code;
+//    public $multicurrency_subprice;
+//    public $multicurrency_total_ht;
+//    public $multicurrency_total_tva;
+//    public $multicurrency_total_ttc;
     public $fk_user_creat;
     public $fk_user_modif;
     public $import_key;
