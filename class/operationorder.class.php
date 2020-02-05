@@ -263,6 +263,10 @@ class OperationOrder extends SeedObject
     {
         $res = parent::fetch($id, $loadChild, $ref);
 
+        usort($this->TOperationOrderDet, function ($a, $b) {
+            return $a->rang - $b->rang;
+        });
+
         $this->fetch_thirdparty();
 
         return $res;
