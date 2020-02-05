@@ -24,6 +24,7 @@ if (!class_exists('SeedObject'))
 	require_once dirname(__FILE__).'/../config.php';
 }
 
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 
 class OperationOrder extends SeedObject
 {
