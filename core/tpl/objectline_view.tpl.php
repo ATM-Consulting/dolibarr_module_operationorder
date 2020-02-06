@@ -72,52 +72,7 @@ $coldisplay = 0; ?>
 <?php } ?>
 	<td class="linecoldescription minwidth300imp"><?php $coldisplay++; ?><div id="line_<?php print $line->id; ?>"></div>
 <?php
-if (($line->info_bits & 2) == 2) {
-    print '<a href="'.DOL_URL_ROOT.'/comm/remx.php?id='.$this->socid.'">';
-	$txt = '';
-	print img_object($langs->trans("ShowReduc"), 'reduc').' ';
-	if ($line->description == '(DEPOSIT)') $txt = $langs->trans("Deposit");
-	elseif ($line->description == '(EXCESS RECEIVED)') $txt = $langs->trans("ExcessReceived");
-	elseif ($line->description == '(EXCESS PAID)') $txt = $langs->trans("ExcessPaid");
-	//else $txt=$langs->trans("Discount");
-	print $txt;
-	print '</a>';
-	if ($line->description)
-	{
-		if ($line->description == '(CREDIT_NOTE)' && $line->fk_remise_except > 0)
-		{
-			$discount = new DiscountAbsolute($this->db);
-			$discount->fetch($line->fk_remise_except);
-			print ($txt ? ' - ' : '').$langs->transnoentities("DiscountFromCreditNote", $discount->getNomUrl(0));
-		}
-		elseif ($line->description == '(DEPOSIT)' && $line->fk_remise_except > 0)
-		{
-			$discount = new DiscountAbsolute($this->db);
-			$discount->fetch($line->fk_remise_except);
-			print ($txt ? ' - ' : '').$langs->transnoentities("DiscountFromDeposit", $discount->getNomUrl(0));
-			// Add date of deposit
-			if (!empty($conf->global->INVOICE_ADD_DEPOSIT_DATE))
-			    print ' ('.dol_print_date($discount->datec).')';
-		}
-		elseif ($line->description == '(EXCESS RECEIVED)' && $objp->fk_remise_except > 0)
-		{
-			$discount = new DiscountAbsolute($this->db);
-			$discount->fetch($line->fk_remise_except);
-			print ($txt ? ' - ' : '').$langs->transnoentities("DiscountFromExcessReceived", $discount->getNomUrl(0));
-		}
-		elseif ($line->description == '(EXCESS PAID)' && $objp->fk_remise_except > 0)
-		{
-			$discount = new DiscountAbsolute($this->db);
-			$discount->fetch($line->fk_remise_except);
-			print ($txt ? ' - ' : '').$langs->transnoentities("DiscountFromExcessPaid", $discount->getNomUrl(0));
-		}
-		else
-		{
-			print ($txt ? ' - ' : '').dol_htmlentitiesbr($line->description);
-		}
-	}
-}
-else
+if (true)
 {
 	$format = $conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE ? 'dayhour' : 'day';
 
@@ -165,60 +120,12 @@ else
 	}
 }
 
-if ($user->rights->fournisseur->lire && $line->fk_fournprice > 0)
-{
-    require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
-	$productfourn = new ProductFournisseur($this->db);
-	$productfourn->fetch_product_fournisseur_price($line->fk_fournprice);
-	print '<div class="clearboth"></div>';
-	print '<span class="opacitymedium">'.$langs->trans('Supplier').' : </span>'.$productfourn->getSocNomUrl(1, 'supplier').' - <span class="opacitymedium">'.$langs->trans('Ref').' : </span>';
-	// Supplier ref
-	if ($user->rights->produit->creer || $user->rights->service->creer) // change required right here
-	{
-		print $productfourn->getNomUrl();
-	}
-	else
-	{
-		print $productfourn->ref_supplier;
-	}
-}
-
-if (!empty($conf->accounting->enabled) && $line->fk_accounting_account > 0)
-{
-	$accountingaccount = new AccountingAccount($this->db);
-	$accountingaccount->fetch($line->fk_accounting_account);
-	print '<div class="clearboth"></div><br><span class="opacitymedium">'.$langs->trans('AccountingAffectation').' : </span>'.$accountingaccount->getNomUrl(0, 1, 1);
-}
-
 print '</td>';
-if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
-{
-	print '<td class="linecolrefsupplier">';
-	print ($line->ref_fourn ? $line->ref_fourn : $line->ref_supplier);
-	print '</td>';
-}
-// VAT Rate
-print '<td class="linecolvat nowrap right">';
+
 $coldisplay++;
 $positiverates = '';
-if (price2num($line->tva_tx))          $positiverates .= ($positiverates ? '/' : '').price2num($line->tva_tx);
-if (price2num($line->total_localtax1)) $positiverates .= ($positiverates ? '/' : '').price2num($line->localtax1_tx);
-if (price2num($line->total_localtax2)) $positiverates .= ($positiverates ? '/' : '').price2num($line->localtax2_tx);
-if (empty($positiverates)) $positiverates = '0';
-print vatrate($positiverates.($line->vat_src_code ? ' ('.$line->vat_src_code.')' : ''), '%', $line->info_bits);
-//print vatrate($line->tva_tx.($line->vat_src_code?(' ('.$line->vat_src_code.')'):''), '%', $line->info_bits);
-?></td>
 
-	<td class="linecoluht nowrap right"><?php $coldisplay++; ?><?php print price($line->subprice); ?></td>
-
-<?php if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) { ?>
-	<td class="linecoluht_currency nowrap right"><?php $coldisplay++; ?><?php print price($line->multicurrency_subprice); ?></td>
-<?php }
-
-if ($inputalsopricewithtax) { ?>
-	<td class="linecoluttc nowrap right"><?php $coldisplay++; ?><?php print (isset($line->pu_ttc) ?price($line->pu_ttc) : price($line->subprice)); ?></td>
-<?php } ?>
-
+?>
 	<td class="linecolqty nowrap right"><?php $coldisplay++; ?>
 <?php
 if ((($line->info_bits & 2) != 2) && $line->special_code != 3) {
@@ -230,80 +137,16 @@ if ((($line->info_bits & 2) != 2) && $line->special_code != 3) {
 } else print '&nbsp;';
 print '</td>';
 
-if ($conf->global->PRODUCT_USE_UNITS)
-{
-	print '<td class="linecoluseunit nowrap left">';
-	$label = $line->getLabelOfUnit('short');
-	if ($label !== '') {
-		print $langs->trans($label);
-	}
-	print '</td>';
-}
-if (!empty($line->remise_percent) && $line->special_code != 3) {
-	print '<td class="linecoldiscount right">';
-	$coldisplay++;
-	include_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-	print dol_print_reduction($line->remise_percent, $langs);
-	print '</td>';
-} else {
-	print '<td class="linecoldiscount">&nbsp;</td>';
-	$coldisplay++;
-}
 
-// Fields for situation invoices
-if ($this->situation_cycle_ref)
-{
-    include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
-	$coldisplay++;
-	print '<td class="linecolcycleref nowrap right">'.$line->situation_percent.'%</td>';
-	$coldisplay++;
-	$locataxes_array = getLocalTaxesFromRate($line->tva.($line->vat_src_code ? ' ('.$line->vat_src_code.')' : ''), 0, ($senderissupplier ? $mysoc : $object->thirdparty), ($senderissupplier ? $object->thirdparty : $mysoc));
-	$tmp = calcul_price_total($line->qty, $line->pu, $line->remise_percent, $line->txtva, -1, -1, 0, 'HT', $line->info_bits, $line->type, ($senderissupplier ? $object->thirdparty : $mysoc), $locataxes_array, 100, $object->multicurrency_tx, $line->multicurrency_subprice);
-	print '<td align="right" class="linecolcycleref2 nowrap">'.price($tmp[0]).'</td>';
-}
+// TODO à revoir
+print '<td class="linecolemplacement right">'.$line->emplacement.'</td>';
 
-if ($usemargins && !empty($conf->margin->enabled) && empty($user->socid))
-{
-	if (!empty($user->rights->margins->creer)) { ?>
-		<td class="linecolmargin1 nowrap margininfos right"><?php $coldisplay++; ?><?php print price($line->pa_ht); ?></td>
-	<?php }
-	if (!empty($conf->global->DISPLAY_MARGIN_RATES) && $user->rights->margins->liretous) { ?>
-		<td class="linecolmargin2 nowrap margininfos right"><?php $coldisplay++; ?><?php print (($line->pa_ht == 0) ? 'n/a' : price(price2num($line->marge_tx, 'MT')).'%'); ?></td>
-	<?php }
-    if (!empty($conf->global->DISPLAY_MARK_RATES) && $user->rights->margins->liretous) {?>
-  	  <td class="linecolmargin2 nowrap margininfos right"><?php $coldisplay++; ?><?php print price(price2num($line->marque_tx, 'MT')).'%'; ?></td>
-    <?php }
-}
-if ($line->special_code == 3) { ?>
-	<td class="linecoloption nowrap right"><?php $coldisplay++; ?><?php print $langs->trans('Option'); ?></td>
-<?php } else {
-	print '<td class="linecolht nowrap right">';
-	$coldisplay++;
-	if (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER))
-	{
-    	print '<span class="classfortooltip" title="';
-    	print $langs->transcountry("TotalHT", $mysoc->country_code).'='.price($line->total_ht);
-    	print '<br>'.$langs->transcountry("TotalVAT", ($senderissupplier ? $object->thirdparty->country_code : $mysoc->country_code)).'='.price($line->total_tva);
-    	if (price2num($line->total_localtax1)) print '<br>'.$langs->transcountry("TotalLT1", ($senderissupplier ? $object->thirdparty->country_code : $mysoc->country_code)).'='.price($line->total_localtax1);
-    	if (price2num($line->total_localtax2)) print '<br>'.$langs->transcountry("TotalLT2", ($senderissupplier ? $object->thirdparty->country_code : $mysoc->country_code)).'='.price($line->total_localtax2);
-    	print '<br>'.$langs->transcountry("TotalTTC", $mysoc->country_code).'='.price($line->total_ttc);
-    	print '">';
-	}
-	print price($line->total_ht);
-	if (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER))
-	{
-	    print '</span>';
-	}
-	print '</td>';
-	if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) {
-		print '<td class="linecolutotalht_currency nowrap right">'.price($line->multicurrency_total_ht).'</td>';
-		$coldisplay++;
-	}
-}
-if ($outputalsopricetotalwithtax) {
-    print '<td class="linecolht nowrap right">'.price($line->total_ttc).'</td>';
-	$coldisplay++;
-}
+print '<td class="linecolpc right">'.$line->pc.'</td>';
+
+print '<td class="linecoltimeplanned right">'.$line->time_planned.'</td>';
+
+print '<td class="linecoltimespent right">'.$line->time_spent.'</td>';
+// TODO FIN
 
 if ($this->status == 0 && ($object_rights->write) && $action != 'selectlines') {
 	print '<td class="linecoledit center">';

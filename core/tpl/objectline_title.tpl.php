@@ -36,65 +36,16 @@ if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) print '<td class="linecolnum 
 // Description
 print '<td class="linecoldescription">'.$langs->trans('Description').'</td>';
 
-if ($this->element == 'supplier_proposal' || $this->element == 'order_supplier' || $this->element == 'invoice_supplier')
-{
-	print '<td class="linerefsupplier"><span id="title_fourn_ref">'.$langs->trans("SupplierRef").'</span></td>';
-}
-
-// VAT
-print '<td class="linecolvat right" style="width: 80px">'.$langs->trans('VAT').'</td>';
-
-// Price HT
-print '<td class="linecoluht right" style="width: 80px">'.$langs->trans('PriceUHT').'</td>';
-
-// Multicurrency
-if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) print '<td class="linecoluht_currency right" style="width: 80px">'.$langs->trans('PriceUHTCurrency', $this->multicurrency_code).'</td>';
-
-if ($inputalsopricewithtax) print '<td class="right" style="width: 80px">'.$langs->trans('PriceUTTC').'</td>';
-
 // Qty
 print '<td class="linecolqty right">'.$langs->trans('Qty').'</td>';
 
-if($conf->global->PRODUCT_USE_UNITS)
-{
-	print '<td class="linecoluseunit left">'.$langs->trans('Unit').'</td>';
-}
+print '<td class="linecolemplacement right">'.$langs->trans('Emplacement').'</td>';
 
-// Reduction short
-print '<td class="linecoldiscount right">'.$langs->trans('ReductionShort').'</td>';
+print '<td class="linecolpc right">'.$langs->trans('PC').'</td>';
 
-// Fields for situation invoice
-if ($this->situation_cycle_ref) {
-	print '<td class="linecolcycleref right">' . $langs->trans('Progress') . '</td>';
-	print '<td class="linecolcycleref2 right">' . $langs->trans('TotalHT100Short') . '</td>';
-}
+print '<td class="linecoltimeplanned right">'.$langs->trans('TimePlanned').'</td>';
 
-if ($usemargins && ! empty($conf->margin->enabled) && empty($user->socid))
-{
-	if (!empty($user->rights->margins->creer))
-	{
-		if ($conf->global->MARGIN_TYPE == "1") {
-			print '<td class="linecolmargin1 margininfos right" style="width: 80px">'.$langs->trans('BuyingPrice').'</td>';
-		} else {
-			print '<td class="linecolmargin1 margininfos right" style="width: 80px">'.$langs->trans('CostPrice').'</td>';
-		}
-	}
-
-	if (! empty($conf->global->DISPLAY_MARGIN_RATES) && $user->rights->margins->liretous) {
-		print '<td class="linecolmargin2 margininfos right" style="width: 50px">'.$langs->trans('MarginRate').'</td>';
-	}
-	if (! empty($conf->global->DISPLAY_MARK_RATES) && $user->rights->margins->liretous) {
-		print '<td class="linecolmargin2 margininfos right" style="width: 50px">'.$langs->trans('MarkRate').'</td>';
-	}
-}
-
-// Total HT
-print '<td class="linecolht right">'.$langs->trans('TotalHTShort').'</td>';
-
-// Multicurrency
-if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) print '<td class="linecoltotalht_currency right">'.$langs->trans('TotalHTShortCurrency', $this->multicurrency_code).'</td>';
-
-if ($outputalsopricetotalwithtax) print '<td class="right" style="width: 80px">'.$langs->trans('TotalTTCShort').'</td>';
+print '<td class="linecoltimespent right">'.$langs->trans('TimeSpent').'</td>';
 
 print '<td class="linecoledit"></td>';  // No width to allow autodim
 

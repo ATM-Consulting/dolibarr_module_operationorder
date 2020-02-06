@@ -132,40 +132,6 @@ $coldisplay++;
 	?>
 	</td>
 
-	<?php
-	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
-	{
-	    $coldisplay++;
-		?>
-		<td class="right"><input id="fourn_ref" name="fourn_ref" class="flat minwidth50 maxwidth150" value="<?php echo ($line->ref_supplier ? $line->ref_supplier : $line->ref_fourn); ?>"></td>
-		<?php
-	}
-
-	$coldisplay++;
-	if ($line->fk_prev_id == null) {
-		print '<td class="right">'.$form->load_tva('tva_tx', $line->tva_tx.($line->vat_src_code ? (' ('.$line->vat_src_code.')') : ''), $seller, $buyer, 0, $line->info_bits, $line->product_type, false, 1).'</td>';
-	} else {
-		print '<td class="right"><input size="1" type="text" class="flat right" name="tva_tx" value="'.price($line->tva_tx).'" readonly />%</td>';
-	}
-
-	$coldisplay++;
-	print '<td class="right"><input type="text" class="flat right" size="5" id="price_ht" name="price_ht" value="'.(isset($line->pu_ht) ?price($line->pu_ht, 0, '', 0) : price($line->subprice, 0, '', 0)).'"';
-	if ($line->fk_prev_id != null) print ' readonly';
-	print '></td>';
-
-	if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) {
-	    $coldisplay++;
-		print '<td class="right"><input rel="'.$object->multicurrency_tx.'" type="text" class="flat right" size="5" id="multicurrency_subprice" name="multicurrency_subprice" value="'.price($line->multicurrency_subprice).'" /></td>';
-	}
-
-	if ($inputalsopricewithtax)
-	{
-		$coldisplay++;
-		print '<td class="right"><input type="text" class="flat right" size="5" id="price_ttc" name="price_ttc" value="'.(isset($line->pu_ttc) ?price($line->pu_ttc, 0, '', 0) : '').'"';
-		if ($line->fk_prev_id != null) print ' readonly';
-		print '></td>';
-	}
-	?>
 	<td class="right">
 	<?php $coldisplay++;
 	if (($line->info_bits & 2) != 2) {
@@ -181,73 +147,22 @@ $coldisplay++;
 	<?php } ?>
 	</td>
 
-	<?php
-	if ($conf->global->PRODUCT_USE_UNITS)
-	{
-	    $coldisplay++;
-		print '<td class="left">';
-		print $form->selectUnits($line->fk_unit, "units");
-		print '</td>';
-	}
-	?>
+    <td class="nowrap right linecolemplacement">
+        <input class="right" type="text" size="3" value="<?php echo $line->emplacement; ?>" name="emplacement">
+    </td>
 
-	<td class="nowrap right">
-	<?php $coldisplay++;
-	if (($line->info_bits & 2) != 2) {
-		print '<input size="1" type="text" class="flat right" name="remise_percent" id="remise_percent" value="' . $line->remise_percent . '"';
-		if ($line->fk_prev_id != null ) print ' readonly';
-		print '>%';
-	} else { ?>
-		&nbsp;
-	<?php } ?>
-	</td>
-	<?php
-	if ($this->situation_cycle_ref) {
-		$coldisplay++;
-		print '<td class="nowrap right linecolcycleref"><input class="right" type="text" size="1" value="'.$line->situation_percent.'" name="progress">%</td>';
-		$coldisplay++;
-		print '<td></td>';
-	}
-	if (!empty($usemargins))
-	{
-        if (!empty($user->rights->margins->creer))
-        {
-            $coldisplay++;
-        	?>
-        <td class="margininfos right">
-			<!-- For predef product -->
-			<?php if (! empty($conf->product->enabled) || ! empty($conf->service->enabled)) { ?>
-			<select id="fournprice_predef" name="fournprice_predef" class="flat minwidth75imp right" style="display: none;"></select>
-			<?php } ?>
-			<!-- For free product -->
-			<input class="flat maxwidth75 right" type="text" id="buying_price" name="buying_price" class="hideobject" value="<?php echo price($line->pa_ht, 0, '', 0); ?>">
-		</td>
-		<?php }
+    <td class="nowrap right linecolpc">
+        <input class="right" type="text" size="3" value="<?php echo $line->pc; ?>" name="pc">
+    </td>
 
-        if ($user->rights->margins->creer) {
-			if (!empty($conf->global->DISPLAY_MARGIN_RATES))
-			{
-				$margin_rate = (isset($_POST["np_marginRate"]) ?GETPOST("np_marginRate", "alpha", 2) : (($line->pa_ht == 0) ? '' : price($line->marge_tx)));
-				// if credit note, dont allow to modify margin
-				if ($line->subprice < 0)
-					echo '<td class="right nowrap margininfos">'.$margin_rate.'<span class="hideonsmartphone">%</span></td>';
-				else
-					echo '<td class="right nowrap margininfos"><input class="right maxwidth75" type="text" name="np_marginRate" value="'.$margin_rate.'"><span class="hideonsmartphone">%</span></td>';
-				$coldisplay++;
-			}
-			elseif (!empty($conf->global->DISPLAY_MARK_RATES))
-			{
-				$mark_rate = (isset($_POST["np_markRate"]) ?GETPOST("np_markRate", 'alpha', 2) : price($line->marque_tx));
-				// if credit note, dont allow to modify margin
-				if ($line->subprice < 0)
-					echo '<td class="right nowrap margininfos">'.$mark_rate.'<span class="hideonsmartphone">%</span></td>';
-				else
-					echo '<td class="right nowrap margininfos"><input class="right maxwidth75" type="text" name="np_markRate" value="'.$mark_rate.'"><span class="hideonsmartphone">%</span></td>';
-				$coldisplay++;
-			}
-		}
-	}
-	?>
+    <td class="nowrap right linecoltimeplanned">
+        <input class="right" type="text" size="3" value="<?php echo $line->time_planned; ?>" name="time_planned">
+    </td>
+
+    <td class="nowrap right linecoltimespent">
+        <input class="right" type="text" size="3" value="<?php echo $line->time_spent; ?>" name="time_spent">
+    </td>
+
 
 	<!-- colspan for this td because it replace total_ht+3 td for buttons+... -->
 	<td class="center valignmiddle" colspan="<?php echo $colspan; ?>"><?php $coldisplay += $colspan; ?>
