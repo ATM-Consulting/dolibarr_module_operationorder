@@ -104,24 +104,12 @@ class OperationOrder extends SeedObject
         'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1, 'index'=>1,),
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
         'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
-        'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 1),
+        'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 0),
         'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>1, 'position'=>61, 'notnull'=>0, 'visible'=>0),
         'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>0),
 
-//        'localtax1' => array('type'=>'real', 'label'=>'Localtax1', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>0),
-//        'localtax2' => array('type'=>'real', 'label'=>'Localtax2', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>0),
-//        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
-//        'tva' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
-//        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1, 'noteditable' => 1),
-
         'fk_c_operationorder_type' => array('type'=>'integer:OperationOrderDictType:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrderType', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'c_operationorder_type.rowid',),
 
-//        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
         'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
         'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
         'fk_user_valid' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserValid', 'enabled'=>1, 'position'=>512, 'notnull'=>0, 'visible'=>-2,),
@@ -469,11 +457,11 @@ class OperationOrder extends SeedObject
     {
         if ($this->status == self::STATUS_VALIDATED)
         {
+            $this->fk_user_cloture = $user->id;
             $this->status = self::STATUS_CLOSED;
             $this->withChild = false;
 
-            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, $this->status, $notrigger, 'OPERATIONORDER_CLOSE');
-            else return $this->update($user);
+            return $this->update($user);
         }
 
         return 0;
@@ -632,7 +620,7 @@ class OperationOrder extends SeedObject
         return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
     }
 
-    public function addline($desc, $qty, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
+    public function addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
     {
         global $user;
 
@@ -647,11 +635,15 @@ class OperationOrder extends SeedObject
 
             // Clean parameters
             if (empty($qty)) $qty = 0;
+            if (empty($time_planned)) $time_planned = 0;
+            if (empty($time_spent)) $time_spent = 0;
             if (empty($info_bits)) $info_bits = 0;
             if (empty($rang)) $rang = 0;
             if (empty($fk_parent_line) || $fk_parent_line < 0) $fk_parent_line = 0;
 
             $qty = price2num($qty);
+            $time_planned = price2num($time_planned);
+            $time_spent = price2num($time_spent);
             $label = trim($label);
             $desc = trim($desc);
 
@@ -680,9 +672,11 @@ class OperationOrder extends SeedObject
             $this->line->fk_product = $fk_product;
             $this->line->description = $desc;
             $this->line->qty = $qty;
+            $this->line->emplacement = $emplacement;
+            $this->line->pc = $pc;
 
-            $this->line->time_planned = 0; // TODO
-            $this->line->time_spent = 0; // TODO
+            $this->line->time_planned = $time_planned; // TODO
+            $this->line->time_spent = $time_spent; // TODO
 
 
             $this->line->label=$label;
@@ -733,7 +727,7 @@ class OperationOrder extends SeedObject
     }
 
 
-    public function updateline($rowid, $desc, $qty, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
+    public function updateline($rowid, $desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
     {
         global $langs, $user;
 
@@ -743,6 +737,8 @@ class OperationOrder extends SeedObject
         {
             // Clean parameters
             if (empty($qty)) $qty = 0;
+            if (empty($time_planned)) $time_planned = 0;
+            if (empty($time_spent)) $time_spent = 0;
             if (empty($info_bits)) $info_bits = 0;
             if (empty($special_code) || $special_code == 3) $special_code = 0;
 
@@ -753,6 +749,8 @@ class OperationOrder extends SeedObject
             }
 
             $qty = price2num($qty);
+            $time_planned = price2num($time_planned);
+            $time_spent = price2num($time_spent);
 
             $this->db->begin();
 
@@ -777,9 +775,11 @@ class OperationOrder extends SeedObject
             $this->line->label=$label;
             $this->line->description=$desc;
             $this->line->qty=$qty;
+            $this->line->emplacement=$emplacement;
+            $this->line->pc=$pc;
 
-            $this->line->time_planned = 0; // TODO
-            $this->line->time_spent = 0; // TODO
+            $this->line->time_planned = $time_planned;
+            $this->line->time_spent = $time_spent;
 
             $this->line->info_bits      = $info_bits;
 
@@ -852,28 +852,12 @@ class OperationOrderDet extends SeedObject
         'label' => array('type'=>'varchar(255)', 'length' => 255, 'label'=>'Label', 'enabled'=>1, 'position'=>35, 'notnull'=>0, 'visible'=>3),
         'description' => array('type'=>'text', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>3,),
         'qty' => array('type'=>'real', 'label'=>'Qty', 'enabled'=>1, 'position'=>45, 'notnull'=>0, 'visible'=>1, 'isameasure'=>'1', 'css'=>'maxwidth75imp'),
-        'time_planned' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>1),
-        'time_spent' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>1),
-//        'subprice' => array('type'=>'real', 'label'=>'Subprice', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1),
-//        'tva_tx' => array('type'=>'real', 'label'=>'VAT', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1),
-//        'localtax1_tx' => array('type'=>'real', 'label'=>'Localtax1Tx', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>1),
-//        'localtax1_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>58, 'notnull'=>0, 'visible'=>1),
-//        'localtax2_tx' => array('type'=>'real', 'label'=>'Localtax2Tx', 'enabled'=>1, 'position'=>60, 'notnull'=>0, 'visible'=>1),
-//        'localtax2_type' => array('type'=>'varchar', 'length' => 128, 'label'=>'Localtax1Type', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>1),
-//        'remise_percent' => array('type'=>'real', 'label'=>'Discount', 'enabled'=>1, 'position'=>64, 'notnull'=>0, 'visible'=>1),
-//        'total_ht' => array('type'=>'real', 'label'=>'TotalHT', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
-//        'total_tva' => array('type'=>'real', 'label'=>'TotalVAT', 'enabled'=>1, 'position'=>72, 'notnull'=>0, 'visible'=>1),
-//        'total_localtax1' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>74, 'notnull'=>0, 'visible'=>1),
-//        'total_localtax2' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>76, 'notnull'=>0, 'visible'=>1),
-//        'total_ttc' => array('type'=>'real', 'label'=>'TotalTTC', 'enabled'=>1, 'position'=>78, 'notnull'=>0, 'visible'=>1),
+        'emplacement' => array('type' => 'varchar(255)', 'length' => 255, 'enabled'=>1, 'position'=>47, 'visible'=>1),
+        'pc' => array('type' => 'varchar(255)', 'length' => 255, 'enabled'=>1, 'position'=>49, 'visible'=>1),
+        'time_planned' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
+        'time_spent' => array('type'=>'integer', 'label'=>'TimeSpent', 'enabled'=>1, 'position'=>80, 'notnull'=>0, 'visible'=>1),
         'product_type' => array('type'=>'integer', 'label'=>'ProductType', 'enabled'=>1, 'position'=>90, 'notnull'=>1, 'visible'=>0),
         'rang' => array('type'=>'integer', 'label'=>'Rank', 'enabled'=>1, 'position'=>92, 'notnull'=>0, 'visible'=>0),
-//        'fk_multicurrency' => array('type'=>'integer', 'label'=>'MulticurrencyId', 'enabled'=>1, 'position'=>120, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_code' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'MulticurrencyCode', 'enabled'=>1, 'position'=>122, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_subprice' => array('type'=>'real', 'label'=>'MulticurrencySubprice', 'enabled'=>1, 'position'=>124, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_ht' => array('type'=>'real', 'label'=>'MulticurrencyTotalHT', 'enabled'=>1, 'position'=>126, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_tva' => array('type'=>'real', 'label'=>'MulticurrencyTotalVAT', 'enabled'=>1, 'position'=>128, 'notnull'=>0, 'visible'=>0),
-//        'multicurrency_total_ttc' => array('type'=>'real', 'label'=>'MulticurrencyTotalTTC', 'enabled'=>1, 'position'=>130, 'notnull'=>0, 'visible'=>0),
         'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
         'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
         'import_key' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'ImportId', 'enabled'=>1, 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
@@ -885,28 +869,12 @@ class OperationOrderDet extends SeedObject
     public $fk_parent_line;
     public $description;
     public $qty;
+    public $emplacement;
+    public $pc;
     public $time_planned;
     public $time_spent;
-//    public $subprice;
-//    public $tva_tx;
-//    public $localtax1_tx;
-//    public $localtax1_type;
-//    public $localtax2_tx;
-//    public $localtax2_type;
-//    public $remise_percent;
-//    public $total_ht;
-//    public $total_tva;
-//    public $total_localtax1;
-//    public $total_localtax2;
-//    public $total_ttc;
     public $product_type;
     public $rang;
-//    public $fk_multicurrency;
-//    public $multicurrency_code;
-//    public $multicurrency_subprice;
-//    public $multicurrency_total_ht;
-//    public $multicurrency_total_tva;
-//    public $multicurrency_total_ttc;
     public $fk_user_creat;
     public $fk_user_modif;
     public $import_key;

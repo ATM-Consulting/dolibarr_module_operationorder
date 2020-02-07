@@ -464,17 +464,17 @@ class pdf_olaf extends ModelePDFOperationOrder
 					$pdf->SetFont('', '', $default_font_size - 1);   // We reposition the default font
 
 					// VAT Rate
-					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN))
-					{
-						$vat_rate = pdf_getlinevatrate($object, $i, $outputlangs, $hidedetails);
-						$pdf->SetXY($this->posxtva-5, $curY);
-						$pdf->MultiCell($this->posxup-$this->posxtva+4, 3, $vat_rate, 0, 'R');
-					}
+//					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN))
+//					{
+//						$vat_rate = pdf_getlinevatrate($object, $i, $outputlangs, $hidedetails);
+//						$pdf->SetXY($this->posxtva-5, $curY);
+//						$pdf->MultiCell($this->posxup-$this->posxtva+4, 3, $vat_rate, 0, 'R');
+//					}
 
 					// Unit price before discount
-					$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
-					$pdf->SetXY($this->posxup, $curY);
-					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
+//					$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
+//					$pdf->SetXY($this->posxup, $curY);
+//					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
 
 					// Quantity
 					$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
@@ -482,62 +482,62 @@ class pdf_olaf extends ModelePDFOperationOrder
 					$pdf->MultiCell($this->posxunit-$this->posxqty-0.8, 4, $qty, 0, 'R');  // Enough for 6 chars
 
 					// Unit
-					if($conf->global->PRODUCT_USE_UNITS)
-					{
-						$unit = pdf_getlineunit($object, $i, $outputlangs, $hidedetails, $hookmanager);
-						$pdf->SetXY($this->posxunit, $curY);
-						$pdf->MultiCell($this->posxdiscount-$this->posxunit-0.8, 4, $unit, 0, 'L');
-					}
+//					if($conf->global->PRODUCT_USE_UNITS)
+//					{
+//						$unit = pdf_getlineunit($object, $i, $outputlangs, $hidedetails, $hookmanager);
+//						$pdf->SetXY($this->posxunit, $curY);
+//						$pdf->MultiCell($this->posxdiscount-$this->posxunit-0.8, 4, $unit, 0, 'L');
+//					}
 
 					// Discount on line
-					$pdf->SetXY($this->posxdiscount, $curY);
-					if ($object->lines[$i]->remise_percent)
-					{
-						$pdf->SetXY($this->posxdiscount-2, $curY);
-						$remise_percent = pdf_getlineremisepercent($object, $i, $outputlangs, $hidedetails);
-						$pdf->MultiCell($this->postotalht-$this->posxdiscount+2, 3, $remise_percent, 0, 'R');
-					}
+//					$pdf->SetXY($this->posxdiscount, $curY);
+//					if ($object->lines[$i]->remise_percent)
+//					{
+//						$pdf->SetXY($this->posxdiscount-2, $curY);
+//						$remise_percent = pdf_getlineremisepercent($object, $i, $outputlangs, $hidedetails);
+//						$pdf->MultiCell($this->postotalht-$this->posxdiscount+2, 3, $remise_percent, 0, 'R');
+//					}
 
 					// Total HT line
-					$total_excl_tax = pdf_getlinetotalexcltax($object, $i, $outputlangs, $hidedetails);
-					$pdf->SetXY($this->postotalht, $curY);
-					$pdf->MultiCell($this->page_largeur-$this->marge_droite-$this->postotalht, 3, $total_excl_tax, 0, 'R', 0);
+//					$total_excl_tax = pdf_getlinetotalexcltax($object, $i, $outputlangs, $hidedetails);
+//					$pdf->SetXY($this->postotalht, $curY);
+//					$pdf->MultiCell($this->page_largeur-$this->marge_droite-$this->postotalht, 3, $total_excl_tax, 0, 'R', 0);
 
 					// Collection of totals by value of vat in $this->vat["rate"] = total_tva
-					if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne=$object->lines[$i]->multicurrency_total_tva;
-					else $tvaligne=$object->lines[$i]->total_tva;
+//					if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne=$object->lines[$i]->multicurrency_total_tva;
+//					else $tvaligne=$object->lines[$i]->total_tva;
 
-					$localtax1ligne=$object->lines[$i]->total_localtax1;
-					$localtax2ligne=$object->lines[$i]->total_localtax2;
-					$localtax1_rate=$object->lines[$i]->localtax1_tx;
-					$localtax2_rate=$object->lines[$i]->localtax2_tx;
-					$localtax1_type=$object->lines[$i]->localtax1_type;
-					$localtax2_type=$object->lines[$i]->localtax2_type;
+//					$localtax1ligne=$object->lines[$i]->total_localtax1;
+//					$localtax2ligne=$object->lines[$i]->total_localtax2;
+//					$localtax1_rate=$object->lines[$i]->localtax1_tx;
+//					$localtax2_rate=$object->lines[$i]->localtax2_tx;
+//					$localtax1_type=$object->lines[$i]->localtax1_type;
+//					$localtax2_type=$object->lines[$i]->localtax2_type;
 
-					if ($object->remise_percent) $tvaligne-=($tvaligne*$object->remise_percent)/100;
-					if ($object->remise_percent) $localtax1ligne-=($localtax1ligne*$object->remise_percent)/100;
-					if ($object->remise_percent) $localtax2ligne-=($localtax2ligne*$object->remise_percent)/100;
+//					if ($object->remise_percent) $tvaligne-=($tvaligne*$object->remise_percent)/100;
+//					if ($object->remise_percent) $localtax1ligne-=($localtax1ligne*$object->remise_percent)/100;
+//					if ($object->remise_percent) $localtax2ligne-=($localtax2ligne*$object->remise_percent)/100;
 
-					$vatrate=(string) $object->lines[$i]->tva_tx;
+//					$vatrate=(string) $object->lines[$i]->tva_tx;
 
 					// Retrieve type from database for backward compatibility with old records
-					if ((! isset($localtax1_type) || $localtax1_type=='' || ! isset($localtax2_type) || $localtax2_type=='') // if tax type not defined
-					&& (! empty($localtax1_rate) || ! empty($localtax2_rate))) // and there is local tax
-					{
-						$localtaxtmp_array=getLocalTaxesFromRate($vatrate, 0, $object->thirdparty, $mysoc);
-						$localtax1_type = $localtaxtmp_array[0];
-						$localtax2_type = $localtaxtmp_array[2];
-					}
+//					if ((! isset($localtax1_type) || $localtax1_type=='' || ! isset($localtax2_type) || $localtax2_type=='') // if tax type not defined
+//					&& (! empty($localtax1_rate) || ! empty($localtax2_rate))) // and there is local tax
+//					{
+//						$localtaxtmp_array=getLocalTaxesFromRate($vatrate, 0, $object->thirdparty, $mysoc);
+//						$localtax1_type = $localtaxtmp_array[0];
+//						$localtax2_type = $localtaxtmp_array[2];
+//					}
 
 				    // retrieve global local tax
-					if ($localtax1_type && $localtax1ligne != 0)
-						$this->localtax1[$localtax1_type][$localtax1_rate]+=$localtax1ligne;
-					if ($localtax2_type && $localtax2ligne != 0)
-						$this->localtax2[$localtax2_type][$localtax2_rate]+=$localtax2ligne;
+//					if ($localtax1_type && $localtax1ligne != 0)
+//						$this->localtax1[$localtax1_type][$localtax1_rate]+=$localtax1ligne;
+//					if ($localtax2_type && $localtax2ligne != 0)
+//						$this->localtax2[$localtax2_type][$localtax2_rate]+=$localtax2ligne;
 
-					if (($object->lines[$i]->info_bits & 0x01) == 0x01) $vatrate.='*';
-					if (! isset($this->tva[$vatrate])) 				$this->tva[$vatrate]=0;
-					$this->tva[$vatrate] += $tvaligne;
+//					if (($object->lines[$i]->info_bits & 0x01) == 0x01) $vatrate.='*';
+//					if (! isset($this->tva[$vatrate])) 				$this->tva[$vatrate]=0;
+//					$this->tva[$vatrate] += $tvaligne;
 
 					// Add line
 					if (! empty($conf->global->MAIN_PDF_DASH_BETWEEN_LINES) && $i < ($nblines - 1))
@@ -599,7 +599,7 @@ class pdf_olaf extends ModelePDFOperationOrder
 				$posy=$this->_tableau_info($pdf, $object, $bottomlasttab, $outputlangs);
 
 				// Affiche zone totaux
-				$posy=$this->_tableau_tot($pdf, $object, $deja_regle, $bottomlasttab, $outputlangs);
+//				$posy=$this->_tableau_tot($pdf, $object, $deja_regle, $bottomlasttab, $outputlangs);
 
 				// Affiche zone versements
 				/*
@@ -696,21 +696,21 @@ class pdf_olaf extends ModelePDFOperationOrder
 		$posxval=52;
 
 		// Show payments conditions
-		if ($object->cond_reglement_code || $object->cond_reglement)
-		{
-			$pdf->SetFont('', 'B', $default_font_size - 2);
-			$pdf->SetXY($this->marge_gauche, $posy);
-			$titre = $outputlangs->transnoentities("PaymentConditions").':';
-			$pdf->MultiCell(43, 4, $titre, 0, 'L');
-
-			$pdf->SetFont('', '', $default_font_size - 2);
-			$pdf->SetXY($posxval, $posy);
-			$lib_condition_paiement=$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code)!=('PaymentCondition'.$object->cond_reglement_code)?$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code):$outputlangs->convToOutputCharset($object->cond_reglement_doc);
-			$lib_condition_paiement=str_replace('\n', "\n", $lib_condition_paiement);
-			$pdf->MultiCell(67, 4, $lib_condition_paiement, 0, 'L');
-
-			$posy=$pdf->GetY()+3;
-		}
+//		if ($object->cond_reglement_code || $object->cond_reglement)
+//		{
+//			$pdf->SetFont('', 'B', $default_font_size - 2);
+//			$pdf->SetXY($this->marge_gauche, $posy);
+//			$titre = $outputlangs->transnoentities("PaymentConditions").':';
+//			$pdf->MultiCell(43, 4, $titre, 0, 'L');
+//
+//			$pdf->SetFont('', '', $default_font_size - 2);
+//			$pdf->SetXY($posxval, $posy);
+//			$lib_condition_paiement=$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code)!=('PaymentCondition'.$object->cond_reglement_code)?$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code):$outputlangs->convToOutputCharset($object->cond_reglement_doc);
+//			$lib_condition_paiement=str_replace('\n', "\n", $lib_condition_paiement);
+//			$pdf->MultiCell(67, 4, $lib_condition_paiement, 0, 'L');
+//
+//			$posy=$pdf->GetY()+3;
+//		}
 
         // Check a payment mode is defined
         /* Not used with orders
@@ -740,113 +740,113 @@ class pdf_olaf extends ModelePDFOperationOrder
 		}*/
 
 	    // Show planed date of delivery
-        if (! empty($object->date_livraison))
-		{
-            $outputlangs->load("sendings");
-			$pdf->SetFont('', 'B', $default_font_size - 2);
-			$pdf->SetXY($this->marge_gauche, $posy);
-			$titre = $outputlangs->transnoentities("DateDeliveryPlanned").':';
-			$pdf->MultiCell(80, 4, $titre, 0, 'L');
-			$pdf->SetFont('', '', $default_font_size - 2);
-			$pdf->SetXY($posxval, $posy);
-			$dlp=dol_print_date($object->date_livraison, "daytext", false, $outputlangs, true);
-			$pdf->MultiCell(80, 4, $dlp, 0, 'L');
-
-            $posy=$pdf->GetY()+1;
-		}
-        elseif ($object->availability_code || $object->availability)    // Show availability conditions
-		{
-			$pdf->SetFont('', 'B', $default_font_size - 2);
-			$pdf->SetXY($this->marge_gauche, $posy);
-			$titre = $outputlangs->transnoentities("AvailabilityPeriod").':';
-			$pdf->MultiCell(80, 4, $titre, 0, 'L');
-			$pdf->SetTextColor(0, 0, 0);
-			$pdf->SetFont('', '', $default_font_size - 2);
-			$pdf->SetXY($posxval, $posy);
-			$lib_availability=$outputlangs->transnoentities("AvailabilityType".$object->availability_code)!=('AvailabilityType'.$object->availability_code)?$outputlangs->transnoentities("AvailabilityType".$object->availability_code):$outputlangs->convToOutputCharset(isset($object->availability)?$object->availability:'');
-			$lib_availability=str_replace('\n', "\n", $lib_availability);
-			$pdf->MultiCell(80, 4, $lib_availability, 0, 'L');
-
-			$posy=$pdf->GetY()+1;
-		}
+//        if (! empty($object->date_livraison))
+//		{
+//            $outputlangs->load("sendings");
+//			$pdf->SetFont('', 'B', $default_font_size - 2);
+//			$pdf->SetXY($this->marge_gauche, $posy);
+//			$titre = $outputlangs->transnoentities("DateDeliveryPlanned").':';
+//			$pdf->MultiCell(80, 4, $titre, 0, 'L');
+//			$pdf->SetFont('', '', $default_font_size - 2);
+//			$pdf->SetXY($posxval, $posy);
+//			$dlp=dol_print_date($object->date_livraison, "daytext", false, $outputlangs, true);
+//			$pdf->MultiCell(80, 4, $dlp, 0, 'L');
+//
+//            $posy=$pdf->GetY()+1;
+//		}
+//        elseif ($object->availability_code || $object->availability)    // Show availability conditions
+//		{
+//			$pdf->SetFont('', 'B', $default_font_size - 2);
+//			$pdf->SetXY($this->marge_gauche, $posy);
+//			$titre = $outputlangs->transnoentities("AvailabilityPeriod").':';
+//			$pdf->MultiCell(80, 4, $titre, 0, 'L');
+//			$pdf->SetTextColor(0, 0, 0);
+//			$pdf->SetFont('', '', $default_font_size - 2);
+//			$pdf->SetXY($posxval, $posy);
+//			$lib_availability=$outputlangs->transnoentities("AvailabilityType".$object->availability_code)!=('AvailabilityType'.$object->availability_code)?$outputlangs->transnoentities("AvailabilityType".$object->availability_code):$outputlangs->convToOutputCharset(isset($object->availability)?$object->availability:'');
+//			$lib_availability=str_replace('\n', "\n", $lib_availability);
+//			$pdf->MultiCell(80, 4, $lib_availability, 0, 'L');
+//
+//			$posy=$pdf->GetY()+1;
+//		}
 
         // Show payment mode
-        if ($object->mode_reglement_code
-        	&& $object->mode_reglement_code != 'CHQ'
-           	&& $object->mode_reglement_code != 'VIR') {
-            $pdf->SetFont('', 'B', $default_font_size - 2);
-            $pdf->SetXY($this->marge_gauche, $posy);
-            $titre = $outputlangs->transnoentities("PaymentMode").':';
-            $pdf->MultiCell(80, 5, $titre, 0, 'L');
-
-			$pdf->SetFont('', '', $default_font_size - 2);
-            $pdf->SetXY($posxval, $posy);
-            $lib_mode_reg=$outputlangs->transnoentities("PaymentType".$object->mode_reglement_code)!=('PaymentType'.$object->mode_reglement_code)?$outputlangs->transnoentities("PaymentType".$object->mode_reglement_code):$outputlangs->convToOutputCharset($object->mode_reglement);
-            $pdf->MultiCell(80, 5, $lib_mode_reg, 0, 'L');
-
-            $posy=$pdf->GetY()+2;
-        }
+//        if ($object->mode_reglement_code
+//        	&& $object->mode_reglement_code != 'CHQ'
+//           	&& $object->mode_reglement_code != 'VIR') {
+//            $pdf->SetFont('', 'B', $default_font_size - 2);
+//            $pdf->SetXY($this->marge_gauche, $posy);
+//            $titre = $outputlangs->transnoentities("PaymentMode").':';
+//            $pdf->MultiCell(80, 5, $titre, 0, 'L');
+//
+//			$pdf->SetFont('', '', $default_font_size - 2);
+//            $pdf->SetXY($posxval, $posy);
+//            $lib_mode_reg=$outputlangs->transnoentities("PaymentType".$object->mode_reglement_code)!=('PaymentType'.$object->mode_reglement_code)?$outputlangs->transnoentities("PaymentType".$object->mode_reglement_code):$outputlangs->convToOutputCharset($object->mode_reglement);
+//            $pdf->MultiCell(80, 5, $lib_mode_reg, 0, 'L');
+//
+//            $posy=$pdf->GetY()+2;
+//        }
 
 		// Show payment mode CHQ
-        if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'CHQ')
-        {
-        	// Si mode reglement non force ou si force a CHQ
-	        if (! empty($conf->global->FACTURE_CHQ_NUMBER))
-	        {
-	            if ($conf->global->FACTURE_CHQ_NUMBER > 0)
-	            {
-	                $account = new Account($this->db);
-	                $account->fetch($conf->global->FACTURE_CHQ_NUMBER);
-
-	                $pdf->SetXY($this->marge_gauche, $posy);
-	                $pdf->SetFont('', 'B', $default_font_size - 3);
-	                $pdf->MultiCell(100, 3, $outputlangs->transnoentities('PaymentByChequeOrderedTo', $account->proprio), 0, 'L', 0);
-		            $posy=$pdf->GetY()+1;
-
-		            if (empty($conf->global->MAIN_PDF_HIDE_CHQ_ADDRESS))
-		            {
-		                $pdf->SetXY($this->marge_gauche, $posy);
-		                $pdf->SetFont('', '', $default_font_size - 3);
-		                $pdf->MultiCell(100, 3, $outputlangs->convToOutputCharset($account->owner_address), 0, 'L', 0);
-			            $posy=$pdf->GetY()+2;
-		            }
-	            }
-	            if ($conf->global->FACTURE_CHQ_NUMBER == -1)
-	            {
-	                $pdf->SetXY($this->marge_gauche, $posy);
-	                $pdf->SetFont('', 'B', $default_font_size - 3);
-	                $pdf->MultiCell(100, 3, $outputlangs->transnoentities('PaymentByChequeOrderedTo', $this->emetteur->name), 0, 'L', 0);
-		            $posy=$pdf->GetY()+1;
-
-		            if (empty($conf->global->MAIN_PDF_HIDE_CHQ_ADDRESS))
-		            {
-			            $pdf->SetXY($this->marge_gauche, $posy);
-		                $pdf->SetFont('', '', $default_font_size - 3);
-		                $pdf->MultiCell(100, 3, $outputlangs->convToOutputCharset($this->emetteur->getFullAddress()), 0, 'L', 0);
-			            $posy=$pdf->GetY()+2;
-		            }
-	            }
-	        }
-		}
+//        if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'CHQ')
+//        {
+//        	// Si mode reglement non force ou si force a CHQ
+//	        if (! empty($conf->global->FACTURE_CHQ_NUMBER))
+//	        {
+//	            if ($conf->global->FACTURE_CHQ_NUMBER > 0)
+//	            {
+//	                $account = new Account($this->db);
+//	                $account->fetch($conf->global->FACTURE_CHQ_NUMBER);
+//
+//	                $pdf->SetXY($this->marge_gauche, $posy);
+//	                $pdf->SetFont('', 'B', $default_font_size - 3);
+//	                $pdf->MultiCell(100, 3, $outputlangs->transnoentities('PaymentByChequeOrderedTo', $account->proprio), 0, 'L', 0);
+//		            $posy=$pdf->GetY()+1;
+//
+//		            if (empty($conf->global->MAIN_PDF_HIDE_CHQ_ADDRESS))
+//		            {
+//		                $pdf->SetXY($this->marge_gauche, $posy);
+//		                $pdf->SetFont('', '', $default_font_size - 3);
+//		                $pdf->MultiCell(100, 3, $outputlangs->convToOutputCharset($account->owner_address), 0, 'L', 0);
+//			            $posy=$pdf->GetY()+2;
+//		            }
+//	            }
+//	            if ($conf->global->FACTURE_CHQ_NUMBER == -1)
+//	            {
+//	                $pdf->SetXY($this->marge_gauche, $posy);
+//	                $pdf->SetFont('', 'B', $default_font_size - 3);
+//	                $pdf->MultiCell(100, 3, $outputlangs->transnoentities('PaymentByChequeOrderedTo', $this->emetteur->name), 0, 'L', 0);
+//		            $posy=$pdf->GetY()+1;
+//
+//		            if (empty($conf->global->MAIN_PDF_HIDE_CHQ_ADDRESS))
+//		            {
+//			            $pdf->SetXY($this->marge_gauche, $posy);
+//		                $pdf->SetFont('', '', $default_font_size - 3);
+//		                $pdf->MultiCell(100, 3, $outputlangs->convToOutputCharset($this->emetteur->getFullAddress()), 0, 'L', 0);
+//			            $posy=$pdf->GetY()+2;
+//		            }
+//	            }
+//	        }
+//		}
 
         // If payment mode not forced or forced to VIR, show payment with BAN
-        if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
-        {
-			if (! empty($object->fk_account) || ! empty($object->fk_bank) || ! empty($conf->global->FACTURE_RIB_NUMBER))
-			{
-				$bankid=(empty($object->fk_account)?$conf->global->FACTURE_RIB_NUMBER:$object->fk_account);
-				if (! empty($object->fk_bank)) $bankid=$object->fk_bank;   // For backward compatibility when object->fk_account is forced with object->fk_bank
-				$account = new Account($this->db);
-				$account->fetch($bankid);
-
-				$curx=$this->marge_gauche;
-				$cury=$posy;
-
-				$posy=pdf_bank($pdf, $outputlangs, $curx, $cury, $account, 0, $default_font_size);
-
-				$posy+=2;
-			}
-        }
+//        if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
+//        {
+//			if (! empty($object->fk_account) || ! empty($object->fk_bank) || ! empty($conf->global->FACTURE_RIB_NUMBER))
+//			{
+//				$bankid=(empty($object->fk_account)?$conf->global->FACTURE_RIB_NUMBER:$object->fk_account);
+//				if (! empty($object->fk_bank)) $bankid=$object->fk_bank;   // For backward compatibility when object->fk_account is forced with object->fk_bank
+//				$account = new Account($this->db);
+//				$account->fetch($bankid);
+//
+//				$curx=$this->marge_gauche;
+//				$cury=$posy;
+//
+//				$posy=pdf_bank($pdf, $outputlangs, $curx, $cury, $account, 0, $default_font_size);
+//
+//				$posy+=2;
+//			}
+//        }
 
 		return $posy;
 	}

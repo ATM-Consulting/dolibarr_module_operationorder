@@ -55,7 +55,13 @@ if ($nolinesbefore) {
 		<td class="linecolqty right"><?php echo $langs->trans('Qty'); ?></td>
 
         <?php
-        // TODO complete
+        print '<td class="linecolemplacement right">'.$langs->trans('Emplacement').'</td>';
+
+        print '<td class="linecolpc right">'.$langs->trans('PC').'</td>';
+
+        print '<td class="linecoltimeplanned right">'.$langs->trans('TimePlanned').'</td>';
+
+        print '<td class="linecoltimespent right">'.$langs->trans('TimeSpent').'</td>';
         ?>
 
 		<td class="linecoledit" colspan="<?php echo $colspan; ?>">&nbsp;</td>

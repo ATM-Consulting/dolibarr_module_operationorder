@@ -106,9 +106,18 @@ if (empty($reshook))
             {
                 $values = array();
                 $attribute = GETPOST('attribute');
-                $value = GETPOST($attribute);
-                $values[$attribute] = $value;
-                $object->setValues($values);
+
+                if ($attribute == 'date_operation_order')
+                {
+                    $object->date_operation_order = dol_mktime(GETPOST('date_operation_orderhour'), GETPOST('date_operation_ordermin'), 0, GETPOST('date_operation_ordermonth'), GETPOST('date_operation_orderday'), GETPOST('date_operation_orderyear'));
+                }
+                else
+                {
+                    $value = GETPOST($attribute);
+                    $values[$attribute] = $value;
+                    $object->setValues($values);
+                }
+
                 $object->save($user);
             }
 
@@ -236,6 +245,10 @@ if (empty($reshook))
                 else $idprod = GETPOST('idprod', 'int');
 
                 $qty = GETPOST('qty'.$predef);
+                $emplacement = GETPOST('emplacement');
+                $pc = GETPOST('pc'.$predef);
+                $time_planned = GETPOST('time_planned', 'int');
+                $time_spent = GETPOST('time_spent', 'int');
 
                 // Extrafields
                 $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
@@ -308,7 +321,7 @@ if (empty($reshook))
                     $info_bits = 0;
 
                     // Insert line
-                    $result = $object->addline($desc, $qty, $idprod, $info_bits, $date_start, $date_end, $type, - 1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+                    $result = $object->addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, - 1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
 
                     if ($result > 0) {
                         $ret = $object->fetch($object->id); // Reload to get new records
@@ -403,6 +416,11 @@ if (empty($reshook))
         $date_end = dol_mktime(GETPOST('date_endhour'), GETPOST('date_endmin'), GETPOST('date_endsec'), GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
         $description = dol_htmlcleanlastbr(GETPOST('product_desc', 'none'));
 
+        $emplacement = GETPOST('emplacement');
+        $pc = GETPOST('pc'.$predef);
+        $time_planned = GETPOST('time_planned', 'int');
+        $time_spent = GETPOST('time_spent', 'int');
+
         // Define info_bits
         $info_bits = 0;
 
@@ -443,7 +461,7 @@ if (empty($reshook))
 
         if (!$error) {
 
-            $result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
+            $result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $emplacement, $pc, $time_planned, $time_spent, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
 
             if ($result >= 0) {
                 if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
