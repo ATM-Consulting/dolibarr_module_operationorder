@@ -247,8 +247,8 @@ if (empty($reshook))
                 $qty = GETPOST('qty'.$predef);
                 $emplacement = GETPOST('emplacement');
                 $pc = GETPOST('pc'.$predef);
-                $time_planned = GETPOST('time_planned', 'int');
-                $time_spent = GETPOST('time_spent', 'int');
+                $time_planned = GETPOST('time_plannedhour', 'int') * 60 * 60 + GETPOST('time_plannedmin', 'int') * 60; // store in seconds
+                $time_spent = GETPOST('time_spenthour', 'int') * 60 * 60 + GETPOST('time_spentmin', 'int') * 60;
 
                 // Extrafields
                 $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
@@ -418,8 +418,8 @@ if (empty($reshook))
 
         $emplacement = GETPOST('emplacement');
         $pc = GETPOST('pc'.$predef);
-        $time_planned = GETPOST('time_planned', 'int');
-        $time_spent = GETPOST('time_spent', 'int');
+        $time_planned = GETPOST('time_plannedhour', 'int') * 60 * 60 + GETPOST('time_plannedmin', 'int') * 60; // store in seconds
+        $time_spent = GETPOST('time_spenthour', 'int') * 60 * 60 + GETPOST('time_spentmin', 'int') * 60;
 
         // Define info_bits
         $info_bits = 0;

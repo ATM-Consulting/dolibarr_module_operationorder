@@ -156,11 +156,11 @@ $coldisplay++;
     </td>
 
     <td class="nowrap right linecoltimeplanned">
-        <input class="right" type="text" size="3" value="<?php echo $line->time_planned; ?>" name="time_planned">
+        <?php print $form->select_duration('time_planned', $line->time_planned, 0, 'text'); ?>
     </td>
 
     <td class="nowrap right linecoltimespent">
-        <input class="right" type="text" size="3" value="<?php echo $line->time_spent; ?>" name="time_spent">
+        <?php print $form->select_duration('time_spent', $line->time_spent, 0, 'text'); ?>
     </td>
 
 

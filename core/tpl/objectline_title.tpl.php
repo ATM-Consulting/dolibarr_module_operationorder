@@ -43,7 +43,7 @@ print '<td class="linecolemplacement right">'.$langs->trans('Emplacement').'</td
 
 print '<td class="linecolpc right">'.$langs->trans('PC').'</td>';
 
-print '<td class="linecoltimeplanned right">'.$langs->trans('TimePlanned').'</td>';
+print '<td class="linecoltimeplanned right">'.$langs->trans('PlannedWorkload').'</td>';
 
 print '<td class="linecoltimespent right">'.$langs->trans('TimeSpent').'</td>';
 

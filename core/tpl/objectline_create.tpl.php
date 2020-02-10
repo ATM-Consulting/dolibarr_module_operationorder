@@ -277,12 +277,15 @@ if ($nolinesbefore) {
     $coldisplay++;
     print '<td class="nobottom linecolpc right"><input type="text" size="3" name="pc" id="pc" class="flat right" value="'.(GETPOSTISSET('pc') ? GETPOST("pc", 'alpha', 2) : '').'"></td>';
 
-    // TODO select time
     $coldisplay++;
-    print '<td class="nobottom linecoltimeplanned right"><input type="text" size="4" name="timeplanned" id="timeplanned" class="flat right" value="'.(GETPOSTISSET('time_planned') ? GETPOST("time_planned", 'alpha', 2) : '').'"></td>';
+    print '<td class="nobottom linecoltimeplanned right">';
+    print $form->select_duration('time_planned', GETPOST('time_planned'), 0, 'text');
+    print '</td>';
 
     $coldisplay++;
-    print '<td class="nobottom linecoltimespent right"><input type="text" size="4" name="timespent" id="timespent" class="flat right" value="'.(GETPOSTISSET('time_spent') ? GETPOST("time_spent", 'alpha', 2) : '').'"></td>';
+    print '<td class="nobottom linecoltimespent right">';
+    print $form->select_duration('time_spent', GETPOST('time_spent'), 0, 'text');
+    print '</td>';
 
 	$coldisplay += $colspan;
 	?>

@@ -143,9 +143,9 @@ print '<td class="linecolemplacement right">'.$line->emplacement.'</td>';
 
 print '<td class="linecolpc right">'.$line->pc.'</td>';
 
-print '<td class="linecoltimeplanned right">'.$line->time_planned.'</td>';
+print '<td class="linecoltimeplanned right">'.convertSecondToTime($line->time_planned, 'allhourmin').'</td>';
 
-print '<td class="linecoltimespent right">'.$line->time_spent.'</td>';
+print '<td class="linecoltimespent right">'.convertSecondToTime($line->time_spent, 'allhourmin').'</td>';
 // TODO FIN
 
 if ($this->status == 0 && ($object_rights->write) && $action != 'selectlines') {
