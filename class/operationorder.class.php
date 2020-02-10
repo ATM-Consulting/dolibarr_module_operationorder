@@ -640,6 +640,7 @@ class OperationOrder extends SeedObject
             if (empty($info_bits)) $info_bits = 0;
             if (empty($rang)) $rang = 0;
             if (empty($fk_parent_line) || $fk_parent_line < 0) $fk_parent_line = 0;
+            if ($type === '') $type = 0;
 
             $qty = price2num($qty);
             $time_planned = price2num($time_planned);
@@ -831,6 +832,38 @@ class OperationOrder extends SeedObject
     {
         $this->thirdparty = new Societe($this->db);
         $this->initAsSpecimenCommon();
+    }
+
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+    /**
+     * 	Update position of line with ajax (rang)
+     *
+     * 	@param	array	$rows	Array of rows
+     * 	@return	void
+     */
+    public function line_ajaxorder($rows)
+    {
+        $TId = array();
+        foreach ($this->TOperationOrderDet as $operationOrderDet)
+        {
+            if (empty($operationOrderDet->fk_parent_line)) $TId[$operationOrderDet->id] = array();
+            else $TId[$operationOrderDet->fk_parent_line][] = $operationOrderDet->id;
+        }
+
+        // phpcs:enable
+        $i = 1;
+        foreach ($rows as $id)
+        {
+            // Si id parent
+            if (isset($TId[$id]))
+            {
+                $this->updateRangOfLine($id, $i++);
+                foreach ($TId[$id] as $fk_child_line)
+                {
+                    $this->updateRangOfLine($fk_child_line, $i++);
+                }
+            }
+        }
     }
 }
 

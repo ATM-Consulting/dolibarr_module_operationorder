@@ -321,9 +321,26 @@ if (empty($reshook))
                     $info_bits = 0;
 
                     // Insert line
-                    $result = $object->addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, - 1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+                    $result = $object->addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
 
                     if ($result > 0) {
+
+                        if (!empty($conf->global->PRODUIT_SOUSPRODUITS) && !empty($idprod))
+                        {
+                            $product = new Product($db);
+                            $product->fetch($idprod);
+
+                            $product->get_sousproduits_arbo();
+                            $arbo = $product->get_arbo_each_prod();
+                            if (!empty($arbo))
+                            {
+                                foreach ($arbo as $product_info)
+                                {
+                                    $object->addline('', $product_info['nb_total']*$qty, $emplacement, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
+                                }
+                            }
+                        }
+
                         $ret = $object->fetch($object->id); // Reload to get new records
 
                         if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
@@ -758,7 +775,6 @@ else
              * Lines
              */
             //$result = $object->getLinesArray();
-
             print '<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '#addline' : '#line_'.GETPOST('lineid')).'" method="POST">
             <input type="hidden" name="token" value="' . $_SESSION ['newtoken'].'">
             <input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
@@ -766,7 +782,8 @@ else
             <input type="hidden" name="id" value="' . $object->id.'">';
 
             if (!empty($conf->use_javascript_ajax) && $object->status == OperationOrder::STATUS_DRAFT) {
-                include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
+//                include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
+                include dol_buildpath('operationorder/core/tpl/ajaxrow.tpl.php');
             }
 
             print '<div class="div-table-responsive-no-min">';

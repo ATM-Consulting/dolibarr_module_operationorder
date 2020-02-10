@@ -66,7 +66,7 @@ $domData .= ' data-product_type="'.$line->product_type.'"';
 
 $coldisplay = 0; ?>
 <!-- BEGIN PHP TEMPLATE objectline_view.tpl.php -->
-<tr  id="row-<?php print $line->id?>" class="drag drop oddeven" <?php print $domData; ?> >
+<tr  id="row-<?php print $line->id?>" class="<?php empty($line->fk_parent_line) ? print 'drag drop' : 'nodrag nodrop'; ?> oddeven" <?php print $domData; ?> >
 <?php if (!empty($conf->global->MAIN_VIEW_LINE_NUMBER)) { ?>
 	<td class="linecolnum center"><?php $coldisplay++; ?><?php print ($i + 1); ?></td>
 <?php } ?>
@@ -167,7 +167,12 @@ if ($this->status == 0 && ($object_rights->write) && $action != 'selectlines') {
 	}
 	print '</td>';
 
-	if ($num > 1 && $conf->browser->layout != 'phone' && ($this->situation_counter == 1 || !$this->situation_cycle_ref) && empty($disablemove)) {
+	if (!empty($line->fk_parent_line))
+    {
+        $coldisplay++;
+        print '<td class="center"></td>';
+    }
+	elseif ($num > 1 && $conf->browser->layout != 'phone' && empty($disablemove)) {
 		print '<td class="linecolmove tdlineupdown center">';
 		$coldisplay++;
 		if ($i > 0) { ?>
