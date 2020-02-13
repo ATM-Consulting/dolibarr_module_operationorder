@@ -942,6 +942,7 @@ class OperationOrderDet extends SeedObject
             $this->product->fetch($this->fk_product);
             $this->ref = $this->product->ref;
             $this->product_ref = $this->product->ref;
+            $this->label = $this->product->label;
         }
 
         return $res;
