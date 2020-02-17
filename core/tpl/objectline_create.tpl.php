@@ -38,7 +38,7 @@ if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf-
 if (in_array($object->element, array('propal', 'commande', 'order', 'facture', 'facturerec', 'invoice', 'supplier_proposal', 'order_supplier', 'invoice_supplier'))) $colspan++; // With this, there is a column move button
 //print $object->element;
 // Lines for extrafield
-$objectline = new OperationOrderDet();
+$objectline = new OperationOrderDet($db);
 
 print "<!-- BEGIN PHP TEMPLATE objectline_create.tpl.php -->\n";
 $nolinesbefore = (count($this->lines) == 0 || $forcetoshowtitlelines);
