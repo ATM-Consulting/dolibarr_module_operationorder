@@ -343,8 +343,6 @@ if ((!empty($conf->service->enabled) || ($object->element == 'contrat')) && $dat
 }
 
 
-print "<script>\n";
-
 ?>
 <script>
 	/* JQuery for product free or predefined select */

@@ -55,7 +55,19 @@ OperationOrderRefuse=Refuser
 OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
+OperationOrderDetPc=Pc
+StockPlace=Emplacement
+TimePlanned=Temps planifié
+AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation
 
+QtyOrdered=Quantité commandé
+ExpectedWorkload=Charge de travail prévue
+HoursPlanned=Temps Plannifié
+HoursSpent=Temps consommé
+TimeDifference=Ecart : temps prévue - temps réel passé
+NotEnoughStockAvailable=Stock insufisant
+VirtualStockAvailable=En stock virtuel
+StockAvailable=En stock
 OperationOrderType=Type
 
 ConfirmValidateOperationOrderTitle=Valider ordre de réparation

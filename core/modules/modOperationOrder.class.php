@@ -44,7 +44,7 @@ class modOperationOrder extends DolibarrModules
 
 		$this->editor_name = 'ATM-Consulting';
 		$this->editor_url = 'https://www.atm-consulting.fr';
-		
+
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
 		$this->numero = 104088; // 104000 to 104999 for ATM CONSULTING
@@ -68,7 +68,7 @@ class modOperationOrder extends DolibarrModules
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
 		$this->picto='operationorder@operationorder';
-		
+
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
 		// for default path (eg: /operationorder/core/xxxxx) (0=disable, 1=enable)
 		// for specific path of parts (eg: /operationorder/core/modules/barcode)
@@ -218,7 +218,7 @@ class modOperationOrder extends DolibarrModules
 		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
-		
+
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_write';	// Permission label
 		$this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
@@ -385,7 +385,7 @@ class modOperationOrder extends DolibarrModules
 		);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 */
-		
+
 		// Exports
 		$r=1;
 
@@ -415,10 +415,10 @@ class modOperationOrder extends DolibarrModules
 	public function init($options = '')
 	{
 		$sql = array();
-		
+
 		define('INC_FROM_DOLIBARR', true);
 
-		require dol_buildpath('/operationorder/script/create-maj-base.php');
+		require __DIR__ .'/../../script/create-maj-base.php';
 
 		$result=$this->_load_tables('/operationorder/sql/');
 

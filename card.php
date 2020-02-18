@@ -37,6 +37,12 @@ $ref = GETPOST('ref');
 $lineid = GETPOST('lineid');
 $confirm = GETPOST('confirm', 'alpha');
 
+$time_plannedhour 	= intval(GETPOST('time_plannedhour', 'int'));
+$time_plannedmin 	= intval(GETPOST('time_plannedmin', 'int'));
+$time_spenthour 	= intval(GETPOST('time_spenthour', 'int'));
+$time_spentmin 		= intval(GETPOST('time_spentmin', 'int'));
+
+
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
 
@@ -239,16 +245,16 @@ if (empty($reshook))
 
                 // Set if we used free entry or predefined product
                 $predef = '';
-                $product_desc = (GETPOST('dp_desc') ?GETPOST('dp_desc') : '');
+                $product_desc = (GETPOST('description') ?GETPOST('dp_desc') : '');
                 $prod_entry_mode = GETPOST('prod_entry_mode');
                 if ($prod_entry_mode == 'free') $idprod = 0;
-                else $idprod = GETPOST('idprod', 'int');
+                else $idprod = GETPOST('fk_product', 'int');
 
                 $qty = GETPOST('qty'.$predef);
                 $emplacement = GETPOST('emplacement');
                 $pc = GETPOST('pc'.$predef);
-                $time_planned = GETPOST('time_plannedhour', 'int') * 60 * 60 + GETPOST('time_plannedmin', 'int') * 60; // store in seconds
-                $time_spent = GETPOST('time_spenthour', 'int') * 60 * 60 + GETPOST('time_spentmin', 'int') * 60;
+                $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
+                $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
 
                 // Extrafields
                 $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
@@ -274,7 +280,7 @@ if (empty($reshook))
                     setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
                     $error++;
                 }
-
+				var_dump(array(!$error, ($qty >= 0), $product_desc,$idprod));
                 if (!$error && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
                     // Clean parameters
                     $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
@@ -571,7 +577,9 @@ $formproject = new FormProjets($db);
 $formcontrat = new FormContract($db);
 
 $title=$langs->trans('OperationOrder');
-llxHeader('', $title);
+$arrayofjs = '';
+$arrayofcss = array('/operationorder/css/operation-order-card.css');
+llxHeader('', $title , '', '', 0, 0, $arrayofjs, $arrayofcss);
 
 if ($action == 'create')
 {
@@ -769,58 +777,174 @@ else
             print '<div class="clearboth"></div><br />';
 
 
+			/*
+			 * Lines
+			 */
+
+			// JS nested
+			$TNested = $object->fetch_all_children_nested();
+			print '<div id="ajaxResults" ></div>';
+			print '<div id="nestedLines" >';
+			print _displaySortableNestedItems($TNested, 'sortableLists', true);
+			print '</div>';
+			print '<script src="'.dol_buildpath('operationorder/js/jquery-sortable-lists.min.js',1).'" ></script>';
+			print '<link rel="stylesheet" href="'.dol_buildpath('operationorder/css/sortable.css',1).'" >';
+			print '<div id="dialog-form-edit" ></div>';
+
+			print '
+			<script type="text/javascript">
+			$(function()
+			{
+				var options = {
+					insertZone: 5, // This property defines the distance from the left, which determines if item will be inserted outside(before/after) or inside of another item.
+					placeholderClass: \'operation-order-sortable-list__item--placeholder\',
+					hintClass: \'operation-order-sortable-list__item--hint\',
+					onChange: function( cEl )
+					{
+
+						$("#ajaxResults").html("");
+
+						$.ajax({
+							url: "'.dol_buildpath('operationorder/scripts/interface.php?action=setOperationOrderlevelHierarchy',1).'",
+							method: "POST",
+							data: {
+							    \'operation-order-id\' : '.$object->id.',
+								\'items\' : $(\'#sortableLists\').sortableListsToHierarchy()
+							},
+							dataType: "json",
+
+							// La fonction à apeller si la requête aboutie
+							success: function (data) {
+								// Loading data
+								console.log(data);
+								if(data.result > 0 ){
+								   // ok case
+								   $("#ajaxResults").html(\'<span class="badge badge-success">\' + data.msg + \'</span>\');
+								}
+								else if(data.result < 0 ){
+								   // error case
+								   $("#ajaxResults").html(\'<span class="badge badge-danger">\' + data.errorMsg + \'</span>\');
+								}
+								else{
+								   // nothing to do ?
+								}
+							},
+							// La fonction à appeler si la requête n\'a pas abouti
+							error: function( jqXHR, textStatus ) {
+								alert( "Request failed: " + textStatus );
+							}
+						});
+					},
+					complete: function( cEl )
+					{
 
 
-            /*
-             * Lines
-             */
-            //$result = $object->getLinesArray();
-            print '<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '#addline' : '#line_'.GETPOST('lineid')).'" method="POST">
-            <input type="hidden" name="token" value="' . $_SESSION ['newtoken'].'">
-            <input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
-            <input type="hidden" name="mode" value="">
-            <input type="hidden" name="id" value="' . $object->id.'">';
 
-            if (!empty($conf->use_javascript_ajax) && $object->status == OperationOrder::STATUS_DRAFT) {
-//                include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
-                include dol_buildpath('operationorder/core/tpl/ajaxrow.tpl.php');
-            }
+					},
+					isAllowed: function( cEl, hint, target )
+					{
+						// Be carefull if you test some ul/ol elements here.
+						// Sometimes ul/ols are dynamically generated and so they have not some attributes as natural ul/ols.
+						// Be careful also if the hint is not visible. It has only display none so it is at the previouse place where it was before(excluding first moves before showing).
 
-            print '<div class="div-table-responsive-no-min">';
-            print '<table id="tablelines" class="noborder noshadow" width="100%">';
-
-            $defaulttpldir = str_replace(DOL_DOCUMENT_ROOT, '', dol_buildpath('operationorder/core/tpl'));
-            // Show object lines
-            if (!empty($object->lines))
-                $ret = $object->printObjectLines($action, $mysoc, $object->thirdparty, $lineid, 1, $defaulttpldir);
-
-            $numlines = count($object->lines);
-
-            /*
-             * Form to add new line
-             */
-            if ($object->status == OperationOrder::STATUS_DRAFT && $usercancreate && $action != 'selectlines')
-            {
-                if ($action != 'editline')
-                {
-                    // Add free products/services
-                    $object->formAddObjectLine(1, $mysoc, $object->thirdparty, $defaulttpldir);
-
-                    $parameters = array();
-                    // Note that $action and $object may be modified by hook
-                    $reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action);
-                }
-            }
-            print '</table>';
-            print '</div>';
-
-            print "</form>\n";
-
-//            dol_fiche_end();
+						if( target.data(\'id\') != cEl.data(\'parent\') )
+						{
+							hint.addClass( "hint-desabled" );
+							hint.removeClass( "hint-enabled" );
+							return false;
+						}
+						else
+						{
+							hint.removeClass( "hint-desabled" );
+							hint.addClass( "hint-enabled" );
+							return true;
+						}
+					},
+//					opener: {
+//						active: false,
+//						as: \'html\',  // if as is not set plugin uses background image
+//						close: \'<i class="fa fa-minus c3"></i>\',  // or \'fa-minus c3\',  // or \'./imgs/Remove2.png\',
+//						open: \'<i class="fa fa-plus"></i>\',  // or \'fa-plus\',  // or\'./imgs/Add2.png\',
+//						openerCss: {
+//							\'display\': \'inline-block\',
+//							//\'width\': \'18px\', \'height\': \'18px\',
+//							\'float\': \'left\',
+//							\'margin-left\': \'-35px\',
+//							\'margin-right\': \'5px\',
+//							//\'background-position\': \'center center\', \'background-repeat\': \'no-repeat\',
+//							\'font-size\': \'1.1em\'
+//						}
+//					},
+					//ignoreClass: \'clickable\',
+					handle: ".handle",
+					insertZonePlus: true,
+				};
 
 
+				$(\'#sortableLists\').sortableLists( options );
+
+				$(document).on("click", ".operation-order-sortable-list__item__title__button.-edit-btn", function(event) {
+					event.preventDefault();
+					var id = $(this).data("id");
+					popTrainingAdmFormDialog(id);
+				});
 
 
+
+				var dialogBox = jQuery("#dialog-form-edit");
+				var width = $(window).width();
+				var height = $(window).height();
+				if(width > 700){ width = 700; }
+				if(height > 600){ height = 600; }
+				//console.log(height);
+				dialogBox.dialog({
+					autoOpen: false,
+					resizable: true,
+			//		height: height,
+					width: width,
+					modal: true,
+					buttons: {
+						"'.$langs->transnoentitiesnoconv('Update').'": function() {
+							dialogBox.find("form").submit();
+							jQuery(this).dialog(\'close\');
+						}
+					}
+				});
+
+				function popOperationOrderEditLineFormDialog(id)
+				{
+
+					var item = $("#item_" + id);
+
+					dialogBox.dialog({
+					  title: $("#item_" + id).data("title")
+					});
+
+					dialogBox.find( "input[name=\'id\']" ).val(id);
+					dialogBox.find( "input[name=\'intitule\']" ).val(item.data("title"));
+					dialogBox.find( "input[name=\'delai\']" ).val(item.data("alert"));
+					dialogBox.find( "input[name=\'delai_end\']" ).val(item.data("alert_end"));
+
+
+					dialogBox.dialog( "open" );
+				}
+
+			});
+
+
+			</script>';
+
+			// ADD FORM
+			if($object->status == OperationOrder::STATUS_DRAFT){
+				print '<div class="add-line-form-wrap" >';
+				print '<div class="add-line-form-title" >';
+				print $langs->trans("AddOperationOrderLine");
+				print '</div>';
+				print '<div class="add-line-form-body" >';
+				print _displayFormFields($object);
+				print '</div>';
+				print '</div>';
+			}
 
             print '<div class="tabsAction">'."\n";
             if ($action != 'editline')
@@ -906,9 +1030,273 @@ else
 
             dol_fiche_end(-1);
         }
-    }
+	}
 }
 
 
 llxFooter();
 $db->close();
+
+
+
+function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
+	global $langs, $user, $extrafields;
+	if(!empty($TNested) && is_array($TNested)){
+		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
+		foreach ($TNested as $k => $v) {
+			$line = $v['object'];
+			/**
+			 * @var $line OperationOrderDet
+			 */
+
+			if (empty($line->id)) $line->id = $line->rowid;
+
+			$class = '';
+			if ($open) {
+				$class .= 'sortableListsClosed';
+			}
+
+			// Product
+			$text = '';
+			if ($line->fk_product > 0) {
+				$product = new Product($line->db);
+				$product->fetch($line->fk_product);
+				$product->ref = $line->ref; //can change ref in hook
+				$product->label = $line->label; //can change label in hook
+				$text = $product->getNomUrl(1) . ' - ' . $product->label;
+
+				$line->stock_reel 		= $product->stock_reel;
+				$line->stock_theorique 	= $product->stock_theorique;
+			}
+
+			$out .= '<li id="item_' . $line->id . '" class="operation-order-sortable-list__item ' . $class . '" ';
+			$out .= ' data-id="' . $line->id . '" ';
+			$out .= ' data-ref="' . dol_escape_htmltag($line->ref) . '" ';
+			$out .= ' data-rank="' . dol_escape_htmltag($line->rang) . '" ';
+			$out .= ' data-parent="' . $line->fk_parent_line . '" ';
+			$out .= '>';
+			$out .= '<div class="operation-order-sortable-list__item__title">';
+			$out .= '	<div class="operation-order-sortable-list__item__title__flex">';
+
+			// DESCRIPTION
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -description">';
+			$out .= $text;
+			$out .= '		</div>';
+
+			// QTY ORDERED
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
+			$out .= '			<span class="classfortooltip" title="' . $langs->trans("QtyOrdered") . '" >';
+			$out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
+			$out .= '			</span>';
+			$out .= '		</div>';
+
+
+			// TIME SPENT AND PLANNED
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -time-spent">';
+			$out .= '			<i class="far fa-hourglass"></i> ';
+
+			$hoursSpendClass = '';
+			if(intval($line->time_planned) < intval($line->time_spent)){
+				$hoursSpendClass = 'badge badge-danger';
+			}
+
+			$out .= '			<span class="classfortooltip '.$hoursSpendClass.'"  title="' . $langs->trans("HoursSpent") . '">';
+			if (!empty($line->time_spent)){
+				$out .= convertSecondToTime(intval($line->time_spent));
+			}else{
+				$out .= ' -- ';
+			}
+
+			$out .= '			</span>';
+			$out.= ' / ';
+			$out.= '			<span class="classfortooltip"  title="'.$langs->trans("HoursPlanned").'">';
+			if (!empty($line->time_planned)){
+				$out.= convertSecondToTime(intval($line->time_planned)) ;
+			}else{
+				$out .= ' -- ';
+			}
+			$out.= '			</span>';
+
+			$out.= '		</div>';
+
+			// ECART
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -difference">';
+			if (!empty($line->time_planned) && !empty($line->time_spent)){
+				$ecart = intval($line->time_planned) - intval($line->time_spent);
+				$sign = '';
+				if($ecart>0){
+					$textClass = "text-success";
+					$iconClass = "fa-caret-down";
+					$sign = '-';
+				}elseif($ecart==0){
+					$textClass = "text-warning";
+					$iconClass = "fa-caret-left";
+				}else{
+					$textClass = "text-danger";
+					$iconClass = "fa-caret-up";
+					$sign = '+';
+				}
+
+				$out.= '<span class="'.$textClass.' classfortooltip paddingrightonly" title="'.$langs->trans('TimeDifference').'" ><i class="fa '.$iconClass.'"></i> '.$sign. dol_print_date(abs($ecart), '%HH%M', true).'</span>';
+
+			}else{
+				$out .= ' -- ';
+			}
+			$out .= '		</div>';
+
+			// PU HT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -unit-price">';
+			$out .= price($line->price).'&nbsp;'.$langs->trans('HT');
+			$out .= '		</div>';
+
+
+			// TOTAL HT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -total-price">';
+			$out .= price($line->total_ht).'&nbsp;'.$langs->trans('HT');
+			$out .= '		</div>';
+
+
+			// STOCK
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
+			$out .= $line->stockStatus();
+			$out .= '		</div>';
+
+
+			// ACTIONS
+			$out.= '		<div class="operation-order-sortable-list__item__title__col -action">';
+
+			if ($line->status == OperationOrder::STATUS_DRAFT && !empty($user->rights->operationorder->write)) {
+
+				$out.= '<a href="" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
+				$out.= '<i class="fa fa-pencil "></i>';
+				$out.= '</a>';
+
+				$deleteUrl = dol_buildpath('operationorder/card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=ask_deleteline&amp;lineid='.$line->id;
+
+				$out.= '<a href="'.$deleteUrl.'" class="classfortooltip operation-order-sortable-list__item__title__button  -delete-btn"  title="' . $langs->trans("Delete") . '"  data-id="'.$line->id.'">';
+				$out.= '<i class="fa fa-trash "></i>';
+				$out.= '</a>';
+
+				// Handler icon
+				$out .= '<span class="operation-order-sortable-list__item__title__button handle move"><i title="' . $langs->trans("Move") . '" class="fa fa-th"></i></span>';
+			}
+
+			$out.= '		</div>';
+
+			$out.= '	</div>';
+
+			//Line extrafield
+//			if (!empty($extrafields))
+//			{
+//				$line->fetch_optionals();
+//				$out.= '<!-- extrafields -->';
+//				$out.= '<table>';
+//				$out.= $line->showOptionals($extrafields, 'view', array(), '', '', 1);
+//				$out.= '</table>';
+//			}
+
+
+			$out.= '</div>';
+			$out.= _displaySortableNestedItems($v['children'], '', $open);
+			$out.= '</li>';
+		}
+		$out.= '</ul>';
+		return $out;
+	}
+	else{
+		return '';
+	}
+}
+
+
+
+/**
+ * @param $object OperationOrder
+ * @param $line OperationOrderDet
+ */
+function _displayFormFields($object, $line= false)
+{
+	global $langs, $db, $form;
+
+	$outForm = '';
+
+	if($line && $line->id > 0){
+		$mode = 'edit';
+	}
+	else{
+		$mode = 'create';
+		$line=new OperationOrderDet($db);
+	}
+
+	$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
+	$actionUrl.= ($mode == 'create') ? '#addline':'';
+
+	$outForm.=  ($mode == 'create') ? '<a name="addline" ></a>':'';
+
+	$outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
+	$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
+	$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+	$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
+
+	if($mode == 'edit') {
+		$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
+	}else{
+		$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
+	}
+
+	$line->fields = dol_sort_array($line->fields, 'position');
+
+	$outForm.= '<table class="table-full">';
+	foreach($line->fields as $key => $val)
+	{
+		// Discard if extrafield is a hidden field on form
+		if (abs($val['visible']) != 1 && abs($val['visible']) != 3) continue;
+
+		if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) continue;	// We don't want this field
+
+		$outForm.=  '<tr id="field_'.$key.'">';
+		$outForm.=  '<td';
+		$outForm.=  ' class="titlefieldcreate';
+		if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
+		if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
+		$outForm.=  '"';
+		$outForm.=  '>';
+
+		if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
+		else $outForm.=  $langs->trans($val['label']);
+		$outForm.=  '</td>';
+
+		$outForm.=  '<td>';
+		if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
+		elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
+		else $value = GETPOST($key, 'alpha');
+		$outForm.=  $line->showInputField($val, $key, $value, '', '', '', 0);
+		$outForm.=  '</td>';
+
+		$outForm.=  '</tr>';
+	}
+
+	if($mode == 'create'){
+
+		$outForm.=  '<tr>';
+		$outForm.=  '<td colspan="2"><hr/></td>';
+		$outForm.=  '</tr>';
+
+		$outForm.=  '<tr>';
+		$outForm.=  '<td>';
+		$outForm.=  '</td>';
+		$outForm.=  '<td>';
+		$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
+		$outForm.=  '<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
+		$outForm.=  '</td>';
+		$outForm.=  '</tr>';
+	}
+
+	$outForm.= '</table>';
+
+
+
+	$outForm.= '</form>';
+
+	return $outForm;
+}

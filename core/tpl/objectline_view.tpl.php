@@ -62,7 +62,7 @@ $domData  = ' data-element="'.$line->element.'"';
 $domData .= ' data-id="'.$line->id.'"';
 $domData .= ' data-qty="'.$line->qty.'"';
 $domData .= ' data-product_type="'.$line->product_type.'"';
-
+$domData .= ' data-fk_parent_line="'.$line->fk_parent_line.'"';
 
 $coldisplay = 0; ?>
 <!-- BEGIN PHP TEMPLATE objectline_view.tpl.php -->

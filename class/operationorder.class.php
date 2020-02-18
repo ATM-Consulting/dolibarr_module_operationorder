@@ -255,11 +255,84 @@ class OperationOrder extends SeedObject
             return $a->rang - $b->rang;
         });
 
+
+
         $this->fetch_thirdparty();
 
         return $res;
     }
 
+    public function lineLevel($id, $level = 0){
+    	// init pour gagner en temps de traitement
+    	if(empty($this->cacheLineIdNumb)){
+			$this->cacheLineParent = array();
+
+			foreach ($this->TOperationOrderDet as $i => $det){
+				$this->cacheLineParent[$det->id] = $det->fk_parent_line;
+			}
+		}
+
+
+
+
+
+	}
+
+
+	/**
+	 * Load object in memory from database
+	 *
+	 * @param int $training_id object
+	 * @param int $fk_parent_level id of parent
+	 * @return array array of object
+	 */
+	public function fetch_all_children_nested($fk_parent_line = 0) {
+
+		$TNested = array();
+
+		$sql = "SELECT";
+		$sql .= " line.rowid,";
+		$sql .= " line.rang,";
+		$sql .= " line.fk_parent_line";
+		$sql .= " FROM " . MAIN_DB_PREFIX . "operationorderdet as line";
+		$sql .= " WHERE line.fk_operation_order=" . intval($this->id);
+		if(empty($fk_parent_line)){
+			$sql .= " AND ( line.fk_parent_line = 0 OR line.fk_parent_line IS NULL ) ";
+		}
+		else{
+			$sql .= " AND line.fk_parent_line=" . intval($fk_parent_line);
+		}
+
+		$sql .= " ORDER BY line.rang ASC";
+
+		dol_syslog(get_class($this) . "::fetch_all", LOG_DEBUG);
+		$resql = $this->db->query($sql);
+
+		if ($resql) {
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+
+			while ( $i < $num ) {
+				$obj = $this->db->fetch_object($resql);
+
+				$line = new OperationOrderDet($this->db);
+				$line->fetch($obj->rowid);
+
+				$TNested[$i] = array(
+					'object' => $line,
+					'children' => $this->fetch_all_children_nested($obj->rowid)
+				);
+				$i ++;
+			}
+			$this->db->free($resql);
+
+			return $TNested;
+		} else {
+			$this->error = "Error " . $this->db->lasterror();
+			dol_syslog(get_class($this) . "::fetch " . $this->error, LOG_ERR);
+			return - 1;
+		}
+	}
 
     /**
      * @see cloneObject
@@ -882,11 +955,12 @@ class OperationOrderDet extends SeedObject
         'fk_operation_order' => array('type'=>'integer', 'label'=>'OperationOrder', 'enabled'=>1, 'position'=>5, 'notnull'=>1, 'visible'=>0,),
         'fk_product' => array('type'=>'integer:Product:product/class/product.class.php:1', 'label'=>'Product', 'enabled'=>1, 'position'=>35, 'notnull'=>-1, 'visible'=>-1, 'index'=>1,),
         'fk_parent_line' => array('type'=>'integer'),
-        'label' => array('type'=>'varchar(255)', 'length' => 255, 'label'=>'Label', 'enabled'=>1, 'position'=>35, 'notnull'=>0, 'visible'=>3),
-        'description' => array('type'=>'text', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>3,),
-        'qty' => array('type'=>'real', 'label'=>'Qty', 'enabled'=>1, 'position'=>45, 'notnull'=>0, 'visible'=>1, 'isameasure'=>'1', 'css'=>'maxwidth75imp'),
-        'emplacement' => array('type' => 'varchar(255)', 'length' => 255, 'enabled'=>1, 'position'=>47, 'visible'=>1),
-        'pc' => array('type' => 'varchar(255)', 'length' => 255, 'enabled'=>1, 'position'=>49, 'visible'=>1),
+		'price' => array('type'=>'real', 'label'=>'UnitPrice', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+//        'label' => array('type'=>'varchar(255)', 'length' => 255, 'label'=>'Label', 'enabled'=>1, 'position'=>35, 'notnull'=>0, 'visible'=>3), // Not used ?
+        'description' => array('type'=>'html', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>3,),
+        'qty' => array('type'=>'real',  'required'=>0, 'label'=>'Qty', 'enabled'=>1, 'position'=>45, 'notnull'=>0, 'visible'=>1, 'isameasure'=>'1', 'css'=>'maxwidth75imp'),
+        'emplacement' => array('type' => 'varchar(255)', 'label'=>'StockPlace', 'length' => 255, 'enabled'=>1, 'position'=>47, 'visible'=>1),
+        'pc' => array('type' => 'varchar(255)', 'label'=>'OperationOrderDetPc', 'length' => 255, 'enabled'=>1, 'position'=>49, 'visible'=>1),
         'time_planned' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
         'time_spent' => array('type'=>'integer', 'label'=>'TimeSpent', 'enabled'=>1, 'position'=>80, 'notnull'=>0, 'visible'=>1),
         'product_type' => array('type'=>'integer', 'label'=>'ProductType', 'enabled'=>1, 'position'=>90, 'notnull'=>1, 'visible'=>0),
@@ -911,6 +985,13 @@ class OperationOrderDet extends SeedObject
     public $fk_user_creat;
     public $fk_user_modif;
     public $import_key;
+    public $price;
+    public $total_ht;
+
+	/**
+	 * @var $product Product
+	 */
+    public $product;
 
     /**
      * OperationOrderDet constructor.
@@ -944,10 +1025,67 @@ class OperationOrderDet extends SeedObject
             $this->product_ref = $this->product->ref;
             $this->label = $this->product->label;
         }
+        else{
+			$this->product = false;
+		}
+
+		$this->calcPrices();
 
         return $res;
     }
 
+    function calcPrices(){
+
+    	/* Sur spéc
+    	 * Règle de calcul du Total HT
+    	 * Si Quantité/Temps utilisé = 0(vide)
+    	 * Total HT = Quantité commandée * P.U. H.T.
+    	 * Sinon
+    	 * Total HT = Quantité/Temps utilisé * P.U. H.T.
+    	 */
+
+		if(!empty($this->time_spent)){
+			$hours = round($this->time_spent / 3600 / 60 / 60, 1);
+			$this->total_ht = $hours * $this->price;
+		}
+		else{
+			$this->total_ht = $this->qty * $this->price;
+		}
+
+	}
+
+
+
+	function stockStatus($mode = '', $url = '', $params = array()){
+    	global $langs;
+
+    	$langs->loadLangs(array('operationorder@operationorder', 'stocks'));
+
+		$out = '';
+		if ($this->fk_product > 0 && empty($this->product_type) && $this->product) {
+
+			$this->product->load_stock();
+
+			$tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
+			$tooltipLabel.= $langs->trans('VirtualStock').' : '.$this->product->stock_theorique;
+
+			if(empty($params['attr']['title'])){
+				$params['attr']['title']=$tooltipLabel;
+			}
+
+			if($this->product->stock_reel >= $this->qty){
+				$out .= dolGetBadge($langs->trans('StockAvailable').' '.$this->product->stock_reel, '','success classfortooltip', $mode, $url, $params);
+			}
+			elseif($this->product->stock_reel < $this->qty && $this->product->stock_theorique >= $this->qty){
+				$out .= dolGetBadge($langs->trans('VirtualStockAvailable').' '.$this->product->stock_reel, '', 'warning classfortooltip', $mode, $url, $params);
+			}
+			else{
+				$out .= dolGetBadge($langs->trans('NotEnoughStockAvailable').' '.$this->product->stock_reel,'', 'danger classfortooltip', $mode, $url, $params);
+			}
+		}
+
+		return $out;
+	}
 
 }
 
