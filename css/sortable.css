@@ -1,0 +1,94 @@
+
+ul.operation-order-sortable-list,ul.operation-order-sortable-list ul,ul.operation-order-sortable-list li, #sortableListsBase ul, #sortableListsBase li {
+    margin:0; padding:0;
+    list-style-type:none;
+    color:#6e6e6e;
+    border:1px solid #c3c3c3;
+}
+
+ul.operation-order-sortable-list{ padding:0; background-color:#f9f9f9; }
+
+ul.operation-order-sortable-list li.operation-order-sortable-list__item, #sortableListsBase li.operation-order-sortable-list__item{
+    padding-left:15px;
+    margin:5px;
+    border: 1px solid #c3c3c3;
+    background-color: #dcdcdc;
+}
+
+li.operation-order-sortable-list__item .operation-order-sortable-list__item__title , #sortableListsBase li.operation-order-sortable-list__item .operation-order-sortable-list__item__title {
+    padding:7px;
+    background-color:#fff;
+}
+
+li.operation-order-sortable-list__item .operation-order-sortable-list__item__title:hover{
+	background-color: #e2edff;
+}
+
+.move {
+    cursor: move;
+}
+
+.clickable, .move .clickable{
+	cursor: pointer;
+}
+
+.sortableListsOpener{
+    cursor: pointer !important;
+}
+
+.operation-order-sortable-list__item--placeholder{
+    background-color: #ff8;
+}
+
+.operation-order-sortable-list__item--hint{
+    background-color: #bbf;
+}
+
+.hint-desabled{
+	background-color: #ff313e;
+}
+
+.hint-enabled{
+	background-color: #a9ff94;
+}
+
+
+.operation-order-sortable-list__item__title__flex{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	flex-flow: row wrap;
+	align-items: stretch;
+}
+
+.operation-order-sortable-list__item__title__col{
+	flex: auto;
+	flex-shrink: 1;
+	flex-grow: 2;
+	width: 80px;
+}
+
+.operation-order-sortable-list__item__title__col.-description{
+	flex-grow: 4;
+}
+
+.operation-order-sortable-list__item__title__col.-action{
+	text-align: right;
+	flex-grow: 0.5;
+}
+
+.operation-order-sortable-list__item__title__button{
+	margin-left: 15px;
+}
+
+.operation-order-sortable-list__item__title__col.-qty-ordered,
+.operation-order-sortable-list__item__title__col.-difference,
+.operation-order-sortable-list__item__title__col.-stock-status,
+.operation-order-sortable-list__item__title__col.-time-spent{
+	text-align: center;
+}
+
+.operation-order-sortable-list__item__title__col.-unit-price,
+.operation-order-sortable-list__item__title__col.-total-price {
+	text-align: right;
+}
