@@ -811,8 +811,14 @@ else
 					  if ($(hash).length){
 					      if($(hash).hasClass("operation-order-sortable-list__item")) //operation-order-sortable-list__item__title
 						  {
-								$(hash).find("> .operation-order-sortable-list__item__title").addClass("flipInX");
-								$(hash).find("> .operation-order-sortable-list__item__title").addClass("animated");
+						      	let itemTitleblock = $(hash).find("> .operation-order-sortable-list__item__title");
+
+								$(\'html,body\').animate({
+								  scrollTop: itemTitleblock.offset().top-150
+								}, 300);
+
+								itemTitleblock.addClass("flipInX");
+								itemTitleblock.addClass("animated");
 						  }
 					  }
 				  } else {
@@ -1226,7 +1232,8 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 				$editUrl = dol_buildpath('operationorder/card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=editline&amp;lineid='.$line->id;
 
-				$out.= '<a href="'.$editUrl.'#item_'.$line->id.'" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
+				//#item_'.$line->id.'
+				$out.= '<a href="'.$editUrl.'" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
 				$out.= '<i class="fa fa-pencil "></i>';
 				$out.= '</a>';
 
