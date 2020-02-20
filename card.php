@@ -584,7 +584,10 @@ $formcontrat = new FormContract($db);
 
 $title=$langs->trans('OperationOrder');
 $arrayofjs = '';
-$arrayofcss = array('/operationorder/css/operation-order-card.css');
+$arrayofcss = array(
+	'/operationorder/css/operation-order-card.css',
+	'/operationorder/css/animate.css'
+);
 llxHeader('', $title , '', '', 0, 0, $arrayofjs, $arrayofcss);
 
 if ($action == 'create')
@@ -800,6 +803,23 @@ else
 			<script type="text/javascript">
 			$(function()
 			{
+			    // Animate modified line
+			    if(window.location.hash) {
+					  var hash = window.location.hash; //Puts hash in variable, and removes the # character
+					  // hash found
+					  console.log($(hash).length);
+					  if ($(hash).length){
+					      if($(hash).hasClass("operation-order-sortable-list__item")) //operation-order-sortable-list__item__title
+						  {
+								$(hash).find("> .operation-order-sortable-list__item__title").addClass("flipInX");
+								$(hash).find("> .operation-order-sortable-list__item__title").addClass("animated");
+						  }
+					  }
+				  } else {
+					  // No hash found
+				  }
+
+
 				var options = {
 					insertZone: 5, // This property defines the distance from the left, which determines if item will be inserted outside(before/after) or inside of another item.
 					placeholderClass: \'operation-order-sortable-list__item--placeholder\',
@@ -931,6 +951,8 @@ else
 					<script type="text/javascript">
 					$(function()
 					{
+						var cardUrl = "'.$_SERVER["PHP_SELF"].'?id='.$object->id.'";
+						var itemHash = "#item_'.$line->id.'";
 
 						var dialogBox = jQuery("#dialog-form-edit");
 						var width = $(window).width();
@@ -949,6 +971,9 @@ else
 									dialogBox.find("form").submit();
 									jQuery(this).dialog(\'close\');
 								}
+							},
+							close: function( event, ui ) {
+								window.location.replace(cardUrl + itemHash);
 							}
 						});
 
