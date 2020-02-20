@@ -59,6 +59,8 @@ OperationOrderDetPc=Pc
 StockPlace=Emplacement
 TimePlanned=Temps planifié
 AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation
+OperationOrderLineAdded=ligne ajoutée l'ordre de réparation
+LineNotFound=Ligne introuvable
 
 QtyOrdered=Quantité commandé
 ExpectedWorkload=Charge de travail prévue

@@ -693,7 +693,7 @@ class OperationOrder extends SeedObject
         return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
     }
 
-    public function addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
+    public function addline($desc, $qty, $price, $emplacement, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
     {
         global $user;
 
@@ -748,10 +748,10 @@ class OperationOrder extends SeedObject
             $this->line->qty = $qty;
             $this->line->emplacement = $emplacement;
             $this->line->pc = $pc;
+			$this->line->price = $price;
 
             $this->line->time_planned = $time_planned; // TODO
             $this->line->time_spent = $time_spent; // TODO
-
 
             $this->line->label=$label;
 
@@ -951,24 +951,135 @@ class OperationOrderDet extends SeedObject
     public $isextrafieldmanaged = 1;
 
     public $fields=array(
-//        'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>1, 'position'=>1, 'notnull'=>1, 'visible'=>-1, 'noteditable'=>'1', 'index'=>1, 'comment'=>"Id"),
-        'fk_operation_order' => array('type'=>'integer', 'label'=>'OperationOrder', 'enabled'=>1, 'position'=>5, 'notnull'=>1, 'visible'=>0,),
-        'fk_product' => array('type'=>'integer:Product:product/class/product.class.php:1', 'label'=>'Product', 'enabled'=>1, 'position'=>35, 'notnull'=>-1, 'visible'=>-1, 'index'=>1,),
-        'fk_parent_line' => array('type'=>'integer'),
-		'price' => array('type'=>'real', 'label'=>'UnitPrice', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
-//        'label' => array('type'=>'varchar(255)', 'length' => 255, 'label'=>'Label', 'enabled'=>1, 'position'=>35, 'notnull'=>0, 'visible'=>3), // Not used ?
-        'description' => array('type'=>'html', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>3,),
-        'qty' => array('type'=>'real',  'required'=>0, 'label'=>'Qty', 'enabled'=>1, 'position'=>45, 'notnull'=>0, 'visible'=>1, 'isameasure'=>'1', 'css'=>'maxwidth75imp'),
-        'emplacement' => array('type' => 'varchar(255)', 'label'=>'StockPlace', 'length' => 255, 'enabled'=>1, 'position'=>47, 'visible'=>1),
-        'pc' => array('type' => 'varchar(255)', 'label'=>'OperationOrderDetPc', 'length' => 255, 'enabled'=>1, 'position'=>49, 'visible'=>1),
-        'time_planned' => array('type'=>'integer', 'label'=>'TimePlanned', 'enabled'=>1, 'position'=>70, 'notnull'=>0, 'visible'=>1),
-        'time_spent' => array('type'=>'integer', 'label'=>'TimeSpent', 'enabled'=>1, 'position'=>80, 'notnull'=>0, 'visible'=>1),
-        'product_type' => array('type'=>'integer', 'label'=>'ProductType', 'enabled'=>1, 'position'=>90, 'notnull'=>1, 'visible'=>0),
-        'rang' => array('type'=>'integer', 'label'=>'Rank', 'enabled'=>1, 'position'=>92, 'notnull'=>0, 'visible'=>0),
-        'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
-        'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
-        'import_key' => array('type'=>'varchar(14)', 'length' => 14, 'label'=>'ImportId', 'enabled'=>1, 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
-        'info_bits' => array('type'=>'int', 'visible'=>0),
+		'fk_operation_order' => array (
+			'type' => 'integer',
+			'label' => 'OperationOrder',
+			'enabled' => 1,
+			'position' => 5,
+			'notnull' => 1,
+			'visible' => 0,
+		),
+		'fk_product' => array (
+			'type' => 'integer:Product:product/class/product.class.php:1',
+			'required' => 1,
+			'label' => 'Product',
+			'enabled' => 1,
+			'position' => 35,
+			'notnull' => -1,
+			'visible' => -1,
+			'index' => 1,
+		),
+		'fk_parent_line' => array (
+			'type' => 'integer',
+		),
+		'price' => array (
+			'type' => 'real',
+			'label' => 'UnitPrice',
+			'enabled' => 1,
+			'position' => 40,
+			'notnull' => 0,
+			'visible' => 1,
+		),
+		'description' => array (
+			'type' => 'html',
+			'label' => 'Description',
+			'enabled' => 1,
+			'position' => 40,
+			'notnull' => 0,
+			'visible' => 3,
+		),
+		'qty' => array (
+			'type' => 'real',
+			'required' => 1,
+			'label' => 'Qty',
+			'enabled' => 1,
+			'position' => 45,
+			'notnull' => 0,
+			'visible' => 1,
+			'isameasure' => '1',
+			'css' => 'maxwidth75imp',
+		),
+		'emplacement' => array (
+			'type' => 'varchar(255)',
+			'label' => 'StockPlace',
+			'length' => 255,
+			'enabled' => 1,
+			'position' => 47,
+			'visible' => 1,
+		),
+/*
+// En fait c'est les pieces .... donc la qty
+'pc' => array (
+			'type' => 'varchar(255)',
+			'label' => 'OperationOrderDetPc',
+			'length' => 255,
+			'enabled' => 1,
+			'position' => 49,
+			'visible' => 1,
+		),
+*/
+		'time_planned' => array (
+			'type' => 'integer',
+			'label' => 'TimePlanned',
+			'enabled' => 1,
+			'position' => 70,
+			'notnull' => 0,
+			'visible' => 1,
+		),
+		'time_spent' => array (
+			'type' => 'integer',
+			'label' => 'TimeSpent',
+			'enabled' => 1,
+			'position' => 80,
+			'notnull' => 0,
+			'visible' => 1,
+		),
+		'product_type' => array (
+			'type' => 'integer',
+			'label' => 'ProductType',
+			'enabled' => 1,
+			'position' => 90,
+			'notnull' => 1,
+			'visible' => 0,
+		),
+		'rang' => array (
+			'type' => 'integer',
+			'label' => 'Rank',
+			'enabled' => 1,
+			'position' => 92,
+			'notnull' => 0,
+			'visible' => 0,
+		),
+		'fk_user_creat' => array (
+			'type' => 'integer:User:user/class/user.class.php',
+			'label' => 'UserAuthor',
+			'enabled' => 1,
+			'position' => 510,
+			'notnull' => 1,
+			'visible' => -2,
+			'foreignkey' => 'user.rowid',
+		),
+		'fk_user_modif' => array (
+			'type' => 'integer:User:user/class/user.class.php',
+			'label' => 'UserModif',
+			'enabled' => 1,
+			'position' => 511,
+			'notnull' => 0,
+			'visible' => -2,
+		),
+		'import_key' => array (
+			'type' => 'varchar(14)',
+			'length' => 14,
+			'label' => 'ImportId',
+			'enabled' => 1,
+			'position' => 1000,
+			'notnull' => -1,
+			'visible' => -2,
+		),
+		'info_bits' => array (
+			'type' => 'int',
+			'visible' => 0,
+		)
     );
 
     public $fk_operation_order;
@@ -1000,7 +1111,6 @@ class OperationOrderDet extends SeedObject
     public function __construct($db)
     {
         $this->db = $db;
-
         $this->init();
     }
 
@@ -1043,15 +1153,18 @@ class OperationOrderDet extends SeedObject
     	 * Sinon
     	 * Total HT = Quantité/Temps utilisé * P.U. H.T.
     	 */
+		$hours = 0;
+		if(!empty($this->time_spent)) {
+			$hours = round($this->time_spent / 3600, 2);
+		}
 
-		if(!empty($this->time_spent)){
-			$hours = round($this->time_spent / 3600 / 60 / 60, 1);
+		if($hours>0){
+
 			$this->total_ht = $hours * $this->price;
 		}
 		else{
 			$this->total_ht = $this->qty * $this->price;
 		}
-
 	}
 
 
@@ -1087,6 +1200,48 @@ class OperationOrderDet extends SeedObject
 		return $out;
 	}
 
+
+	/**
+	 * Return HTML string to put an input field into a page
+	 * Code very similar with showInputField of extra fields
+	 *
+	 * @param  array   		$val	       Array of properties for field to show
+	 * @param  string  		$key           Key of attribute
+	 * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param  string  		$moreparam     To add more parameters on html input tag
+	 * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
+	 * @return string
+	 */
+	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+	{
+		global $langs, $db;
+
+		// for cache
+		if(empty($this->form)){
+			$this->form = new Form($db);
+		}
+
+		if($key == 'qty')
+		{
+			if(!empty($this->fields[$key]['required'])){ $moreparam.= " required"; }
+			$out ='<input type="number" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+		}
+		elseif ($key == 'time_planned')
+		{
+			$out = $this->form->select_duration('time_planned', $value, 0, 'text', 0, 1);
+		}
+		elseif ($key == 'time_spent')
+		{
+			$out = $this->form->select_duration('time_spent', $value, 0, 'text', 0, 1);
+		}
+		else{
+			$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+		}
+
+		return $out;
+	}
 }
 
 
@@ -1119,4 +1274,27 @@ class OperationOrderDictType extends SeedObject
     {
         return $this->label;
     }
+
+
+	/**
+	 * Return HTML string to put an input field into a page
+	 * Code very similar with showInputField of extra fields
+	 *
+	 * @param  array   		$val	       Array of properties for field to show
+	 * @param  string  		$key           Key of attribute
+	 * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param  string  		$moreparam     To add more parameters on html input tag
+	 * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
+	 * @return string
+	 */
+	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+	{
+		global $conf, $langs, $form;
+
+		$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+
+		return $out;
+	}
 }

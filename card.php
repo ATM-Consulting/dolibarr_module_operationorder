@@ -251,6 +251,7 @@ if (empty($reshook))
                 else $idprod = GETPOST('fk_product', 'int');
 
                 $qty = GETPOST('qty'.$predef);
+                $price = GETPOST('price'.$predef);
                 $emplacement = GETPOST('emplacement');
                 $pc = GETPOST('pc'.$predef);
                 $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
@@ -280,7 +281,7 @@ if (empty($reshook))
                     setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
                     $error++;
                 }
-				var_dump(array(!$error, ($qty >= 0), $product_desc,$idprod));
+
                 if (!$error && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
                     // Clean parameters
                     $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
@@ -327,7 +328,7 @@ if (empty($reshook))
                     $info_bits = 0;
 
                     // Insert line
-                    $result = $object->addline($desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+                    $result = $object->addline($desc, $qty, $price, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
 
                     if ($result > 0) {
 
@@ -342,7 +343,7 @@ if (empty($reshook))
                             {
                                 foreach ($arbo as $product_info)
                                 {
-                                    $object->addline('', $product_info['nb_total']*$qty, $emplacement, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
+                                    $object->addline('', $product_info['nb_total']*$qty, '', $emplacement, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
                                 }
                             }
                         }
@@ -385,6 +386,11 @@ if (empty($reshook))
                         unset($_POST['date_endday']);
                         unset($_POST['date_endmonth']);
                         unset($_POST['date_endyear']);
+
+                        setEventMessage($langs->trans('OperationOrderLineAdded'));
+						header('Location: '.dol_buildpath('/operationorder/card.php', 1).'?id='.$object->id)."#addline";
+						exit;
+
                     } else {
                         setEventMessages($object->error, $object->errors, 'errors');
                     }
@@ -789,7 +795,6 @@ else
 			print '</div>';
 			print '<script src="'.dol_buildpath('operationorder/js/jquery-sortable-lists.min.js',1).'" ></script>';
 			print '<link rel="stylesheet" href="'.dol_buildpath('operationorder/css/sortable.css',1).'" >';
-			print '<div id="dialog-form-edit" ></div>';
 
 			print '
 			<script type="text/javascript">
@@ -882,60 +887,15 @@ else
 
 
 				$(\'#sortableLists\').sortableLists( options );
-
-				$(document).on("click", ".operation-order-sortable-list__item__title__button.-edit-btn", function(event) {
-					event.preventDefault();
-					var id = $(this).data("id");
-					popTrainingAdmFormDialog(id);
-				});
-
-
-
-				var dialogBox = jQuery("#dialog-form-edit");
-				var width = $(window).width();
-				var height = $(window).height();
-				if(width > 700){ width = 700; }
-				if(height > 600){ height = 600; }
-				//console.log(height);
-				dialogBox.dialog({
-					autoOpen: false,
-					resizable: true,
-			//		height: height,
-					width: width,
-					modal: true,
-					buttons: {
-						"'.$langs->transnoentitiesnoconv('Update').'": function() {
-							dialogBox.find("form").submit();
-							jQuery(this).dialog(\'close\');
-						}
-					}
-				});
-
-				function popOperationOrderEditLineFormDialog(id)
-				{
-
-					var item = $("#item_" + id);
-
-					dialogBox.dialog({
-					  title: $("#item_" + id).data("title")
-					});
-
-					dialogBox.find( "input[name=\'id\']" ).val(id);
-					dialogBox.find( "input[name=\'intitule\']" ).val(item.data("title"));
-					dialogBox.find( "input[name=\'delai\']" ).val(item.data("alert"));
-					dialogBox.find( "input[name=\'delai_end\']" ).val(item.data("alert_end"));
-
-
-					dialogBox.dialog( "open" );
-				}
-
 			});
 
 
 			</script>';
 
+
+
 			// ADD FORM
-			if($object->status == OperationOrder::STATUS_DRAFT){
+			if($action != 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
 				print '<div class="add-line-form-wrap" >';
 				print '<div class="add-line-form-title" >';
 				print $langs->trans("AddOperationOrderLine");
@@ -944,6 +904,70 @@ else
 				print _displayFormFields($object);
 				print '</div>';
 				print '</div>';
+			}
+			elseif($action == 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
+				$lineid = GETPOST('lineid', 'int');
+				if(!empty($lineid)){
+
+					$line=new OperationOrderDet($db);
+					$res = $line->fetch($lineid);
+
+					print '<div id="dialog-form-edit" style="display: none;" >';
+					print '<div id="edit-item_'.$line->id.'" class="edit-line-form-wrap" title="'.$line->ref.'" >';
+					print '<div class="edit-line-form-body" >';
+					if($res>0){
+						print _displayFormFields($object, $line, 0);
+					}
+					else{
+						print $langs->trans('LineNotFound');
+					}
+					print '</div>';
+					print '</div>';
+					print '</div>';
+
+
+
+					print '
+					<script type="text/javascript">
+					$(function()
+					{
+
+						var dialogBox = jQuery("#dialog-form-edit");
+						var width = $(window).width();
+						var height = $(window).height();
+						if(width > 700){ width = 700; }
+						if(height > 600){ height = 600; }
+						//console.log(height);
+						dialogBox.dialog({
+							autoOpen: false,
+							resizable: true,
+					//		height: height,
+							width: width,
+							modal: true,
+							buttons: {
+								"'.$langs->transnoentitiesnoconv('Update').'": function() {
+									dialogBox.find("form").submit();
+									jQuery(this).dialog(\'close\');
+								}
+							}
+						});
+
+						function popOperationOrderEditLineFormDialog(id)
+						{
+							var item = $("#edit-item_" + id);
+
+							dialogBox.dialog({
+							  title: item.attr("title")
+							});
+
+							dialogBox.dialog( "open" );
+						}
+
+						popOperationOrderEditLineFormDialog("'.intval($lineid).'");
+
+					});
+					</script>';
+				}
 			}
 
             print '<div class="tabsAction">'."\n";
@@ -1048,6 +1072,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			/**
 			 * @var $line OperationOrderDet
 			 */
+			$line->calcPrices();
 
 			if (empty($line->id)) $line->id = $line->rowid;
 
@@ -1156,6 +1181,13 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			$out .= '		</div>';
 
 
+			// EMPLACEMENT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
+			$out.= '			<span class="classfortooltip paddingrightonly" title="'.dol_escape_htmltag($langs->trans($line->fields['emplacement']['label'])).'" ><i class="fas fa-map-pin"></i></span>';
+
+			$out .= dol_htmlentities($line->emplacement);
+			$out .= '		</div>';
+
 			// STOCK
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
 			$out .= $line->stockStatus();
@@ -1167,7 +1199,9 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 			if ($line->status == OperationOrder::STATUS_DRAFT && !empty($user->rights->operationorder->write)) {
 
-				$out.= '<a href="" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
+				$editUrl = dol_buildpath('operationorder/card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=editline&amp;lineid='.$line->id;
+
+				$out.= '<a href="'.$editUrl.'#item_'.$line->id.'" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
 				$out.= '<i class="fa fa-pencil "></i>';
 				$out.= '</a>';
 
@@ -1214,34 +1248,37 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
  * @param $object OperationOrder
  * @param $line OperationOrderDet
  */
-function _displayFormFields($object, $line= false)
+function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 {
 	global $langs, $db, $form;
 
 	$outForm = '';
 
 	if($line && $line->id > 0){
-		$mode = 'edit';
+		$action = 'edit';
 	}
 	else{
-		$mode = 'create';
+		$action = 'create';
 		$line=new OperationOrderDet($db);
 	}
 
 	$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
-	$actionUrl.= ($mode == 'create') ? '#addline':'';
 
-	$outForm.=  ($mode == 'create') ? '<a name="addline" ></a>':'';
+	// Ancors
+	$actionUrl.= ($action == 'create') ? '#addline':'#item_'.$line->id;
+
+	$outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
 
 	$outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
 	$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
 	$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
 	$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
 
-	if($mode == 'edit') {
+	if($action == 'edit') {
 		$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
 	}else{
 		$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
+		$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
 	}
 
 	$line->fields = dol_sort_array($line->fields, 'position');
@@ -1251,6 +1288,12 @@ function _displayFormFields($object, $line= false)
 	{
 		// Discard if extrafield is a hidden field on form
 		if (abs($val['visible']) != 1 && abs($val['visible']) != 3) continue;
+
+		$mode = 'edit'; // edit or view
+
+		if($key == 'fk_product' && $action == 'edit') {
+			$mode = 'view';
+		}
 
 		if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) continue;	// We don't want this field
 
@@ -1267,28 +1310,47 @@ function _displayFormFields($object, $line= false)
 		$outForm.=  '</td>';
 
 		$outForm.=  '<td>';
-		if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
-		elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
-		else $value = GETPOST($key, 'alpha');
-		$outForm.=  $line->showInputField($val, $key, $value, '', '', '', 0);
+
+		// Load value from object
+		$value = '';
+		if(isset($line->{$key})){
+			$value = $line->{$key};
+		}
+
+		if(GETPOSTISSET($key)){
+			if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
+			elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
+			else $value = GETPOST($key, 'alpha');
+		}
+
+		if($mode == 'edit'){
+			$outForm.=  $line->showInputField($val, $key, $value, '', '', '', 0);
+		}
+		else{
+			$outForm.=  $line->showOutputField($val, $key, $value, '', '', '', 0);
+		}
 		$outForm.=  '</td>';
 
 		$outForm.=  '</tr>';
 	}
 
-	if($mode == 'create'){
+	if($showSubmitBtn){
 
 		$outForm.=  '<tr>';
-		$outForm.=  '<td colspan="2"><hr/></td>';
+		$outForm.=  '	<td colspan="2"><hr/></td>';
 		$outForm.=  '</tr>';
 
 		$outForm.=  '<tr>';
-		$outForm.=  '<td>';
-		$outForm.=  '</td>';
-		$outForm.=  '<td>';
-		$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
-		$outForm.=  '<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
-		$outForm.=  '</td>';
+		$outForm.=  '	<td>';
+		$outForm.=  '	</td>';
+		$outForm.=  '	<td>';
+		if($action == 'create'){
+			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
+		}else{
+			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
+		}
+		$outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
+		$outForm.=  '	</td>';
 		$outForm.=  '</tr>';
 	}
 
