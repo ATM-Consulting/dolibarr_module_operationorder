@@ -693,6 +693,29 @@ class OperationOrder extends SeedObject
         return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
     }
 
+	/**
+	 * @param $desc
+	 * @param $qty
+	 * @param $price
+	 * @param $fk_warehouse
+	 * @param $pc
+	 * @param $time_planned
+	 * @param $time_spent
+	 * @param int $fk_product
+	 * @param int $info_bits
+	 * @param string $date_start
+	 * @param string $date_end
+	 * @param int $type
+	 * @param int $rang
+	 * @param int $special_code
+	 * @param int $fk_parent_line
+	 * @param string $label
+	 * @param int $array_options
+	 * @param string $origin
+	 * @param int $origin_id
+	 * @return int
+	 * @throws Exception
+	 */
     public function addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
     {
         global $user;
@@ -800,8 +823,29 @@ class OperationOrder extends SeedObject
         }
     }
 
-
-    public function updateline($rowid, $desc, $qty, $fk_warehouse, $pc, $time_planned, $time_spent, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
+	/**
+	 * @param $rowid
+	 * @param $desc
+	 * @param $qty
+	 * @param $price
+	 * @param $fk_warehouse
+	 * @param $pc
+	 * @param $time_planned
+	 * @param $time_spent
+	 * @param $fk_product
+	 * @param int $info_bits
+	 * @param string $date_start
+	 * @param string $date_end
+	 * @param int $type
+	 * @param int $fk_parent_line
+	 * @param string $label
+	 * @param int $special_code
+	 * @param int $array_options
+	 * @param int $notrigger
+	 * @return int
+	 * @throws Exception
+	 */
+    public function updateline($rowid, $desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
     {
         global $langs, $user;
 
@@ -851,6 +895,9 @@ class OperationOrder extends SeedObject
             $this->line->qty=$qty;
             $this->line->fk_warehouse=$fk_warehouse;
             $this->line->pc=$pc;
+            $this->line->price=$price;
+			$this->line->fk_product = $fk_product;
+
 
             $this->line->time_planned = $time_planned;
             $this->line->time_spent = $time_spent;
@@ -881,7 +928,8 @@ class OperationOrder extends SeedObject
             }
             else
             {
-                $this->error = $this->line->error;
+				$this->error = $this->line->error;
+				$this->errors = $this->line->errors;
 
                 $this->db->rollback();
                 return -1;
@@ -1140,6 +1188,12 @@ class OperationOrderDet extends SeedObject
 			$this->product = false;
 		}
 
+        // désactivation de l'entrepot pour les services
+        if($this->product_type != 0){
+        	$this->fields['fk_warehouse']['visible'] = 0;
+		}
+
+
 		$this->calcPrices();
 
         return $res;
@@ -1354,7 +1408,7 @@ class OperationOrderDet extends SeedObject
 		}
 		elseif ($key == 'fk_warehouse')
 		{
-			if ($this->product->type != 1 && !empty($conf->stock->enabled)) {
+			if (!empty($conf->stock->enabled)) {
 				$out = $this->formproduct->selectWarehouses($value, $keyprefix . $key . $keysuffix, 'warehouseopen', 1);
 			}
 			else{

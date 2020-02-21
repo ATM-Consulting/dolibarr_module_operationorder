@@ -436,8 +436,11 @@ if (empty($reshook))
     /*
      *  Update a line
      */
-    if ($action == 'updateline' && $usercancreate && GETPOST('save'))
+
+    if ($action == 'updateline' && $usercancreate && GETPOSTISSET('save'))
     {
+    	$updateLineResult = false;
+
         // Clean parameters
         $date_start = '';
         $date_end = '';
@@ -447,8 +450,16 @@ if (empty($reshook))
 
         $fk_warehouse = GETPOST('fk_warehouse');
         $pc = GETPOST('pc'.$predef);
-        $time_planned = GETPOST('time_plannedhour', 'int') * 60 * 60 + GETPOST('time_plannedmin', 'int') * 60; // store in seconds
-        $time_spent = GETPOST('time_spenthour', 'int') * 60 * 60 + GETPOST('time_spentmin', 'int') * 60;
+
+		$price = GETPOST('price'.$predef);
+
+		$time_plannedhour = GETPOST('time_plannedhour', 'int');
+		$time_plannedmin = GETPOST('time_plannedmin', 'int');
+		$time_spenthour = GETPOST('time_spenthour', 'int');
+		$time_spentmin = GETPOST('time_spentmin', 'int');
+
+        $time_planned = doubleval($time_plannedhour) * 60 * 60 + doubleval($time_plannedmin) * 60; // store in seconds
+        $time_spent = doubleval($time_spenthour) * 60 * 60 + doubleval($time_spentmin) * 60;
 
         // Define info_bits
         $info_bits = 0;
@@ -468,7 +479,7 @@ if (empty($reshook))
         if (!GETPOST('qty')) $special_code = 3;
 
         // Check minimum price
-        $productid = GETPOST('productid', 'int');
+        $productid = GETPOST('fk_product', 'int');
         if (!empty($productid)) {
             $product = new Product($db);
             $product->fetch($productid);
@@ -490,9 +501,12 @@ if (empty($reshook))
 
         if (!$error) {
 
-            $result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $fk_warehouse, $pc, $time_planned, $time_spent, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
+			$result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $price, $fk_warehouse, $pc, $time_planned, $time_spent,$productid, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
 
             if ($result >= 0) {
+
+				$updateLineResult = true;
+
                 if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
                     // Define output language
                     $outputlangs = $langs;
@@ -529,13 +543,26 @@ if (empty($reshook))
                 unset($_POST['date_endday']);
                 unset($_POST['date_endmonth']);
                 unset($_POST['date_endyear']);
+
+
+				header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id.'#item_'.GETPOST('lineid', 'int'));
+				exit;
             } else {
                 setEventMessages($object->error, $object->errors, 'errors');
             }
         }
+
+
+        if(!$updateLineResult){
+			// Pour reaffichage de la fiche en cours d'edition
+			header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=editline&lineid=5'.GETPOST('lineid'));
+			exit();
+		}
+
+
     } elseif ($action == 'updateline' && $usercancreate && GETPOST('cancel', 'alpha') == $langs->trans('Cancel')) {
         header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id); // Pour reaffichage de la fiche en cours d'edition
-        exit();
+		exit;
     }
     // Link to a project
     elseif ($action == 'classin' && $usercancreate)
@@ -975,7 +1002,6 @@ else
 							buttons: {
 								"'.$langs->transnoentitiesnoconv('Update').'": function() {
 									dialogBox.find("form").submit();
-									jQuery(this).dialog(\'close\');
 								}
 							},
 							close: function( event, ui ) {
@@ -1311,9 +1337,11 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 
 	if($action == 'edit') {
 		$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
+		$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
+		$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
+		$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
 	}else{
 		$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
-		$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
 	}
 
 	$line->fields = dol_sort_array($line->fields, 'position');

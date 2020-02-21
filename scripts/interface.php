@@ -55,26 +55,27 @@ if(GETPOST('action'))
 			$data['time_plannedmin'] = 0;
 
 
-			$fk_duration_unit = UnitsTools::getUnitFromCode($product->duration_unit, 'short_label');
-			if($fk_duration_unit<1) {
-				$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', $product->duration_unit);
-			}
-
-
-			if(!empty($product->duration_value) && $fk_duration_unit > 0){
-				$fk_unit_hours = UnitsTools::getUnitFromCode('H', 'code');
-				if($fk_unit_hours>0) {
-					$durationHours = UnitsTools::unitConverteur($product->duration_value, $fk_duration_unit, $fk_unit_hours);
-
-					$data['time_plannedhour'] = floor($durationHours);
-					$data['time_plannedmin'] = ($durationHours-floor($durationHours)) * 60;
-				}
-				else{
-					$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
+			if(!empty($product->duration_unit))
+			{
+				$fk_duration_unit = UnitsTools::getUnitFromCode($product->duration_unit, 'short_label');
+				if($fk_duration_unit<1) {
+					$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', $product->duration_unit);
 				}
 
-			}
+				if(!empty($product->duration_value) && $fk_duration_unit > 0){
+					$fk_unit_hours = UnitsTools::getUnitFromCode('H', 'code');
+					if($fk_unit_hours>0) {
+						$durationHours = UnitsTools::unitConverteur($product->duration_value, $fk_duration_unit, $fk_unit_hours);
 
+						$data['time_plannedhour'] = floor($durationHours);
+						$data['time_plannedmin'] = ($durationHours-floor($durationHours)) * 60;
+					}
+					else{
+						$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
+					}
+
+				}
+			}
 		}
 		else{
 			$data['result'] = 0;
