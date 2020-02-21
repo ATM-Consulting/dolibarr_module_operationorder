@@ -6,8 +6,8 @@ if (! $res)
 if (! $res)
 	die("Include of main fails");
 
-
-dol_include_once('/core/lib/functions.lib.php');
+require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
+require_once __DIR__ . '/../class/unitstools.class.php';
 
 
 global $db;
@@ -37,6 +37,47 @@ if(GETPOST('action'))
 			if($data['result']>0){
 				$data['msg'] =  $langs->transnoentities('Updated') . ' : ' .  $data['result'];
 			}
+		}
+	}
+	elseif($action=='getProductInfos' && !empty($user->rights->produit->lire)){
+		include_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
+		$productId = GETPOST('fk_product', 'int');
+		$product = new Product($db);
+		if(!empty($productId) && $product->fetch($productId) > 0)
+		{
+			$data['result'] = 1;
+			$data['fk_default_warehouse'] = $product->fk_default_warehouse;
+			$data['price'] = price($product->price);
+			$data['duration_unit'] = $product->duration_unit;
+			$data['duration_value'] = $product->duration_value;
+
+			$data['time_plannedhour'] = 0;
+			$data['time_plannedmin'] = 0;
+
+
+			$fk_duration_unit = UnitsTools::getUnitFromCode($product->duration_unit, 'short_label');
+			if($fk_duration_unit<1) {
+				$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', $product->duration_unit);
+			}
+
+
+			if(!empty($product->duration_value) && $fk_duration_unit > 0){
+				$fk_unit_hours = UnitsTools::getUnitFromCode('H', 'code');
+				if($fk_unit_hours>0) {
+					$durationHours = UnitsTools::unitConverteur($product->duration_value, $fk_duration_unit, $fk_unit_hours);
+
+					$data['time_plannedhour'] = floor($durationHours);
+					$data['time_plannedmin'] = ($durationHours-floor($durationHours)) * 60;
+				}
+				else{
+					$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
+				}
+
+			}
+
+		}
+		else{
+			$data['result'] = 0;
 		}
 	}
 }

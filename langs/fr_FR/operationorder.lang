@@ -83,3 +83,7 @@ ConfirmDeleteOperationOrderBody=Êtes-vous sûr de vouloir effacer cet ordre de 
 
 ConfirmCloseOperationOrderTitle=Clôturer ordre de réparation
 ConfirmCloseOperationOrderBody=Êtes-vous sûr de vouloir clôturer cet ordre de réparation ?
+
+
+# AJAX
+UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées

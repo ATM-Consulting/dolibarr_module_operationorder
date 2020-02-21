@@ -693,7 +693,7 @@ class OperationOrder extends SeedObject
         return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
     }
 
-    public function addline($desc, $qty, $price, $emplacement, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
+    public function addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
     {
         global $user;
 
@@ -746,7 +746,7 @@ class OperationOrder extends SeedObject
             $this->line->fk_product = $fk_product;
             $this->line->description = $desc;
             $this->line->qty = $qty;
-            $this->line->emplacement = $emplacement;
+            $this->line->fk_warehouse = $fk_warehouse;
             $this->line->pc = $pc;
 			$this->line->price = $price;
 
@@ -801,7 +801,7 @@ class OperationOrder extends SeedObject
     }
 
 
-    public function updateline($rowid, $desc, $qty, $emplacement, $pc, $time_planned, $time_spent, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
+    public function updateline($rowid, $desc, $qty, $fk_warehouse, $pc, $time_planned, $time_spent, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $fk_parent_line = 0, $label = '', $special_code = 0, $array_options = 0, $notrigger = 0)
     {
         global $langs, $user;
 
@@ -849,7 +849,7 @@ class OperationOrder extends SeedObject
             $this->line->label=$label;
             $this->line->description=$desc;
             $this->line->qty=$qty;
-            $this->line->emplacement=$emplacement;
+            $this->line->fk_warehouse=$fk_warehouse;
             $this->line->pc=$pc;
 
             $this->line->time_planned = $time_planned;
@@ -978,6 +978,7 @@ class OperationOrderDet extends SeedObject
 			'enabled' => 1,
 			'position' => 40,
 			'notnull' => 0,
+			'required' => 1,
 			'visible' => 1,
 		),
 		'description' => array (
@@ -999,7 +1000,7 @@ class OperationOrderDet extends SeedObject
 			'isameasure' => '1',
 			'css' => 'maxwidth75imp',
 		),
-		'emplacement' => array (
+		'fk_warehouse' => array (
 			'type' => 'varchar(255)',
 			'label' => 'StockPlace',
 			'length' => 255,
@@ -1087,7 +1088,7 @@ class OperationOrderDet extends SeedObject
     public $fk_parent_line;
     public $description;
     public $qty;
-    public $emplacement;
+    public $fk_warehouse;
     public $pc;
     public $time_planned;
     public $time_spent;
@@ -1200,48 +1201,176 @@ class OperationOrderDet extends SeedObject
 		return $out;
 	}
 
+	/**
+	 * Return HTML string to show a field into a page
+	 *
+	 * @param  string  $key            Key of attribute
+	 * @param  string  $moreparam      To add more parameters on html input tag
+	 * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+	 * @return string
+	 */
+	public function showOutputFieldQuick($key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = ''){
+		return $this->showOutputField($this->fields[$key], $key, $this->{$key}, $moreparam, $keysuffix, $keyprefix, $morecss);
+	}
+
+	/**
+	 * Return HTML string to show a field into a page
+	 * Code very similar with showOutputField of extra fields
+	 *
+	 * @param  array   $val		       Array of properties of field to show
+	 * @param  string  $key            Key of attribute
+	 * @param  string  $value          Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param  string  $moreparam      To add more parametes on html input tag
+	 * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+	 * @return string
+	 */
+	public function showOutputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '')
+	{
+		global $conf, $langs, $db;
+		$out = '';
+		if ($key == 'fk_warehouse')
+		{
+			$warehouse = new Entrepot($db);
+			$res = $warehouse->fetch($value);
+			if($res>0){
+				$out.= $warehouse->getNomUrl(1);
+			}
+		}
+		else{
+			$out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+		}
+
+		return $out;
+	}
 
 	/**
 	 * Return HTML string to put an input field into a page
 	 * Code very similar with showInputField of extra fields
 	 *
-	 * @param  array   		$val	       Array of properties for field to show
-	 * @param  string  		$key           Key of attribute
-	 * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
-	 * @param  string  		$moreparam     To add more parameters on html input tag
-	 * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
+	 * @param array $val Array of properties for field to show
+	 * @param string $key Key of attribute
+	 * @param string $value Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param string $moreparam To add more parameters on html input tag
+	 * @param string $keysuffix Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param string $keyprefix Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param string|int $morecss Value for css to define style/length of field. May also be a numeric.
+	 * @param int $nonewbutton
 	 * @return string
+	 * @throws Exception
 	 */
 	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
 	{
-		global $langs, $db;
+		global $langs, $db, $conf, $user;
+
+
+		if(!empty($this->fields[$key]['required'])){ $moreparam.= " required"; }
 
 		// for cache
 		if(empty($this->form)){
 			$this->form = new Form($db);
 		}
 
-		if($key == 'qty')
+		if(empty($this->formproduct)){
+			include_once DOL_DOCUMENT_ROOT . '/product/class/html.formproduct.class.php';
+			$this->formproduct = new FormProduct($db);
+		}
+
+		if($key == 'fk_product')
 		{
-			if(!empty($this->fields[$key]['required'])){ $moreparam.= " required"; }
+			if($this->{$key} > 0){
+				// désactivation de l'affichage en mode edition
+				$out ='<input type="hidden" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+				$out.= $this->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+			}
+			else{
+				$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+
+				$out.= '<script type="text/javascript">
+					$(function()
+					{
+					    if($("#'.$keyprefix . $key . $keysuffix.'").length>0){
+							$("#' . $keyprefix . $key . $keysuffix . '").change(function(){
+								$.ajax({
+									url: "' . dol_buildpath('operationorder/scripts/interface.php?action=getProductInfos', 1) . '",
+									method: "POST",
+									data: {
+										\'fk_product\' : $( this ).val()
+									},
+									dataType: "json",
+
+									// La fonction à apeller si la requête aboutie
+									success: function (data) {
+										// Loading data
+										console.log(data);
+										if(data.result > 0 ){
+										   // ok case
+										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(data.fk_default_warehouse);
+										   $("#' . $keyprefix . 'price' . $keysuffix . '").val(data.price);
+
+										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").val(data.time_plannedhour);
+										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val(data.time_plannedmin);
+										}
+										else{
+										   // nothing to do ?
+										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(-1);
+										   $("#' . $keyprefix . 'price' . $keysuffix . '").val("");
+										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").val("");
+										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val("");
+										}
+
+										if(data.errorMsg.length > 0){
+											$.jnotify(data.errorMsg, "error", true);
+										}
+
+										$("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").change();
+									},
+									// La fonction à appeler si la requête n\'a pas abouti
+									error: function( jqXHR, textStatus ) {
+										alert( "Request failed: " + textStatus );
+									}
+								});
+							});
+						}
+					});
+					</script>
+				';
+			}
+		}
+		elseif($key == 'qty')
+		{
 			$out ='<input type="number" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
 		}
 		elseif ($key == 'time_planned')
 		{
-			$out = $this->form->select_duration('time_planned', $value, 0, 'text', 0, 1);
+			$out = $this->form->select_duration($keyprefix.$key.$keysuffix, $value, 0, 'text', 0, 1);
 		}
 		elseif ($key == 'time_spent')
 		{
-			$out = $this->form->select_duration('time_spent', $value, 0, 'text', 0, 1);
+			$out = $this->form->select_duration($keyprefix.$key.$keysuffix, $value, 0, 'text', 0, 1);
+		}
+		elseif ($key == 'fk_warehouse')
+		{
+			if ($this->product->type != 1 && !empty($conf->stock->enabled)) {
+				$out = $this->formproduct->selectWarehouses($value, $keyprefix . $key . $keysuffix, 'warehouseopen', 1);
+			}
+			else{
+				$out ='<input type="hidden"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" >';
+			}
 		}
 		else{
-			$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+			$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
 		}
 
 		return $out;
 	}
+
+
+
+
 }
 
 
@@ -1274,27 +1403,4 @@ class OperationOrderDictType extends SeedObject
     {
         return $this->label;
     }
-
-
-	/**
-	 * Return HTML string to put an input field into a page
-	 * Code very similar with showInputField of extra fields
-	 *
-	 * @param  array   		$val	       Array of properties for field to show
-	 * @param  string  		$key           Key of attribute
-	 * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
-	 * @param  string  		$moreparam     To add more parameters on html input tag
-	 * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
-	 * @return string
-	 */
-	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
-	{
-		global $conf, $langs, $form;
-
-		$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
-
-		return $out;
-	}
 }

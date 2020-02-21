@@ -252,7 +252,7 @@ if (empty($reshook))
 
                 $qty = GETPOST('qty'.$predef);
                 $price = GETPOST('price'.$predef);
-                $emplacement = GETPOST('emplacement');
+                $fk_warehouse = GETPOST('fk_warehouse');
                 $pc = GETPOST('pc'.$predef);
                 $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
                 $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
@@ -328,7 +328,7 @@ if (empty($reshook))
                     $info_bits = 0;
 
                     // Insert line
-                    $result = $object->addline($desc, $qty, $price, $emplacement, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+                    $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
 
                     if ($result > 0) {
 
@@ -343,7 +343,7 @@ if (empty($reshook))
                             {
                                 foreach ($arbo as $product_info)
                                 {
-                                    $object->addline('', $product_info['nb_total']*$qty, '', $emplacement, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
+                                    $object->addline('', $product_info['nb_total']*$qty, '', $fk_warehouse, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
                                 }
                             }
                         }
@@ -445,7 +445,7 @@ if (empty($reshook))
         $date_end = dol_mktime(GETPOST('date_endhour'), GETPOST('date_endmin'), GETPOST('date_endsec'), GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
         $description = dol_htmlcleanlastbr(GETPOST('product_desc', 'none'));
 
-        $emplacement = GETPOST('emplacement');
+        $fk_warehouse = GETPOST('fk_warehouse');
         $pc = GETPOST('pc'.$predef);
         $time_planned = GETPOST('time_plannedhour', 'int') * 60 * 60 + GETPOST('time_plannedmin', 'int') * 60; // store in seconds
         $time_spent = GETPOST('time_spenthour', 'int') * 60 * 60 + GETPOST('time_spentmin', 'int') * 60;
@@ -490,7 +490,7 @@ if (empty($reshook))
 
         if (!$error) {
 
-            $result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $emplacement, $pc, $time_planned, $time_spent, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
+            $result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $fk_warehouse, $pc, $time_planned, $time_spent, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
 
             if ($result >= 0) {
                 if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
@@ -952,7 +952,7 @@ else
 					print '</div>';
 
 
-
+					// MISE A JOUR AJAX DE L'ORDRE DES LIGNES
 					print '
 					<script type="text/javascript">
 					$(function()
@@ -1214,9 +1214,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 			// EMPLACEMENT
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
-			$out.= '			<span class="classfortooltip paddingrightonly" title="'.dol_escape_htmltag($langs->trans($line->fields['emplacement']['label'])).'" ><i class="fas fa-map-pin"></i></span>';
-
-			$out .= dol_htmlentities($line->emplacement);
+			$out .=  $line->showOutputFieldQuick('fk_warehouse');
 			$out .= '		</div>';
 
 			// STOCK
@@ -1275,10 +1273,11 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 }
 
 
-
 /**
  * @param $object OperationOrder
  * @param $line OperationOrderDet
+ * @param $showSubmitBtn bool
+ * @return string
  */
 function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 {
@@ -1292,6 +1291,10 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 	else{
 		$action = 'create';
 		$line=new OperationOrderDet($db);
+
+		// set default values
+		$line->qty = '';
+		$line->price = '';
 	}
 
 	$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
@@ -1323,7 +1326,8 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 
 		$mode = 'edit'; // edit or view
 
-		if($key == 'fk_product' && $action == 'edit') {
+		// for some case if you need to change display mode
+		if($key == 'xxxxxx' && $action == 'edit') {
 			$mode = 'view';
 		}
 

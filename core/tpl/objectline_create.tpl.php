@@ -55,7 +55,7 @@ if ($nolinesbefore) {
 		<td class="linecolqty right"><?php echo $langs->trans('Qty'); ?></td>
 
         <?php
-        print '<td class="linecolemplacement right">'.$langs->trans('Emplacement').'</td>';
+        print '<td class="linecolemplacement right">'.$langs->trans('fk_warehouse').'</td>';
 
         print '<td class="linecolpc right">'.$langs->trans('PC').'</td>';
 
@@ -272,7 +272,7 @@ if ($nolinesbefore) {
 	<?php
 
     $coldisplay++;
-    print '<td class="nobottom linecolemplacement right"><input type="text" size="3" name="emplacement" id="emplacement" class="flat right" value="'.(GETPOSTISSET('emplacement') ? GETPOST("emplacement", 'alpha', 2) : '').'"></td>';
+    print '<td class="nobottom linecolemplacement right"><input type="text" size="3" name="fk_warehouse" id="fk_warehouse" class="flat right" value="'.(GETPOSTISSET('fk_warehouse') ? GETPOST("fk_warehouse", 'alpha', 2) : '').'"></td>';
 
     $coldisplay++;
     print '<td class="nobottom linecolpc right"><input type="text" size="3" name="pc" id="pc" class="flat right" value="'.(GETPOSTISSET('pc') ? GETPOST("pc", 'alpha', 2) : '').'"></td>';
