@@ -21,6 +21,7 @@ ParamHelp=Le contenu de l'aide
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
+OperationOrderTopMenu=Réparations
 
 # STATUS
 OperationOrderStatusCanceled=Abandonnée (fermée)

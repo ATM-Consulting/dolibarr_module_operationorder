@@ -241,20 +241,20 @@ class modOperationOrder extends DolibarrModules
 		// Add here entries to declare new menus
 		//
 		// Example to declare a new Top Menu entry and its Left menu entry:
-		// $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder',		// Put 0 if this is a single top menu or keep fk_mainmenu to give an entry on left
-		//							'type'=>'top',			                // This is a Top menu entry
-		//							'titre'=>'OperationOrder top menu',
-		//							'mainmenu'=>'operationorder',
-		//							'leftmenu'=>'operationorder_left',			// This is the name of left menu for the next entries
-		//							'url'=>'/operationorder/pagetop.php',
-		//							'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-		//							'position'=>100,
-		//							'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->operationorder->enabled' if entry must be visible if module is enabled.
-		//							'perms'=>'1',			                // Use 'perms'=>'$user->rights->operationorder->level1->level2' if you want your menu with a permission rules
-		//							'target'=>'',
-		//							'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
-		// $r++;
-		//
+		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder',		// Put 0 if this is a single top menu or keep fk_mainmenu to give an entry on left
+									'type'=>'top',			                // This is a Top menu entry
+									'titre'=>'OperationOrderTopMenu',
+									'mainmenu'=>'operationorder',
+									'leftmenu'=>'operationorder_left',			// This is the name of left menu for the next entries
+			 						'url'=>'/operationorder/list.php',
+									'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>100,
+									'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->operationorder->enabled' if entry must be visible if module is enabled.
+									'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->operationorder->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		 $r++;
+
 		// Example to declare a Left Menu entry into an existing Top menu entry:
 		// $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 		//							'type'=>'left',			                // This is a Left menu entry
@@ -271,7 +271,7 @@ class modOperationOrder extends DolibarrModules
 		// $r++;
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial',			                // Put 0 if this is a top menu
+			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',			                // Put 0 if this is a top menu
             'type'=>'left',			                // This is a Top menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrder'),
             'mainmenu'=>'commercial',
@@ -287,7 +287,7 @@ class modOperationOrder extends DolibarrModules
         $r++;
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
             'mainmenu'=>'commercial',
@@ -304,7 +304,7 @@ class modOperationOrder extends DolibarrModules
 
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderList'),
             'mainmenu'=>'commercial',
