@@ -68,7 +68,7 @@ class mod_operationorder_advanced extends ModeleNumRefOperationOrder
 		$texte.= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 		$texte.= '<input type="hidden" name="token" value="'.newToken().'">';
 		$texte.= '<input type="hidden" name="action" value="updateMask">';
-		$texte.= '<input type="hidden" name="maskconstBom" value="OPERATIONORDER_OPERATIONORDER_ADVANCED_MASK">';
+		$texte.= '<input type="hidden" name="maskconstOperationOrder" value="OPERATIONORDER_ADVANCED_MASK">';
 		$texte.= '<table class="nobordernopadding" width="100%">';
 
 		$tooltip=$langs->trans("GenericMaskCodes", $langs->transnoentities("OperationOrder"), $langs->transnoentities("OperationOrder"));
@@ -79,7 +79,7 @@ class mod_operationorder_advanced extends ModeleNumRefOperationOrder
 
 		// Parametrage du prefix
 		$texte.= '<tr><td>'.$langs->trans("Mask").':</td>';
-		$texte.= '<td class="right">'.$form->textwithpicto('<input type="text" class="flat" size="24" name="maskOperationOrder" value="'.$conf->global->OPERATIONORDER_OPERATIONORDER_ADVANCED_MASK.'">', $tooltip, 1, 1).'</td>';
+		$texte.= '<td class="right">'.$form->textwithpicto('<input type="text" class="flat" size="24" name="maskOperationOrder" value="'.$conf->global->OPERATIONORDER_ADVANCED_MASK.'">', $tooltip, 1, 1).'</td>';
 
 		$texte.= '<td class="left" rowspan="2">&nbsp; <input type="submit" class="button" value="'.$langs->trans("Modify").'" name="Button"></td>';
 
@@ -104,7 +104,7 @@ class mod_operationorder_advanced extends ModeleNumRefOperationOrder
     	$old_code_type=$mysoc->typent_code;
     	$mysoc->code_client='CCCCCCCCCC';
     	$mysoc->typent_code='TTTTTTTTTT';
-     	$numExample = $this->getNextValue($mysoc, '');
+     	$numExample = $this->getNextValue('');
 		$mysoc->code_client=$old_code_client;
 		$mysoc->typent_code=$old_code_type;
 
@@ -116,19 +116,19 @@ class mod_operationorder_advanced extends ModeleNumRefOperationOrder
     }
 
 	/**
-	 * 	Return next free value
+	 *	Returns next assigned value
 	 *
-	 *  @param  Object		$object		Object we need next value for
-	 *  @return string      			Value if KO, <0 if KO
+	 *	@param	Object		$object		Object we need next value for
+	 *	@return	string      Valeur
 	 */
-    public function getNextValue($object)
+	public function getNextValue($object)
     {
 		global $db,$conf;
 
 		require_once DOL_DOCUMENT_ROOT .'/core/lib/functions2.lib.php';
 
 		// We get cursor rule
-		$mask=$conf->global->OPERATIONORDER_OPERATIONORDER_ADVANCED_MASK;
+		$mask=$conf->global->OPERATIONORDER_ADVANCED_MASK;
 
 		if (! $mask)
 		{
@@ -138,7 +138,7 @@ class mod_operationorder_advanced extends ModeleNumRefOperationOrder
 
 		$date = $object->date;
 
-		$numFinal=get_next_value($db, $mask, 'operationorder_operationorder', 'ref', '', null, $date);
+		$numFinal=get_next_value($db, $mask, 'operationorder', 'ref', '', null, $date);
 
 		return  $numFinal;
 	}

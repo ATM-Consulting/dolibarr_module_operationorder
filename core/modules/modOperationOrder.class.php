@@ -47,7 +47,7 @@ class modOperationOrder extends DolibarrModules
 
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
-		$this->numero = 104088; // 104000 to 104999 for ATM CONSULTING
+		$this->numero = 104158; // 104000 to 104999 for ATM CONSULTING
 		// Key text used to identify module (for permissions, menus, etc...)
 		$this->rights_class = 'operationorder';
 
