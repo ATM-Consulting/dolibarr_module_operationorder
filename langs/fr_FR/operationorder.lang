@@ -46,6 +46,7 @@ NoOperationOrder=(vide)
 NewOperationOrder=Création ordre de réparation
 OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
+ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner

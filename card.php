@@ -332,23 +332,17 @@ if (empty($reshook))
 
                     if ($result > 0) {
 
-                        if (!empty($conf->global->PRODUIT_SOUSPRODUITS) && !empty($idprod))
-                        {
-                            $product = new Product($db);
-                            $product->fetch($idprod);
+						$recusiveAddResult = $object->recurciveAddChildLines($result,$idprod, $qty);
 
-                            $product->get_sousproduits_arbo();
-                            $arbo = $product->get_arbo_each_prod();
-                            if (!empty($arbo))
-                            {
-                                foreach ($arbo as $product_info)
-                                {
-                                    $object->addline('', $product_info['nb_total']*$qty, '', $fk_warehouse, $pc, 0, 0, $product_info['id'], 0, '', '', $product_info['type'], -1, 0, $result, '', array(), '', 0);
-                                }
-                            }
-                        }
+						if($recusiveAddResult<0)
+						{
+							setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
+							if(!empty($this->errors)){
+								setEventMessages($this->errors, 'errors');
+							}
+						}
 
-                        $ret = $object->fetch($object->id); // Reload to get new records
+						$ret = $object->fetch($object->id); // Reload to get new records
 
                         if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
                             // Define output language

@@ -25,6 +25,7 @@ if (!class_exists('SeedObject'))
 }
 
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once __DIR__ . '/unitstools.class.php';
 
 class OperationOrder extends SeedObject
 {
@@ -285,7 +286,7 @@ class OperationOrder extends SeedObject
 	/**
 	 * Load object in memory from database
 	 *
-	 * @param int $training_id object
+	 * @param int $fk_parent_line object
 	 * @param int $fk_parent_level id of parent
 	 * @return array array of object
 	 */
@@ -990,6 +991,103 @@ class OperationOrder extends SeedObject
             }
         }
     }
+
+
+	public function recurciveAddChildLines($fk_line_parent, $fk_product, $qty){
+		global $conf, $langs;
+
+		if (!empty($conf->global->PRODUIT_SOUSPRODUITS) && !empty($fk_line_parent) && !empty($fk_product))
+		{
+			$product = new Product($this->db);
+			$res = $product->fetch($fk_product);
+			if($res){
+				$arbo = $product->getChildsArbo($product->id, 1);
+
+				if (!empty($arbo))
+				{
+					foreach ($arbo as $productid => $product_info)
+					{
+						$childLineProduct = new Product($this->db);
+						$res = $childLineProduct->fetch( $productid);
+						if($res){
+
+							$nb = doubleval(!empty($product_info[1]) ? $product_info[1] : 0);
+
+							$newLineQty = $nb*$qty;
+
+							// Convertion des temps planifier
+							$time_plannedhour = 0;
+							$time_plannedmin = 0;
+							$timePlanned = 0;
+
+							if(!empty($childLineProduct->duration_unit) && !empty($childLineProduct->duration_value))
+							{
+								$fk_duration_unit = UnitsTools::getUnitFromCode($childLineProduct->duration_unit, 'short_label');
+								if($fk_duration_unit<1) {
+									$this->errors[] =  $langs->transnoentities('UnitCodeNotFound', $childLineProduct->duration_unit);
+								}
+
+								if(!empty($childLineProduct->duration_value) && $fk_duration_unit > 0){
+									$fk_unit_hours = UnitsTools::getUnitFromCode('H', 'code');
+									if($fk_unit_hours>0) {
+										$durationHours = UnitsTools::unitConverteur($childLineProduct->duration_value, $fk_duration_unit, $fk_unit_hours);
+
+										$time_plannedhour = floor($durationHours);
+										$time_plannedmin = floor(($durationHours-floor($durationHours)) * 60);
+									}
+									else{
+										$this->errors[] = $langs->transnoentities('UnitCodeNotFound', 'H');
+									}
+								}
+
+								// set time planned after time conversion according to qty
+								$timePlanned = ($time_plannedhour * 60 * 60 + $time_plannedmin * 60) * $newLineQty;
+							}
+
+							// Ajout de la ligne
+							$newLineRes = $this->addline(
+								'',
+								$newLineQty,
+								$childLineProduct->price,
+								$childLineProduct->fk_default_warehouse,
+								0,
+								$timePlanned,
+								0,
+								$childLineProduct->id,
+								0,
+								'',
+								'',
+								$childLineProduct->type,
+								-1,
+								0,
+								$fk_line_parent,
+								'',
+								array(),
+								'',
+								0
+							);
+
+							if($newLineRes>0){
+								$recusiveRes = $this->recurciveAddChildLines($newLineRes, $childLineProduct->id, $newLineQty);
+								if($recusiveRes<0){
+									$this->errors[] = $langs->transnoentities('RecurciveLineaddFail');
+									return -2;
+								}
+							}
+							else
+							{
+								$this->errors[] = $langs->transnoentities('LineaddFail');
+								return -1;
+							}
+						}
+					}
+					return 1;
+				}
+			}
+		}
+
+		return 0;
+	}
 }
 
 
@@ -1427,8 +1525,94 @@ class OperationOrderDet extends SeedObject
 	}
 
 
+	/**
+	 * Function to delete object in database
+	 *
+	 * @param   User    $user   	user object
+	 * @param	bool	$notrigger	false=launch triggers after, true=disable triggers
+	 * @return  int                 < 0 if ko, > 0 if ok
+	 */
+	public function delete(User &$user, $notrigger = false)
+	{
+		if ($this->id <= 0) return 0;
+
+		$Tlines = $this->fetch_all_children_lines();
+		if(is_array($Tlines)){
+			foreach ($Tlines as $line){
+				/**
+				 * @var $line OperationOrderDet
+				 */
+				$res = $line->delete($user, $notrigger);
+				if($res < 0){
+					return -2;
+				}
+			}
+		}
+
+		return parent::delete($user, $notrigger);
+	}
 
 
+	/**
+	 * Load object in memory from database
+	 *
+	 * @param int $fk_parent_line object
+	 * @param bool $nested 0 = return simple array of lines , 1 = return recusive table of object need recursive nested
+	 * @return array array of object
+	 * @throws Exception
+	 */
+	public function fetch_all_children_lines($fk_parent_line = 0, $nested = false) {
+
+		$TNested = array();
+
+		$sql = "SELECT";
+		$sql .= " line.rowid,";
+		$sql .= " line.rang,";
+		$sql .= " line.fk_parent_line";
+		$sql .= " FROM " . MAIN_DB_PREFIX . "operationorderdet as line";
+		$sql .= " WHERE line.fk_operation_order=" . intval($this->fk_operation_order);
+		if(empty($fk_parent_line)){
+			$sql .= " AND line.fk_parent_line=" . intval($this->id);
+		}
+		else{
+			$sql .= " AND line.fk_parent_line=" . intval($fk_parent_line);
+		}
+
+		$sql .= " ORDER BY line.rang ASC";
+
+		dol_syslog(get_class($this) . "::fetch_all", LOG_DEBUG);
+		$resql = $this->db->query($sql);
+
+		if ($resql) {
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+
+			while ( $i < $num ) {
+				$obj = $this->db->fetch_object($resql);
+
+				$line = new OperationOrderDet($this->db);
+				$line->fetch($obj->rowid);
+
+				if($nested){
+					$TNested[$i] = array(
+						'object' => $line,
+						'children' => $this->fetch_all_children_lines($obj->rowid, true)
+					);
+				}
+				else{
+					$TNested[$i] = $line;
+				}
+				$i ++;
+			}
+			$this->db->free($resql);
+
+			return $TNested;
+		} else {
+			$this->error = "Error " . $this->db->lasterror();
+			dol_syslog(get_class($this) . "::fetch " . $this->error, LOG_ERR);
+			return - 1;
+		}
+	}
 }
 
 
