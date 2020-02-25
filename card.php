@@ -245,7 +245,8 @@ if (empty($reshook))
 
                 // Set if we used free entry or predefined product
                 $predef = '';
-                $product_desc = (GETPOST('description') ?GETPOST('dp_desc') : '');
+                $product_desc = (GETPOST('description') ?GETPOST('description') : '');
+
                 $prod_entry_mode = GETPOST('prod_entry_mode');
                 if ($prod_entry_mode == 'free') $idprod = 0;
                 else $idprod = GETPOST('fk_product', 'int');
@@ -440,7 +441,7 @@ if (empty($reshook))
         $date_end = '';
         $date_start = dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), GETPOST('date_startsec'), GETPOST('date_startmonth'), GETPOST('date_startday'), GETPOST('date_startyear'));
         $date_end = dol_mktime(GETPOST('date_endhour'), GETPOST('date_endmin'), GETPOST('date_endsec'), GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
-        $description = dol_htmlcleanlastbr(GETPOST('product_desc', 'none'));
+        $description = dol_htmlcleanlastbr(GETPOST('description', 'none'));
 
         $fk_warehouse = GETPOST('fk_warehouse');
         $pc = GETPOST('pc'.$predef);
