@@ -47,7 +47,7 @@ class modOperationOrder extends DolibarrModules
 
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
-		$this->numero = 104158; // 104000 to 104999 for ATM CONSULTING
+		$this->numero = 104158; // 104000 to 104999 for ATM CONSULTING // ancient numéro 104088
 		// Key text used to identify module (for permissions, menus, etc...)
 		$this->rights_class = 'operationorder';
 
@@ -274,7 +274,7 @@ class modOperationOrder extends DolibarrModules
 			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',			                // Put 0 if this is a top menu
             'type'=>'left',			                // This is a Top menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrder'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left',
             'url'=>'/operationorder/list.php',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
@@ -290,7 +290,7 @@ class modOperationOrder extends DolibarrModules
             'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_create',
             'url'=>'/operationorder/card.php?action=create',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
@@ -307,7 +307,7 @@ class modOperationOrder extends DolibarrModules
             'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderList'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_list',
             'url'=>'/operationorder/list.php',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
