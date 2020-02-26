@@ -1,10 +1,9 @@
 <?php
-/* Copyright (C) 2017 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) ---Put here your own copyright and developer email---
+/* Copyright (C) 2020 ATM Consulting <support@atm-consulting.fr>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -13,587 +12,1422 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *   	\file       operationorder_card.php
- *		\ingroup    operationorder
- *		\brief      Page to create/edit/view operationorder
- */
-
-//if (! defined('NOREQUIREDB'))              define('NOREQUIREDB','1');					// Do not create database handler $db
-//if (! defined('NOREQUIREUSER'))            define('NOREQUIREUSER','1');				// Do not load object $user
-//if (! defined('NOREQUIRESOC'))             define('NOREQUIRESOC','1');				// Do not load object $mysoc
-//if (! defined('NOREQUIRETRAN'))            define('NOREQUIRETRAN','1');				// Do not load object $langs
-//if (! defined('NOSCANGETFORINJECTION'))    define('NOSCANGETFORINJECTION','1');		// Do not check injection attack on GET parameters
-//if (! defined('NOSCANPOSTFORINJECTION'))   define('NOSCANPOSTFORINJECTION','1');		// Do not check injection attack on POST parameters
-//if (! defined('NOCSRFCHECK'))              define('NOCSRFCHECK','1');					// Do not check CSRF attack (test on referer + on token if option MAIN_SECURITY_CSRF_WITH_TOKEN is on).
-//if (! defined('NOTOKENRENEWAL'))           define('NOTOKENRENEWAL','1');				// Do not roll the Anti CSRF token (used if MAIN_SECURITY_CSRF_WITH_TOKEN is on)
-//if (! defined('NOSTYLECHECK'))             define('NOSTYLECHECK','1');				// Do not check style html tag into posted data
-//if (! defined('NOREQUIREMENU'))            define('NOREQUIREMENU','1');				// If there is no need to load and show top and left menu
-//if (! defined('NOREQUIREHTML'))            define('NOREQUIREHTML','1');				// If we don't need to load the html.form.class.php
-//if (! defined('NOREQUIREAJAX'))            define('NOREQUIREAJAX','1');       	  	// Do not load ajax.lib.php library
-//if (! defined("NOLOGIN"))                  define("NOLOGIN",'1');						// If this page is public (can be called outside logged session). This include the NOIPCHECK too.
-//if (! defined('NOIPCHECK'))                define('NOIPCHECK','1');					// Do not check IP defined into conf $dolibarr_main_restrict_ip
-//if (! defined("MAIN_LANG_DEFAULT"))        define('MAIN_LANG_DEFAULT','auto');					// Force lang to a particular value
-//if (! defined("MAIN_AUTHENTICATION_MODE")) define('MAIN_AUTHENTICATION_MODE','aloginmodule');		// Force authentication handler
-//if (! defined("NOREDIRECTBYMAINTOLOGIN"))  define('NOREDIRECTBYMAINTOLOGIN',1);		// The main.inc.php does not make a redirect if not logged, instead show simple error message
-//if (! defined("FORCECSP"))                 define('FORCECSP','none');					// Disable all Content Security Policies
-
-
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) $res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-// Try main.inc.php using relative path
-if (!$res && file_exists("../main.inc.php")) $res = @include "../main.inc.php";
-if (!$res && file_exists("../../main.inc.php")) $res = @include "../../main.inc.php";
-if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
-if (!$res) die("Include of main fails");
-
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
+require 'config.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
-dol_include_once('/operationorder/class/operationorder.class.php');
-dol_include_once('/operationorder/lib/operationorder_operationorder.lib.php');
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcontract.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
+dol_include_once('operationorder/class/operationorder.class.php');
+dol_include_once('operationorder/lib/operationorder.lib.php');
 
-// Load translation files required by the page
-$langs->loadLangs(array("operationorder@operationorder", "other"));
+if(empty($user->rights->operationorder->read)) accessforbidden();
 
-// Get parameters
+$langs->load('operationorder@operationorder');
+$langs->load('bills');
+
+$action = GETPOST('action', 'alpha');
 $id = GETPOST('id', 'int');
-$ref        = GETPOST('ref', 'alpha');
-$action = GETPOST('action', 'aZ09');
-$confirm    = GETPOST('confirm', 'alpha');
-$cancel     = GETPOST('cancel', 'aZ09');
-$contextpage = GETPOST('contextpage', 'aZ') ?GETPOST('contextpage', 'aZ') : 'operationordercard'; // To manage different context of search
+$ref = GETPOST('ref');
+$lineid = GETPOST('lineid');
+$confirm = GETPOST('confirm', 'alpha');
+
+$time_plannedhour 	= intval(GETPOST('time_plannedhour', 'int'));
+$time_plannedmin 	= intval(GETPOST('time_plannedmin', 'int'));
+$time_spenthour 	= intval(GETPOST('time_spenthour', 'int'));
+$time_spentmin 		= intval(GETPOST('time_spentmin', 'int'));
+
+
+$contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
-$backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
-//$lineid   = GETPOST('lineid', 'int');
 
-// Initialize technical objects
+
 $object = new OperationOrder($db);
-$extrafields = new ExtraFields($db);
-$diroutputmassaction = $conf->operationorder->dir_output.'/temp/massgeneration/'.$user->id;
-$hookmanager->initHooks(array('operationordercard', 'globalcard')); // Note that conf->hooks_modules contains array
 
-// Fetch optionals attributes and labels
-$extrafields->fetch_name_optionals_label($object->table_element);
+if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
 
-$search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
+$hookmanager->initHooks(array($contextpage, 'globalcard'));
 
-// Initialize array of search criterias
-$search_all = trim(GETPOST("search_all", 'alpha'));
-$search = array();
-foreach ($object->fields as $key => $val)
+
+if ($object->isextrafieldmanaged)
 {
-	if (GETPOST('search_'.$key, 'alpha')) $search[$key] = GETPOST('search_'.$key, 'alpha');
+    $extrafields = new ExtraFields($db);
+
+    $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
+    $search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
 }
 
-if (empty($action) && empty($id) && empty($ref)) $action = 'view';
+// Initialize array of search criterias
+//$search_all=trim(GETPOST("search_all",'alpha'));
+//$search=array();
+//foreach($object->fields as $key => $val)
+//{
+//    if (GETPOST('search_'.$key,'alpha')) $search[$key]=GETPOST('search_'.$key,'alpha');
+//}
+$usercanread = $user->rights->operationorder->read;
+$usercancreate = $user->rights->operationorder->write;
 
-// Load object
-include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
-
-// Security check - Protection if external user
-//if ($user->socid > 0) accessforbidden();
-//if ($user->socid > 0) $socid = $user->socid;
-//$isdraft = (($object->statut == $object::STATUS_DRAFT) ? 1 : 0);
-//$result = restrictedArea($user, 'operationorder', $object->id, '', '', 'fk_soc', 'rowid', $isdraft);
-
-$permissiontoread = $user->rights->operationorder->operationorder->read;
-$permissiontoadd = $user->rights->operationorder->operationorder->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->operationorder->operationorder->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-$permissionnote = $user->rights->operationorder->operationorder->write; // Used by the include of actions_setnotes.inc.php
-$permissiondellink = $user->rights->operationorder->operationorder->write; // Used by the include of actions_dellink.inc.php
-$upload_dir = $conf->operationorder->multidir_output[isset($object->entity) ? $object->entity : 1];
-
+$permissionnote = $usercancreate; // Used by the include of actions_setnotes.inc.php
+$permissiondellink = $usercancreate; // Used by the include of actions_dellink.inc.php
+$permissiontoedit = $usercancreate; // Used by the include of actions_lineupdonw.inc.php
+$permissiontoadd = $usercancreate; // Used by the include of actions_addupdatedelete.inc.php
 
 /*
  * Actions
  */
 
-$parameters = array();
-$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
+$parameters = array('id' => $id, 'ref' => $ref);
+$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
+// Si vide alors le comportement n'est pas remplacé
 if (empty($reshook))
 {
-    $error = 0;
 
-    $backurlforlist = dol_buildpath('/operationorder/operationorder_list.php', 1);
-
-    if (empty($backtopage) || ($cancel && empty($id))) {
-    	if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
-    		if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) $backtopage = $backurlforlist;
-    		else $backtopage = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.($id > 0 ? $id : '__ID__');
-    	}
+    if ($cancel)
+    {
+        if (! empty($backtopage))
+        {
+            header("Location: ".$backtopage);
+            exit;
+        }
+        $action='';
     }
-    $triggermodname = 'OPERATIONORDER_OPERATIONORDER_MODIFY'; // Name of trigger action code to execute when we modify record
 
-    // Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
-    include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
+    // For object linked
+    include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';		// Must be include, not include_once
 
-    // Actions when linking object each other
-    include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';
+
+
+
+    $error = 0;
+	switch ($action) {
+        case 'update_attribute':
+            if (!empty($user->rights->operationorder->write))
+            {
+                $values = array();
+                $attribute = GETPOST('attribute');
+
+                if ($attribute == 'date_operation_order')
+                {
+                    $object->date_operation_order = dol_mktime(GETPOST('date_operation_orderhour'), GETPOST('date_operation_ordermin'), 0, GETPOST('date_operation_ordermonth'), GETPOST('date_operation_orderday'), GETPOST('date_operation_orderyear'));
+                }
+                else
+                {
+                    $value = GETPOST($attribute);
+                    $values[$attribute] = $value;
+                    $object->setValues($values);
+                }
+
+                $object->save($user);
+            }
+
+            break;
+		case 'add':
+		    if (!empty($conf->multicurrency->enabled))
+            {
+                require_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
+                $object->fk_multicurrency = MultiCurrency::getIdFromCode($object->db, $conf->currency);
+                $object->multicurrency_code = $conf->currency;
+            }
+		case 'update':
+			$object->setValues($_REQUEST); // Set standard attributes
+
+//    var_dump($_REQUEST);exit;
+
+            if ($object->isextrafieldmanaged)
+            {
+                $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
+                if ($ret < 0) $error++;
+            }
+
+//			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
+
+			// Check parameters
+//			if (empty($object->date_other))
+//			{
+//				$error++;
+//				setEventMessages($langs->trans('warning_date_must_be_fill'), array(), 'warnings');
+//			}
+
+			// ...
+
+			if ($error > 0)
+			{
+				$action = 'edit';
+				break;
+			}
+
+//        $object->fk_project = '';
+			$res = $object->save($user);
+//			var_dump($res, $object->db);exit;
+            if ($res < 0)
+            {
+                setEventMessage($object->errors, 'errors');
+                if (empty($object->id)) $action = 'create';
+                else $action = 'edit';
+            }
+            else
+            {
+                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+                exit;
+            }
+        case 'update_extras':
+
+            $object->oldcopy = dol_clone($object);
+
+            // Fill array 'array_options' with data from update form
+            $ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute', 'none'));
+            if ($ret < 0) $error++;
+
+            if (! $error)
+            {
+                $result = $object->insertExtraFields('OPERATIONORDER_MODIFY');
+                if ($result < 0)
+                {
+                    setEventMessages($object->error, $object->errors, 'errors');
+                    $error++;
+                }
+            }
+
+            if ($error) $action = 'edit_extras';
+            else
+            {
+                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+                exit;
+            }
+            break;
+		case 'confirm_clone':
+            if (!empty($user->rights->operationorder->write))
+            {
+                $object->cloneObject($user);
+                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+                exit;
+            }
+
+        case 'confirm_modify':
+			if (!empty($user->rights->operationorder->write)) $object->setDraft($user);
+
+			break;
+
+        case 'reopen':
+            if (!empty($user->rights->operationorder->write)) $object->setReopen($user);
+
+            break;
+		case 'confirm_close':
+			if (!empty($user->rights->operationorder->write)) $object->setClosed($user);
+
+			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+			exit;
+
+		case 'confirm_delete':
+			if (!empty($user->rights->operationorder->delete)) $object->delete($user);
+
+			header('Location: '.dol_buildpath('/operationorder/list.php', 1));
+			exit;
+
+		// link from llx_element_element
+		case 'dellink':
+			$object->deleteObjectLinked(null, '', null, '', GETPOST('dellinkid'));
+			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+			exit;
+
+        case 'addline':
+            if ($usercancreate)
+            {
+                $langs->load('errors');
+                $error = 0;
+
+                // Set if we used free entry or predefined product
+                $predef = '';
+                $product_desc = (GETPOST('description') ?GETPOST('description') : '');
+
+                $prod_entry_mode = GETPOST('prod_entry_mode');
+                if ($prod_entry_mode == 'free') $idprod = 0;
+                else $idprod = GETPOST('fk_product', 'int');
+
+                $qty = GETPOST('qty'.$predef);
+                $price = GETPOST('price'.$predef);
+                $fk_warehouse = GETPOST('fk_warehouse');
+                $pc = GETPOST('pc'.$predef);
+                $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
+                $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
+
+                // Extrafields
+                $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
+                $array_options = $extrafields->getOptionalsFromPost($object->table_element_line, $predef);
+                // Unset extrafield
+                if (is_array($extralabelsline)) {
+                    // Get extra fields
+                    foreach ($extralabelsline as $key => $value) {
+                        unset($_POST["options_".$key]);
+                    }
+                }
+
+
+                if ($prod_entry_mode == 'free' && empty($idprod) && GETPOST('type') < 0) {
+                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
+                    $error++;
+                }
+                if ($qty == '') {
+                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
+                    $error++;
+                }
+                if ($prod_entry_mode == 'free' && empty($idprod) && empty($product_desc)) {
+                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
+                    $error++;
+                }
+
+                if (!$error && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
+                    // Clean parameters
+                    $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
+                    $date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
+
+                    if (!empty($idprod)) {
+                        $prod = new Product($db);
+                        $prod->fetch($idprod);
+
+                        $label = ((GETPOST('product_label') && GETPOST('product_label') != $prod->label) ? GETPOST('product_label') : '');
+
+                        $desc = '';
+
+                        // Define output language
+                        if (!empty($conf->global->MAIN_MULTILANGS) && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
+                            $outputlangs = $langs;
+                            $newlang = '';
+                            if (empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                                $newlang = GETPOST('lang_id', 'aZ09');
+                            if (empty($newlang))
+                                $newlang = $object->thirdparty->default_lang;
+                            if (!empty($newlang)) {
+                                $outputlangs = new Translate("", $conf);
+                                $outputlangs->setDefaultLang($newlang);
+                            }
+
+                            $desc = (!empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
+                        } else {
+                            $desc = $prod->description;
+                        }
+
+                        if (!empty($product_desc) && !empty($conf->global->MAIN_NO_CONCAT_DESCRIPTION)) $desc = $product_desc;
+                        else $desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
+
+                        $type = $prod->type;
+                    } else {
+                        $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
+                        $desc = $product_desc;
+                        $type = GETPOST('type');
+                    }
+
+                    $desc = dol_htmlcleanlastbr($desc);
+
+                    $info_bits = 0;
+
+                    // Insert line
+                    $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+
+                    if ($result > 0) {
+
+						$recusiveAddResult = $object->recurciveAddChildLines($result,$idprod, $qty);
+
+						if($recusiveAddResult<0)
+						{
+							setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
+							if(!empty($this->errors)){
+								setEventMessages($this->errors, 'errors');
+							}
+						}
+
+						$ret = $object->fetch($object->id); // Reload to get new records
+
+                        if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+                            // Define output language
+                            $outputlangs = $langs;
+                            $newlang = GETPOST('lang_id', 'alpha');
+                            if (!empty($conf->global->MAIN_MULTILANGS) && empty($newlang))
+                                $newlang = $object->thirdparty->default_lang;
+                            if (!empty($newlang)) {
+                                $outputlangs = new Translate("", $conf);
+                                $outputlangs->setDefaultLang($newlang);
+                            }
+
+                            $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+                        }
+
+                        unset($_POST['prod_entry_mode']);
+
+                        unset($_POST['qty']);
+                        unset($_POST['type']);
+                        unset($_POST['product_ref']);
+                        unset($_POST['product_label']);
+                        unset($_POST['product_desc']);
+                        unset($_POST['dp_desc']);
+                        unset($_POST['idprod']);
+
+                        unset($_POST['date_starthour']);
+                        unset($_POST['date_startmin']);
+                        unset($_POST['date_startsec']);
+                        unset($_POST['date_startday']);
+                        unset($_POST['date_startmonth']);
+                        unset($_POST['date_startyear']);
+                        unset($_POST['date_endhour']);
+                        unset($_POST['date_endmin']);
+                        unset($_POST['date_endsec']);
+                        unset($_POST['date_endday']);
+                        unset($_POST['date_endmonth']);
+                        unset($_POST['date_endyear']);
+
+                        setEventMessage($langs->trans('OperationOrderLineAdded'));
+						header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id)."#addline";
+						exit;
+
+                    } else {
+                        setEventMessages($object->error, $object->errors, 'errors');
+                    }
+                }
+
+            }
+
+            break;
+        case 'confirm_deleteline':
+            // Remove a product line
+            if ($confirm == 'yes' && $usercancreate)
+            {
+                $result = $object->removeChild($user, 'OperationOrderDet', $lineid);
+                if ($result)
+                {
+                    // Define output language
+                    $outputlangs = $langs;
+                    $newlang = '';
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                        $newlang = GETPOST('lang_id', 'aZ09');
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+                        $newlang = $object->thirdparty->default_lang;
+                    if (!empty($newlang)) {
+                        $outputlangs = new Translate("", $conf);
+                        $outputlangs->setDefaultLang($newlang);
+                    }
+                    if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+                        $ret = $object->fetch($object->id); // Reload to get new records
+                        $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+                    }
+
+                    header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
+                    exit;
+                }
+                else
+                {
+                    setEventMessages($object->error, $object->errors, 'errors');
+                }
+            }
+            break;
+	}
+
+    /*
+     *  Update a line
+     */
+
+    if ($action == 'updateline' && $usercancreate && GETPOSTISSET('save'))
+    {
+    	$updateLineResult = false;
+
+        // Clean parameters
+        $date_start = '';
+        $date_end = '';
+        $date_start = dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), GETPOST('date_startsec'), GETPOST('date_startmonth'), GETPOST('date_startday'), GETPOST('date_startyear'));
+        $date_end = dol_mktime(GETPOST('date_endhour'), GETPOST('date_endmin'), GETPOST('date_endsec'), GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
+        $description = dol_htmlcleanlastbr(GETPOST('description', 'none'));
+
+        $fk_warehouse = GETPOST('fk_warehouse');
+        $pc = GETPOST('pc'.$predef);
+
+		$price = GETPOST('price'.$predef);
+
+		$time_plannedhour = GETPOST('time_plannedhour', 'int');
+		$time_plannedmin = GETPOST('time_plannedmin', 'int');
+		$time_spenthour = GETPOST('time_spenthour', 'int');
+		$time_spentmin = GETPOST('time_spentmin', 'int');
+
+        $time_planned = doubleval($time_plannedhour) * 60 * 60 + doubleval($time_plannedmin) * 60; // store in seconds
+        $time_spent = doubleval($time_spenthour) * 60 * 60 + doubleval($time_spentmin) * 60;
+
+        // Define info_bits
+        $info_bits = 0;
+
+        // Extrafields Lines
+        $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
+        $array_options = $extrafields->getOptionalsFromPost($object->table_element_line);
+        // Unset extrafield POST Data
+        if (is_array($extralabelsline)) {
+            foreach ($extralabelsline as $key => $value) {
+                unset($_POST["options_".$key]);
+            }
+        }
+
+        // Define special_code for special lines
+        $special_code = GETPOST('special_code');
+        if (!GETPOST('qty')) $special_code = 3;
+
+        // Check minimum price
+        $productid = GETPOST('fk_product', 'int');
+        if (!empty($productid)) {
+            $product = new Product($db);
+            $product->fetch($productid);
+
+            $type = $product->type;
+
+            $label = ((GETPOST('update_label') && GETPOST('product_label')) ? GETPOST('product_label') : '');
+
+        } else {
+            $type = GETPOST('type');
+            $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
+
+            // Check parameters
+            if (GETPOST('type') < 0) {
+                setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Type")), null, 'errors');
+                $error++;
+            }
+        }
+
+        if (!$error) {
+
+			$result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $price, $fk_warehouse, $pc, $time_planned, $time_spent,$productid, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
+
+            if ($result >= 0) {
+
+				$updateLineResult = true;
+
+                if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+                    // Define output language
+                    $outputlangs = $langs;
+                    $newlang = '';
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                        $newlang = GETPOST('lang_id', 'aZ09');
+                    if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+                        $newlang = $object->thirdparty->default_lang;
+                    if (!empty($newlang)) {
+                        $outputlangs = new Translate("", $conf);
+                        $outputlangs->setDefaultLang($newlang);
+                    }
+
+                    $ret = $object->fetch($object->id); // Reload to get new records
+                    $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+                }
+
+                unset($_POST['qty']);
+                unset($_POST['type']);
+                unset($_POST['productid']);
+                unset($_POST['product_ref']);
+                unset($_POST['product_label']);
+                unset($_POST['product_desc']);
+
+                unset($_POST['date_starthour']);
+                unset($_POST['date_startmin']);
+                unset($_POST['date_startsec']);
+                unset($_POST['date_startday']);
+                unset($_POST['date_startmonth']);
+                unset($_POST['date_startyear']);
+                unset($_POST['date_endhour']);
+                unset($_POST['date_endmin']);
+                unset($_POST['date_endsec']);
+                unset($_POST['date_endday']);
+                unset($_POST['date_endmonth']);
+                unset($_POST['date_endyear']);
+
+
+				header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id.'#item_'.GETPOST('lineid', 'int'));
+				exit;
+            } else {
+                setEventMessages($object->error, $object->errors, 'errors');
+            }
+        }
+
+
+        if(!$updateLineResult){
+			// Pour reaffichage de la fiche en cours d'edition
+			header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=editline&lineid=5'.GETPOST('lineid'));
+			exit();
+		}
+
+
+    } elseif ($action == 'updateline' && $usercancreate && GETPOST('cancel', 'alpha') == $langs->trans('Cancel')) {
+        header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id); // Pour reaffichage de la fiche en cours d'edition
+		exit;
+    }
+    // Link to a project
+    elseif ($action == 'classin' && $usercancreate)
+    {
+        $object->setProject(GETPOST('projectid', 'int'));
+    }
+    // Positionne ref commande client
+    elseif ($action == 'setref_client' && $usercancreate) {
+        $object->ref_client = GETPOST('ref_client');
+        $result = $object->update($user);
+        if ($result < 0)
+        {
+            setEventMessages($object->error, $object->errors, 'errors');
+        }
+    }
+    // Link to a project
+    elseif ($action == 'setcontratin' && $usercancreate)
+    {
+        $object->fk_contrat = GETPOST('fk_contrat');
+        $result = $object->update($user);
+        if ($result < 0)
+        {
+            setEventMessages($object->error, $object->errors, 'errors');
+        }
+    }
 
     // Actions when printing a doc from card
     include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
-    // Action to move up and down lines of object
-    //include DOL_DOCUMENT_ROOT.'/core/actions_lineupdown.inc.php';
-
-    // Action to build doc
+    // Actions to build doc
+    $upload_dir = $conf->operationorder->multidir_output[$object->entity];
+    $permissiontoadd = $usercancreate;
     include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
 
-    if ($action == 'set_thirdparty' && $permissiontoadd)
-    {
-    	$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, 'OPERATIONORDER_MODIFY');
-    }
-    if ($action == 'classin' && $permissiontoadd)
-    {
-    	$object->setProject(GETPOST('projectid', 'int'));
-    }
-
-    // Actions to send emails
-    $triggersendname = 'OPERATIONORDER_SENTBYMAIL';
-    $autocopy = 'MAIN_MAIL_AUTOCOPY_OPERATIONORDER_TO';
-    $trackid = 'operationorder'.$object->id;
-    include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 }
 
 
 
-
-/*
+/**
  * View
- *
- * Put here all code to build page
  */
-
 $form = new Form($db);
 $formfile = new FormFile($db);
+$formproject = new FormProjets($db);
+$formcontrat = new FormContract($db);
 
-llxHeader('', $langs->trans('OperationOrder'), '');
+$title=$langs->trans('OperationOrder');
+$arrayofjs = '';
+$arrayofcss = array(
+	'/operationorder/css/operation-order-card.css',
+	'/operationorder/css/animate.css'
+);
+llxHeader('', $title , '', '', 0, 0, $arrayofjs, $arrayofcss);
 
-// Example : Adding jquery code
-print '<script type="text/javascript" language="javascript">
-jQuery(document).ready(function() {
-	function init_myfunc()
-	{
-		jQuery("#myid").removeAttr(\'disabled\');
-		jQuery("#myid").attr(\'disabled\',\'disabled\');
-	}
-	init_myfunc();
-	jQuery("#mybutton").click(function() {
-		init_myfunc();
-	});
-});
-</script>';
-
-
-// Part to create
 if ($action == 'create')
 {
-	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("OperationOrder")));
+    print load_fiche_titre($langs->trans('NewOperationOrder'), '', 'operationorder@operationorder');
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-	print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="add">';
-	if ($backtopage) print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	if ($backtopageforcancel) print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
+    print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="action" value="add">';
+    print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 
-	dol_fiche_head(array(), '');
+    dol_fiche_head(array(), '');
 
-	print '<table class="border centpercent tableforfieldcreate">'."\n";
+    print '<table class="border centpercent">'."\n";
 
-	// Common attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
+    // Common attributes
+    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
-	// Other attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_add.tpl.php';
+    // Other attributes
+    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
 
-	print '</table>'."\n";
+    print '</table>'."\n";
 
-	dol_fiche_end();
+    dol_fiche_end();
 
-	print '<div class="center">';
-	print '<input type="submit" class="button" name="add" value="'.dol_escape_htmltag($langs->trans("Create")).'">';
-	print '&nbsp; ';
-	print '<input type="'.($backtopage ? "submit" : "button").'" class="button" name="cancel" value="'.dol_escape_htmltag($langs->trans("Cancel")).'"'.($backtopage ? '' : ' onclick="javascript:history.go(-1)"').'>'; // Cancel for create does not post form if we don't know the backtopage
-	print '</div>';
+    print '<div class="center">';
+    print '<input type="submit" class="button" name="add" value="'.dol_escape_htmltag($langs->trans('Create')).'">';
+    print '&nbsp; ';
+    print '<input type="'.($backtopage?"submit":"button").'" class="button" name="cancel" value="'.dol_escape_htmltag($langs->trans('Cancel')).'"'.($backtopage?'':' onclick="javascript:history.go(-1)"').'>';	// Cancel for create does not post form if we don't know the backtopage
+    print '</div>';
 
-	print '</form>';
-
-	//dol_set_focus('input[name="ref"]');
+    print '</form>';
 }
-
-// Part to edit record
-if (($id || $ref) && $action == 'edit')
+else
 {
-	print load_fiche_titre($langs->trans("OperationOrder"));
+    if (empty($object->id))
+    {
+        $langs->load('errors');
+        print $langs->trans('ErrorRecordNotFound');
+    }
+    else
+    {
+        $object->fields['ref_client']['visible'] = 2;
+        $object->fields['fk_soc']['visible'] = 2;
+        $object->fields['fk_project']['visible'] = 2;
+        $object->fields['fk_contrat']['visible'] = 2;
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-    print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="update">';
-	print '<input type="hidden" name="id" value="'.$object->id.'">';
-	if ($backtopage) print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	if ($backtopageforcancel) print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
+        if (!empty($object->id) && $action === 'edit')
+        {
+            print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+            print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+            print '<input type="hidden" name="action" value="update">';
+            print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
+            print '<input type="hidden" name="id" value="'.$object->id.'">';
 
-	dol_fiche_head();
+            $head = operationorder_prepare_head($object);
+            $picto = 'operationorder@operationorder';
+            dol_fiche_head($head, 'card', $langs->trans('OperationOrder'), 0, $picto);
 
-	print '<table class="border centpercent tableforfieldedit">'."\n";
+            print '<table class="border centpercent">'."\n";
 
-	// Common attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_edit.tpl.php';
+            // Common attributes
+            include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
 
-	// Other attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_edit.tpl.php';
+            // Other attributes
+            include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
-	print '</table>';
+            print '</table>';
 
-	dol_fiche_end();
+            dol_fiche_end();
 
-	print '<div class="center"><input type="submit" class="button" name="save" value="'.$langs->trans("Save").'">';
-	print ' &nbsp; <input type="submit" class="button" name="cancel" value="'.$langs->trans("Cancel").'">';
-	print '</div>';
+            print '<div class="center"><input type="submit" class="button" name="save" value="'.$langs->trans('Save').'">';
+            print ' &nbsp; <input type="submit" class="button" name="cancel" value="'.$langs->trans('Cancel').'">';
+            print '</div>';
 
-	print '</form>';
-}
+            print '</form>';
+        }
+        elseif ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create')))
+        {
+            $head = operationorder_prepare_head($object);
+            $picto = 'operationorder@operationorder';
+            dol_fiche_head($head, 'card', $langs->trans('OperationOrder'), -1, $picto);
 
-// Part to show record
-if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create')))
-{
-    $res = $object->fetch_optionals();
-
-	$head = operationorderPrepareHead($object);
-	dol_fiche_head($head, 'card', $langs->trans("OperationOrder"), -1, $object->picto);
-
-	$formconfirm = '';
-
-	// Confirmation to delete
-	if ($action == 'delete')
-	{
-	    $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteOperationOrder'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
-	}
-	// Confirmation to delete line
-	if ($action == 'deleteline')
-	{
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
-	}
-	// Clone confirmation
-	if ($action == 'clone') {
-		// Create an array for form
-		$formquestion = array();
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneOperationOrder', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
-	}
-
-	// Confirmation of action xxxx
-	if ($action == 'xxx')
-	{
-		$formquestion = array();
-	    /*
-		$forcecombo=0;
-		if ($conf->browser->name == 'ie') $forcecombo = 1;	// There is a bug in IE10 that make combo inside popup crazy
-	    $formquestion = array(
-	        // 'text' => $langs->trans("ConfirmClone"),
-	        // array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
-	        // array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
-	        // array('type' => 'other',    'name' => 'idwarehouse',   'label' => $langs->trans("SelectWarehouseForStockDecrease"), 'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
-        );
-	    */
-	    $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('XXX'), $text, 'confirm_xxx', $formquestion, 0, 1, 220);
-	}
-
-	// Call Hook formConfirm
-	$parameters = array('formConfirm' => $formconfirm, 'lineid' => $lineid);
-	$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-	if (empty($reshook)) $formconfirm .= $hookmanager->resPrint;
-	elseif ($reshook > 0) $formconfirm = $hookmanager->resPrint;
-
-	// Print form confirm
-	print $formconfirm;
+            $formconfirm = getFormConfirmOperationOrder($form, $object, $action);
+            if (!empty($formconfirm)) print $formconfirm;
 
 
-	// Object card
-	// ------------------------------------------------------------
-	$linkback = '<a href="'.dol_buildpath('/operationorder/operationorder_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+            $linkback = '<a href="' .dol_buildpath('/operationorder/list.php', 1) . '?restore_lastsearch_values=1">' . $langs->trans('BackToList') . '</a>';
 
-	$morehtmlref = '<div class="refidno">';
-	/*
-	// Ref bis
-	$morehtmlref.=$form->editfieldkey("RefBis", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->operationorder->creer, 'string', '', 0, 1);
-	$morehtmlref.=$form->editfieldval("RefBis", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->operationorder->creer, 'string', '', null, null, '', 1);
-	// Thirdparty
-	$morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
-	// Project
-	if (! empty($conf->projet->enabled))
-	{
-	    $langs->load("projects");
-	    $morehtmlref.='<br>'.$langs->trans('Project') . ' ';
-	    if ($permissiontoadd)
-	    {
-	        if ($action != 'classify')
-	            $morehtmlref.='<a class="editfielda" href="' . $_SERVER['PHP_SELF'] . '?action=classify&amp;id=' . $object->id . '">' . img_edit($langs->transnoentitiesnoconv('SetProject')) . '</a> : ';
-            if ($action == 'classify') {
-                //$morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
-                $morehtmlref.='<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
-                $morehtmlref.='<input type="hidden" name="action" value="classin">';
-                $morehtmlref.='<input type="hidden" name="token" value="'.newToken().'">';
-                $morehtmlref.=$formproject->select_projects($object->socid, $object->fk_project, 'projectid', 0, 0, 1, 0, 1, 0, 0, '', 1);
-                $morehtmlref.='<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
-                $morehtmlref.='</form>';
-            } else {
-                $morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'none', 0, 0, 0, 1);
-	        }
-	    } else {
-	        if (! empty($object->fk_project)) {
-	            $proj = new Project($db);
-	            $proj->fetch($object->fk_project);
-	            $morehtmlref.=$proj->getNomUrl();
-	        } else {
-	            $morehtmlref.='';
-	        }
-	    }
-	}
-	*/
-	$morehtmlref .= '</div>';
+            $morehtmlref='<div class="refidno">';
 
+            // Ref bis
+            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
+            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
 
-	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+//            $morehtmlref.=$form->editfieldkey("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
+//            $morehtmlref.=$form->editfieldval("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
+            // Thirdparty
+            $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $object->thirdparty->getNomUrl(1);
 
-
-	print '<div class="fichecenter">';
-	print '<div class="fichehalfleft">';
-	print '<div class="underbanner clearboth"></div>';
-	print '<table class="border centpercent">'."\n";
-
-	// Common attributes
-	//$keyforbreak='fieldkeytoswitchonsecondcolumn';	// We change column just after this field
-	//unset($object->fields['fk_project']);				// Hide field already shown in banner
-	//unset($object->fields['fk_soc']);					// Hide field already shown in banner
-	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_view.tpl.php';
-
-	// Other attributes. Fields from hook formObjectOptions and Extrafields.
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_view.tpl.php';
-
-	print '</table>';
-	print '</div>';
-	print '</div>';
-
-	print '<div class="clearboth"></div>';
-
-	dol_fiche_end();
-
-
-	/*
-	 * Lines
-	 */
-
-	if (!empty($object->table_element_line))
-	{
-    	// Show object lines
-    	$result = $object->getLinesArray();
-
-    	print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '#addline' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
-    	<input type="hidden" name="token" value="' . $_SESSION ['newtoken'].'">
-    	<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
-    	<input type="hidden" name="mode" value="">
-    	<input type="hidden" name="id" value="' . $object->id.'">
-    	';
-
-    	if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
-    	    include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
-    	}
-
-    	print '<div class="div-table-responsive-no-min">';
-    	if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline'))
-    	{
-    	    print '<table id="tablelines" class="noborder noshadow" width="100%">';
-    	}
-
-    	if (!empty($object->lines))
-    	{
-    		$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1);
-    	}
-
-    	// Form to add new line
-    	if ($object->status == 0 && $permissiontoadd && $action != 'selectlines')
-    	{
-    	    if ($action != 'editline')
-    	    {
-    	        // Add products/services form
-    	        $object->formAddObjectLine(1, $mysoc, $soc);
-
-    	        $parameters = array();
-    	        $reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-    	    }
-    	}
-
-    	if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline'))
-    	{
-    	    print '</table>';
-    	}
-    	print '</div>';
-
-    	print "</form>\n";
-	}
-
-
-	// Buttons for actions
-
-	if ($action != 'presend' && $action != 'editline') {
-    	print '<div class="tabsAction">'."\n";
-    	$parameters = array();
-    	$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-    	if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-
-    	if (empty($reshook))
-    	{
-    	    // Send
-            print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=presend&mode=init#formmailbeforetitle">'.$langs->trans('SendMail').'</a>'."\n";
-
-            // Back to draft
-            if ($object->status == $object::STATUS_VALIDATED)
+            // Project
+            if (!empty($conf->projet->enabled))
             {
-	            if ($permissiontoadd)
-	            {
-	            	print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=confirm_setdraft&confirm=yes">'.$langs->trans("SetToDraft").'</a>';
-	            }
+                $langs->load("projects");
+                $morehtmlref .= '<br>'.$langs->trans('Project').' ';
+                if ($usercancreate)
+                {
+                    if ($action != 'classify')
+                        $morehtmlref .= '<a class="editfielda" href="'.$_SERVER['PHP_SELF'].'?action=classify&amp;id='.$object->id.'">'.img_edit($langs->transnoentitiesnoconv('SetProject')).'</a> : ';
+                    if ($action == 'classify') {
+                        //$morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
+                        $morehtmlref .= '<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
+                        $morehtmlref .= '<input type="hidden" name="action" value="classin">';
+                        $morehtmlref .= '<input type="hidden" name="token" value="'.newToken().'">';
+                        $morehtmlref .= $formproject->select_projects($object->fk_soc, $object->fk_project, 'projectid', $maxlength, 0, 1, 0, 1, 0, 0, '', 1);
+                        $morehtmlref .= '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+                        $morehtmlref .= '</form>';
+                    } else {
+                        $morehtmlref .= $form->form_project($_SERVER['PHP_SELF'].'?id='.$object->id, $object->fk_soc, $object->fk_project, 'none', 0, 0, 0, 1);
+                    }
+                } else {
+                    if (!empty($object->fk_project)) {
+                        $proj = new Project($db);
+                        $proj->fetch($object->fk_project);
+                        $morehtmlref .= '<a href="'.DOL_URL_ROOT.'/projet/card.php?id='.$object->fk_project.'" title="'.$langs->trans('ShowProject').'">';
+                        $morehtmlref .= $proj->ref;
+                        $morehtmlref .= '</a>';
+                    } else {
+                        $morehtmlref .= '';
+                    }
+                }
             }
 
-            // Modify
-            if ($permissiontoadd)
-    		{
-    			print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a>'."\n";
-    		}
-    		else
-    		{
-    			print '<a class="butActionRefused classfortooltip" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('Modify').'</a>'."\n";
-    		}
+            // Contrat
+            if (!empty($conf->contrat->enabled))
+            {
+                $langs->load("contrat");
+                $morehtmlref .= '<br>'.$langs->trans('Contrat').' ';
+                if ($usercancreate)
+                {
+                    if ($action != 'setcontrat')
+                        $morehtmlref .= '<a class="editfielda" href="'.$_SERVER['PHP_SELF'].'?action=setcontrat&amp;id='.$object->id.'">'.img_edit($langs->transnoentitiesnoconv('SetContrat')).'</a> : ';
+                    if ($action == 'setcontrat') {
+                        //$morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
+                        $morehtmlref .= '<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
+                        $morehtmlref .= '<input type="hidden" name="action" value="setcontratin">';
+                        $morehtmlref .= '<input type="hidden" name="token" value="'.newToken().'">';
+                        ob_start();
+                        $formcontrat->select_contract($object->fk_soc, $object->fk_contrat, 'fk_contrat', $maxlength, 1);
+                        $select_contrat = ob_get_clean();
+                        $morehtmlref .= $select_contrat;
+                        $morehtmlref .= '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+                        $morehtmlref .= '</form>';
+                    } else {
+                        $contrat = new Contrat($db);
+                        $contrat->fetch($object->fk_contrat);
+                        $morehtmlref .= $contrat->getNomUrl();
+                    }
+                } else {
+                    if (!empty($object->fk_contrat)) {
+                        $contrat = new Contrat($db);
+                        $contrat->fetch($object->fk_contrat);
+                        $morehtmlref .= $contrat->getNomUrl();
+                    } else {
+                        $morehtmlref .= '';
+                    }
+                }
+            }
 
-    		// Validate
-    		if ($object->status == $object::STATUS_DRAFT)
-    		{
-	    		if ($permissiontoadd)
-	    		{
-	    			if (empty($object->table_element_line) || (is_array($object->lines) && count($object->lines) > 0))
-	    			{
-	    				print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=confirm_validate&confirm=yes">'.$langs->trans("Validate").'</a>';
-	    			}
-	    			else
-	    			{
-	    				$langs->load("errors");
-	    				print '<a class="butActionRefused" href="" title="'.$langs->trans("ErrorAddAtLeastOneLineFirst").'">'.$langs->trans("Validate").'</a>';
-	    			}
-	    		}
-    		}
+            $morehtmlref.='</div>';
 
-    		// Clone
-    		if ($permissiontoadd)
-    		{
-    			print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&socid='.$object->socid.'&action=clone&object=operationorder">'.$langs->trans("ToClone").'</a>'."\n";
-    		}
 
-    		/*
-    		if ($permissiontoadd)
-    		{
-    			if ($object->status == $object::STATUS_ENABLED)
-    		 	{
-    		 		print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=disable">'.$langs->trans("Disable").'</a>'."\n";
-    		 	}
-    		 	else
-    		 	{
-    		 		print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=enable">'.$langs->trans("Enable").'</a>'."\n";
-    		 	}
-    		}
-    		if ($permissiontoadd)
-    		{
-    			if ($object->status == $object::STATUS_VALIDATED)
-    		 	{
-    		 		print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=close">'.$langs->trans("Cancel").'</a>'."\n";
-    		 	}
-    		 	else
-    		 	{
-    		 		print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=reopen">'.$langs->trans("Re-Open").'</a>'."\n";
-    		 	}
-    		}
-    		*/
+            $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
+            dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
 
-    		// Delete (need delete permission, or if draft, just need create/modify permission)
-    		if ($permissiontodelete)
-    		{
-    			print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans('Delete').'</a>'."\n";
-    		}
-    		else
-    		{
-    			print '<a class="butActionRefused classfortooltip" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('Delete').'</a>'."\n";
-    		}
-    	}
-    	print '</div>'."\n";
+            print '<div class="fichecenter">';
+
+            print '<div class="fichehalfleft">'; // Auto close by commonfields_view.tpl.php
+            print '<div class="underbanner clearboth"></div>';
+            print '<table class="border tableforfield" width="100%">'."\n";
+
+            $permok = $usercancreate;
+            // Common attributes
+//            $keyforbreak='total_ht';
+//            include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+            include dol_buildpath('operationorder/core/tpl/commonfields_view.tpl.php');
+
+            // Other attributes
+            include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+
+            print '</table>';
+
+            print '</div></div>'; // Fin fichehalfright & ficheaddleft
+            print '</div>'; // Fin fichecenter
+
+            print '<div class="clearboth"></div><br />';
+
+
+			/*
+			 * Lines
+			 */
+
+			// JS nested
+			$TNested = $object->fetch_all_children_nested();
+			print '<div id="ajaxResults" ></div>';
+			print '<div id="nestedLines" >';
+			print _displaySortableNestedItems($TNested, 'sortableLists', true);
+			print '</div>';
+			print '<script src="'.dol_buildpath('operationorder/js/jquery-sortable-lists.min.js',1).'" ></script>';
+			print '<link rel="stylesheet" href="'.dol_buildpath('operationorder/css/sortable.css',1).'" >';
+
+			print '
+			<script type="text/javascript">
+			$(function()
+			{
+			    // Animate modified line
+			    if(window.location.hash) {
+					  var hash = window.location.hash; //Puts hash in variable, and removes the # character
+					  // hash found
+					  console.log($(hash).length);
+					  if ($(hash).length){
+					      if($(hash).hasClass("operation-order-sortable-list__item")) //operation-order-sortable-list__item__title
+						  {
+						      	let itemTitleblock = $(hash).find("> .operation-order-sortable-list__item__title");
+
+								$(\'html,body\').animate({
+								  scrollTop: itemTitleblock.offset().top-150
+								}, 300);
+
+								itemTitleblock.addClass("flipInX");
+								itemTitleblock.addClass("animated");
+						  }
+					  }
+				  } else {
+					  // No hash found
+				  }
+
+
+				var options = {
+					insertZone: 5, // This property defines the distance from the left, which determines if item will be inserted outside(before/after) or inside of another item.
+					placeholderClass: \'operation-order-sortable-list__item--placeholder\',
+					hintClass: \'operation-order-sortable-list__item--hint\',
+					onChange: function( cEl )
+					{
+
+						$("#ajaxResults").html("");
+
+						$.ajax({
+							url: "'.dol_buildpath('operationorder/scripts/interface.php?action=setOperationOrderlevelHierarchy',1).'",
+							method: "POST",
+							data: {
+							    \'operation-order-id\' : '.$object->id.',
+								\'items\' : $(\'#sortableLists\').sortableListsToHierarchy()
+							},
+							dataType: "json",
+
+							// La fonction à apeller si la requête aboutie
+							success: function (data) {
+								// Loading data
+								console.log(data);
+								if(data.result > 0 ){
+								   // ok case
+								   $("#ajaxResults").html(\'<span class="badge badge-success">\' + data.msg + \'</span>\');
+								}
+								else if(data.result < 0 ){
+								   // error case
+								   $("#ajaxResults").html(\'<span class="badge badge-danger">\' + data.errorMsg + \'</span>\');
+								}
+								else{
+								   // nothing to do ?
+								}
+							},
+							// La fonction à appeler si la requête n\'a pas abouti
+							error: function( jqXHR, textStatus ) {
+								alert( "Request failed: " + textStatus );
+							}
+						});
+					},
+					complete: function( cEl )
+					{
+
+
+
+					},
+					isAllowed: function( cEl, hint, target )
+					{
+						// Be carefull if you test some ul/ol elements here.
+						// Sometimes ul/ols are dynamically generated and so they have not some attributes as natural ul/ols.
+						// Be careful also if the hint is not visible. It has only display none so it is at the previouse place where it was before(excluding first moves before showing).
+
+						if( target.data(\'id\') != cEl.data(\'parent\') )
+						{
+							hint.addClass( "hint-desabled" );
+							hint.removeClass( "hint-enabled" );
+							return false;
+						}
+						else
+						{
+							hint.removeClass( "hint-desabled" );
+							hint.addClass( "hint-enabled" );
+							return true;
+						}
+					},
+//					opener: {
+//						active: false,
+//						as: \'html\',  // if as is not set plugin uses background image
+//						close: \'<i class="fa fa-minus c3"></i>\',  // or \'fa-minus c3\',  // or \'./imgs/Remove2.png\',
+//						open: \'<i class="fa fa-plus"></i>\',  // or \'fa-plus\',  // or\'./imgs/Add2.png\',
+//						openerCss: {
+//							\'display\': \'inline-block\',
+//							//\'width\': \'18px\', \'height\': \'18px\',
+//							\'float\': \'left\',
+//							\'margin-left\': \'-35px\',
+//							\'margin-right\': \'5px\',
+//							//\'background-position\': \'center center\', \'background-repeat\': \'no-repeat\',
+//							\'font-size\': \'1.1em\'
+//						}
+//					},
+					//ignoreClass: \'clickable\',
+					handle: ".handle",
+					insertZonePlus: true,
+				};
+
+
+				$(\'#sortableLists\').sortableLists( options );
+			});
+
+
+			</script>';
+
+
+
+			// ADD FORM
+			if($action != 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
+				print '<div class="add-line-form-wrap" >';
+				print '<div class="add-line-form-title" >';
+				print $langs->trans("AddOperationOrderLine");
+				print '</div>';
+				print '<div class="add-line-form-body" >';
+				print _displayFormFields($object);
+				print '</div>';
+				print '</div>';
+			}
+			elseif($action == 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
+				$lineid = GETPOST('lineid', 'int');
+				if(!empty($lineid)){
+
+					$line=new OperationOrderDet($db);
+					$res = $line->fetch($lineid);
+
+					print '<div id="dialog-form-edit" style="display: none;" >';
+					print '<div id="edit-item_'.$line->id.'" class="edit-line-form-wrap" title="'.$line->ref.'" >';
+					print '<div class="edit-line-form-body" >';
+					if($res>0){
+						print _displayFormFields($object, $line, 0);
+					}
+					else{
+						print $langs->trans('LineNotFound');
+					}
+					print '</div>';
+					print '</div>';
+					print '</div>';
+
+
+					// MISE A JOUR AJAX DE L'ORDRE DES LIGNES
+					print '
+					<script type="text/javascript">
+					$(function()
+					{
+						var cardUrl = "'.$_SERVER["PHP_SELF"].'?id='.$object->id.'";
+						var itemHash = "#item_'.$line->id.'";
+
+						var dialogBox = jQuery("#dialog-form-edit");
+						var width = $(window).width();
+						var height = $(window).height();
+						if(width > 700){ width = 700; }
+						if(height > 600){ height = 600; }
+						//console.log(height);
+						dialogBox.dialog({
+							autoOpen: false,
+							resizable: true,
+					//		height: height,
+							width: width,
+							modal: true,
+							buttons: {
+								"'.$langs->transnoentitiesnoconv('Update').'": function() {
+									dialogBox.find("form").submit();
+								}
+							},
+							close: function( event, ui ) {
+								window.location.replace(cardUrl + itemHash);
+							}
+						});
+
+						function popOperationOrderEditLineFormDialog(id)
+						{
+							var item = $("#edit-item_" + id);
+
+							dialogBox.dialog({
+							  title: item.attr("title")
+							});
+
+							dialogBox.dialog( "open" );
+						}
+
+						popOperationOrderEditLineFormDialog("'.intval($lineid).'");
+
+					});
+					</script>';
+				}
+			}
+
+            print '<div class="tabsAction">'."\n";
+            if ($action != 'editline')
+            {
+                $parameters=array();
+                $reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
+                if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
+                if (empty($reshook))
+                {
+                    // Send
+                    //        print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
+
+                    // Modify
+                    if (!empty($user->rights->operationorder->write))
+                    {
+                        // Valid
+                        if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
+
+                        // Reopen
+                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=modify">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+                        if ($object->status == OperationOrder::STATUS_CLOSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderReopen').'</a></div>'."\n";
+
+                        // Close
+                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=close">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
+
+                        // Clone
+                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
+                    }
+                    else
+                    {
+                        // Valid
+                        if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
+
+                        // Reopen
+                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+
+                        // Close
+                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
+
+                        // Clone
+                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
+                    }
+
+                    if (!empty($user->rights->operationorder->delete))
+                    {
+                        print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans("OperationOrderDelete").'</a></div>'."\n";
+                    }
+                    else
+                    {
+                        print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderDelete").'</a></div>'."\n";
+                    }
+                }
+            }
+            print '</div>'."\n";
+
+            print '<div class="fichecenter"><div class="fichehalfleft">';
+            print '<a name="builddoc"></a>'; // ancre
+
+            // Documents generes
+            $filename = dol_sanitizeFileName($object->ref);
+            $filedir = $conf->operationorder->multidir_output[$object->entity].'/'.dol_sanitizeFileName($object->ref);
+            $urlsource = $_SERVER['PHP_SELF'].'?id='.$object->id;
+            $genallowed = $usercanread;
+            $delallowed = $usercancreate;
+
+//            var_dump($filename, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf);exit;
+            print $formfile->showdocuments('operationorder', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', '', '', $soc->default_lang, '', $object);
+            $somethingshown = $formfile->numoffiles;
+
+            // Show links to link elements
+            $linktoelem = $form->showLinkToObjectBlock($object, null, array($object->element));
+            $somethingshown = $form->showLinkedObjectBlock($object, $linktoelem);
+
+            print '</div><div class="fichehalfright"><div class="ficheaddleft">';
+
+            // List of actions on element
+            include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
+            $formactions = new FormActions($db);
+            $somethingshown = $formactions->showactions($object, $object->element, $socid, 1);
+
+            print '</div></div></div>';
+
+            dol_fiche_end(-1);
+        }
 	}
-
-
-	// Select mail models is same action as presend
-	if (GETPOST('modelselected')) {
-		$action = 'presend';
-	}
-
-	if ($action != 'presend')
-	{
-	    print '<div class="fichecenter"><div class="fichehalfleft">';
-	    print '<a name="builddoc"></a>'; // ancre
-
-	    // Documents
-	    /*$objref = dol_sanitizeFileName($object->ref);
-	    $relativepath = $objref . '/' . $objref . '.pdf';
-	    $filedir = $conf->operationorder->dir_output . '/' . $objref;
-	    $urlsource = $_SERVER["PHP_SELF"] . "?id=" . $object->id;
-	    $genallowed = $user->rights->operationorder->operationorder->read;	// If you can read, you can build the PDF to read content
-	    $delallowed = $user->rights->operationorder->operationorder->create;	// If you can create/edit, you can remove a file on card
-	    print $formfile->showdocuments('operationorder', $objref, $filedir, $urlsource, $genallowed, $delallowed, $object->modelpdf, 1, 0, 0, 28, 0, '', '', '', $langs->defaultlang);
-		*/
-
-	    // Show links to link elements
-	    $linktoelem = $form->showLinkToObjectBlock($object, null, array('operationorder'));
-	    $somethingshown = $form->showLinkedObjectBlock($object, $linktoelem);
-
-
-	    print '</div><div class="fichehalfright"><div class="ficheaddleft">';
-
-	    $MAXEVENT = 10;
-
-	    $morehtmlright = '<a href="'.dol_buildpath('/operationorder/operationorder_agenda.php', 1).'?id='.$object->id.'">';
-	    $morehtmlright .= $langs->trans("SeeAll");
-	    $morehtmlright .= '</a>';
-
-	    // List of actions on element
-	    include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
-	    $formactions = new FormActions($db);
-	    $somethingshown = $formactions->showactions($object, $object->element, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlright);
-
-	    print '</div></div></div>';
-	}
-
-	//Select mail models is same action as presend
-	/*
-	if (GETPOST('modelselected')) $action = 'presend';
-
-	// Presend form
-	$modelmail='operationorder';
-	$defaulttopic='InformationMessage';
-	$diroutput = $conf->operationorder->dir_output;
-	$trackid = 'operationorder'.$object->id;
-
-	include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
-	*/
 }
 
-// End of page
+
 llxFooter();
 $db->close();
+
+
+
+function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
+	global $langs, $user, $extrafields, $conf;
+	if(!empty($TNested) && is_array($TNested)){
+		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
+		foreach ($TNested as $k => $v) {
+			$line = $v['object'];
+			/**
+			 * @var $line OperationOrderDet
+			 */
+			$line->calcPrices();
+
+			if (empty($line->id)) $line->id = $line->rowid;
+
+			$class = '';
+			if ($open) {
+				$class .= 'sortableListsClosed';
+			}
+
+			// Product
+			$label = $line->description;
+			$line->product_label = '';
+			if ($line->fk_product > 0) {
+				$product = new Product($line->db);
+				$product->fetch($line->fk_product);
+				$product->ref = $line->ref; //can change ref in hook
+				$product->label = $line->label; //can change label in hook
+				$label = $product->getNomUrl(1) . ' - ' . $product->label;
+
+				$line->product_label = $product->label;
+				$line->stock_reel 		= $product->stock_reel;
+				$line->stock_theorique 	= $product->stock_theorique;
+			}
+
+			$out .= '<li id="item_' . $line->id . '" class="operation-order-sortable-list__item ' . $class . '" ';
+			$out .= ' data-id="' . $line->id . '" ';
+			$out .= ' data-ref="' . dol_escape_htmltag($line->ref) . '" ';
+			$out .= ' data-rank="' . dol_escape_htmltag($line->rang) . '" ';
+			$out .= ' data-parent="' . $line->fk_parent_line . '" ';
+			$out .= '>';
+			$out .= '<div class="operation-order-sortable-list__item__title">';
+			$out .= '	<div class="operation-order-sortable-list__item__title__flex">';
+
+			// DESCRIPTION
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -description">';
+			$out .= '			<div class="line-description-label">'.$label.'</div>';
+			// Add description
+			if ($line->fk_product > 0 && !empty($conf->global->PRODUIT_DESC_IN_FORM))
+			{
+				if(!empty($line->description) && $line->description != $line->product_label)
+				{
+					$out .= '	<div class="line-description">'.dol_htmlentitiesbr($line->description).'</div>';
+				}
+			}
+			$out .= '		</div>';
+
+			// QTY ORDERED
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
+			$out .= '			<span class="classfortooltip" title="' . $langs->trans("QtyOrdered") . '" >';
+			$out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
+			$out .= '			</span>';
+			$out .= '		</div>';
+
+
+			// TIME SPENT AND PLANNED
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -time-spent">';
+			$out .= '			<i class="far fa-hourglass"></i> ';
+
+			$hoursSpendClass = '';
+			if(intval($line->time_planned) < intval($line->time_spent)){
+				$hoursSpendClass = 'badge badge-danger';
+			}
+
+			$out .= '			<span class="classfortooltip '.$hoursSpendClass.'"  title="' . $langs->trans("HoursSpent") . '">';
+			if (!empty($line->time_spent)){
+				$out .= convertSecondToTime(intval($line->time_spent));
+			}else{
+				$out .= ' -- ';
+			}
+
+			$out .= '			</span>';
+			$out.= ' / ';
+			$out.= '			<span class="classfortooltip"  title="'.$langs->trans("HoursPlanned").'">';
+			if (!empty($line->time_planned)){
+				$out.= convertSecondToTime(intval($line->time_planned)) ;
+			}else{
+				$out .= ' -- ';
+			}
+			$out.= '			</span>';
+
+			$out.= '		</div>';
+
+			// ECART
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -difference">';
+			if (!empty($line->time_planned) && !empty($line->time_spent)){
+				$ecart = intval($line->time_planned) - intval($line->time_spent);
+				$sign = '';
+				if($ecart>0){
+					$textClass = "text-success";
+					$iconClass = "fa-caret-down";
+					$sign = '-';
+				}elseif($ecart==0){
+					$textClass = "text-warning";
+					$iconClass = "fa-caret-left";
+				}else{
+					$textClass = "text-danger";
+					$iconClass = "fa-caret-up";
+					$sign = '+';
+				}
+
+				$out.= '<span class="'.$textClass.' classfortooltip paddingrightonly" title="'.$langs->trans('TimeDifference').'" ><i class="fa '.$iconClass.'"></i> '.$sign. dol_print_date(abs($ecart), '%HH%M', true).'</span>';
+
+			}else{
+				$out .= ' -- ';
+			}
+			$out .= '		</div>';
+
+			// PU HT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -unit-price">';
+			$out .= price($line->price).'&nbsp;'.$langs->trans('HT');
+			$out .= '		</div>';
+
+
+			// TOTAL HT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -total-price">';
+			$out .= price($line->total_ht).'&nbsp;'.$langs->trans('HT');
+			$out .= '		</div>';
+
+
+			// EMPLACEMENT
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
+			$out .=  $line->showOutputFieldQuick('fk_warehouse');
+			$out .= '		</div>';
+
+			// STOCK
+			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
+			$out .= $line->stockStatus();
+			$out .= '		</div>';
+
+
+			// ACTIONS
+			$out.= '		<div class="operation-order-sortable-list__item__title__col -action">';
+
+			if ($line->status == OperationOrder::STATUS_DRAFT && !empty($user->rights->operationorder->write)) {
+
+				$editUrl = dol_buildpath('operationorder/operationorder_card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=editline&amp;lineid='.$line->id;
+
+				//#item_'.$line->id.'
+				$out.= '<a href="'.$editUrl.'" class="classfortooltip operation-order-sortable-list__item__title__button -edit-btn"  title="' . $langs->trans("Edit") . '" data-id="'.$line->id.'">';
+				$out.= '<i class="fa fa-pencil "></i>';
+				$out.= '</a>';
+
+				$deleteUrl = dol_buildpath('operationorder/operationorder_card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=ask_deleteline&amp;lineid='.$line->id;
+
+				$out.= '<a href="'.$deleteUrl.'" class="classfortooltip operation-order-sortable-list__item__title__button  -delete-btn"  title="' . $langs->trans("Delete") . '"  data-id="'.$line->id.'">';
+				$out.= '<i class="fa fa-trash "></i>';
+				$out.= '</a>';
+
+				// Handler icon
+				$out .= '<span class="operation-order-sortable-list__item__title__button handle move"><i title="' . $langs->trans("Move") . '" class="fa fa-th"></i></span>';
+			}
+
+			$out.= '		</div>';
+
+			$out.= '	</div>';
+
+			//Line extrafield
+//			if (!empty($extrafields))
+//			{
+//				$line->fetch_optionals();
+//				$out.= '<!-- extrafields -->';
+//				$out.= '<table>';
+//				$out.= $line->showOptionals($extrafields, 'view', array(), '', '', 1);
+//				$out.= '</table>';
+//			}
+
+
+			$out.= '</div>';
+			$out.= _displaySortableNestedItems($v['children'], '', $open);
+			$out.= '</li>';
+		}
+		$out.= '</ul>';
+		return $out;
+	}
+	else{
+		return '';
+	}
+}
+
+
+/**
+ * @param $object OperationOrder
+ * @param $line OperationOrderDet
+ * @param $showSubmitBtn bool
+ * @return string
+ */
+function _displayFormFields($object, $line= false, $showSubmitBtn = true)
+{
+	global $langs, $db, $form;
+
+	$outForm = '';
+
+	if($line && $line->id > 0){
+		$action = 'edit';
+	}
+	else{
+		$action = 'create';
+		$line=new OperationOrderDet($db);
+
+		// set default values
+		$line->qty = '';
+		$line->price = '';
+	}
+
+	$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
+
+	// Ancors
+	$actionUrl.= ($action == 'create') ? '#addline':'#item_'.$line->id;
+
+	$outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
+
+	$outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
+	$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
+	$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+	$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
+
+	if($action == 'edit') {
+		$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
+		$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
+		$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
+		$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
+	}else{
+		$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
+	}
+
+	$line->fields = dol_sort_array($line->fields, 'position');
+
+	$outForm.= '<table class="table-full">';
+	foreach($line->fields as $key => $val)
+	{
+		// Discard if extrafield is a hidden field on form
+		if (abs($val['visible']) != 1 && abs($val['visible']) != 3) continue;
+
+		$mode = 'edit'; // edit or view
+
+		// for some case if you need to change display mode
+		if($key == 'xxxxxx' && $action == 'edit') {
+			$mode = 'view';
+		}
+
+		if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) continue;	// We don't want this field
+
+		$outForm.=  '<tr id="field_'.$key.'">';
+		$outForm.=  '<td';
+		$outForm.=  ' class="titlefieldcreate';
+		if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
+		if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
+		$outForm.=  '"';
+		$outForm.=  '>';
+
+		if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
+		else $outForm.=  $langs->trans($val['label']);
+		$outForm.=  '</td>';
+
+		$outForm.=  '<td>';
+
+		// Load value from object
+		$value = '';
+		if(isset($line->{$key})){
+			$value = $line->{$key};
+		}
+
+		if(GETPOSTISSET($key)){
+			if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
+			elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
+			else $value = GETPOST($key, 'alpha');
+		}
+
+		if($mode == 'edit'){
+			$outForm.=  $line->showInputField($val, $key, $value, '', '', '', 0);
+		}
+		else{
+			$outForm.=  $line->showOutputField($val, $key, $value, '', '', '', 0);
+		}
+		$outForm.=  '</td>';
+
+		$outForm.=  '</tr>';
+	}
+
+	if($showSubmitBtn){
+
+		$outForm.=  '<tr>';
+		$outForm.=  '	<td colspan="2"><hr/></td>';
+		$outForm.=  '</tr>';
+
+		$outForm.=  '<tr>';
+		$outForm.=  '	<td>';
+		$outForm.=  '	</td>';
+		$outForm.=  '	<td>';
+		if($action == 'create'){
+			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
+		}else{
+			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
+		}
+		$outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
+		$outForm.=  '	</td>';
+		$outForm.=  '</tr>';
+	}
+
+	$outForm.= '</table>';
+
+
+
+	$outForm.= '</form>';
+
+	return $outForm;
+}

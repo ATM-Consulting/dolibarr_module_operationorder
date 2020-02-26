@@ -21,6 +21,7 @@ ParamHelp=Le contenu de l'aide
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
+OperationOrderTopMenu=Réparations
 
 # STATUS
 OperationOrderStatusCanceled=Abandonnée (fermée)
@@ -45,6 +46,7 @@ NoOperationOrder=(vide)
 NewOperationOrder=Création ordre de réparation
 OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
+ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
@@ -55,7 +57,21 @@ OperationOrderRefuse=Refuser
 OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
+OperationOrderDetPc=Pc
+StockPlace=Emplacement
+TimePlanned=Temps planifié
+AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation
+OperationOrderLineAdded=ligne ajoutée l'ordre de réparation
+LineNotFound=Ligne introuvable
 
+QtyOrdered=Quantité commandé
+ExpectedWorkload=Charge de travail prévue
+HoursPlanned=Temps Plannifié
+HoursSpent=Temps consommé
+TimeDifference=Ecart : temps prévue - temps réel passé
+NotEnoughStockAvailable=Stock insufisant
+VirtualStockAvailable=En stock virtuel
+StockAvailable=En stock
 OperationOrderType=Type
 
 ConfirmValidateOperationOrderTitle=Valider ordre de réparation
@@ -69,3 +85,7 @@ ConfirmDeleteOperationOrderBody=Êtes-vous sûr de vouloir effacer cet ordre de 
 
 ConfirmCloseOperationOrderTitle=Clôturer ordre de réparation
 ConfirmCloseOperationOrderBody=Êtes-vous sûr de vouloir clôturer cet ordre de réparation ?
+
+
+# AJAX
+UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées

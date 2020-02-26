@@ -51,6 +51,8 @@ $type = 'operationorder';
 /*
  * Actions
  */
+
+
 if (preg_match('/set_(.*)/', $action, $reg))
 {
 	$code=$reg[1];
@@ -64,7 +66,7 @@ if (preg_match('/set_(.*)/', $action, $reg))
 		dol_print_error($db);
 	}
 }
-	
+
 if (preg_match('/del_(.*)/', $action, $reg))
 {
 	$code=$reg[1];
@@ -81,8 +83,8 @@ if (preg_match('/del_(.*)/', $action, $reg))
 
 if ($action == 'updateMask')
 {
-    $maskconstorder = GETPOST('maskconstorder', 'alpha');
-    $maskorder = GETPOST('maskorder', 'alpha');
+    $maskconstorder = GETPOST('maskconstOperationOrder', 'alpha');
+    $maskorder = GETPOST('maskOperationOrder', 'alpha');
 
     if ($maskconstorder) $res = dolibarr_set_const($db, $maskconstorder, $maskorder, 'chaine', 0, '', $conf->entity);
 
@@ -173,6 +175,13 @@ elseif ($action == 'setdoc')
         $ret = addDocumentModel($value, $type, $label, $scandir);
     }
 }
+elseif ($action == 'setmod')
+{
+	// TODO Verifier si module numerotation choisi peut etre active
+	// par appel methode canBeActivated
+
+	dolibarr_set_const($db, "OPERATIONORDER_ADDON", $value, 'chaine', 0, '', $conf->entity);
+}
 /*
  * View
  */
@@ -200,24 +209,24 @@ dol_fiche_head(
 // Setup page goes here
 $form=new Form($db);
 $var=false;
-print '<table class="noborder" width="100%">';
-
 
 if(!function_exists('setup_print_title')){
     print '<div class="error" >'.$langs->trans('AbricotNeedUpdate').' : <a href="http://wiki.atm-consulting.fr/index.php/Accueil#Abricot" target="_blank"><i class="fa fa-info"></i> Wiki</a></div>';
     exit;
 }
 
-setup_print_title("Parameters");
+print '<table class="noborder" width="100%">';
+
+//setup_print_title("Parameters");
 
 // Example with a yes / no select
-setup_print_on_off('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc');
+//setup_print_on_off('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc');
 
 // Example with imput
-setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
+//setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
 
 // Example with color
-setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc', array('type'=>'color'), 'input', 'ParamHelp');
+//setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc', array('type'=>'color'), 'input', 'ParamHelp');
 
 // Example with placeholder
 //setup_print_input_form_part('CONSTNAME',$langs->trans('ParamLabel'),'ParamDesc',array('placeholder'=>'http://'),'input','ParamHelp');
@@ -299,7 +308,7 @@ foreach ($dirmodels as $reldir)
                         $htmltooltip = '';
                         $htmltooltip .= ''.$langs->trans("Version").': <b>'.$module->getVersion().'</b><br>';
                         $operationorder->type = 0;
-                        $nextval = $module->getNextValue($mysoc, $operationorder);
+                        $nextval = $module->getNextValue($operationorder);
                         if ("$nextval" != $langs->trans("NotAvailable")) {  // Keep " on nextval
                             $htmltooltip .= ''.$langs->trans("NextValue").': ';
                             if ($nextval) {

@@ -44,10 +44,10 @@ class modOperationOrder extends DolibarrModules
 
 		$this->editor_name = 'ATM-Consulting';
 		$this->editor_url = 'https://www.atm-consulting.fr';
-		
+
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
-		$this->numero = 104088; // 104000 to 104999 for ATM CONSULTING
+		$this->numero = 104158; // 104000 to 104999 for ATM CONSULTING // ancien numéro 104088
 		// Key text used to identify module (for permissions, menus, etc...)
 		$this->rights_class = 'operationorder';
 
@@ -59,7 +59,7 @@ class modOperationOrder extends DolibarrModules
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
 		$this->description = "Description of module OperationOrder";
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.0.0';
+		$this->version = '1.5.0';
 		// Key used in llx_const table to save module status enabled/disabled (where OPERATIONORDER is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
@@ -68,7 +68,7 @@ class modOperationOrder extends DolibarrModules
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
 		$this->picto='operationorder@operationorder';
-		
+
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
 		// for default path (eg: /operationorder/core/xxxxx) (0=disable, 1=enable)
 		// for specific path of parts (eg: /operationorder/core/modules/barcode)
@@ -218,7 +218,7 @@ class modOperationOrder extends DolibarrModules
 		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
-		
+
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_write';	// Permission label
 		$this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
@@ -241,20 +241,20 @@ class modOperationOrder extends DolibarrModules
 		// Add here entries to declare new menus
 		//
 		// Example to declare a new Top Menu entry and its Left menu entry:
-		// $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder',		// Put 0 if this is a single top menu or keep fk_mainmenu to give an entry on left
-		//							'type'=>'top',			                // This is a Top menu entry
-		//							'titre'=>'OperationOrder top menu',
-		//							'mainmenu'=>'operationorder',
-		//							'leftmenu'=>'operationorder_left',			// This is the name of left menu for the next entries
-		//							'url'=>'/operationorder/pagetop.php',
-		//							'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-		//							'position'=>100,
-		//							'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->operationorder->enabled' if entry must be visible if module is enabled.
-		//							'perms'=>'1',			                // Use 'perms'=>'$user->rights->operationorder->level1->level2' if you want your menu with a permission rules
-		//							'target'=>'',
-		//							'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
-		// $r++;
-		//
+		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder',		// Put 0 if this is a single top menu or keep fk_mainmenu to give an entry on left
+									'type'=>'top',			                // This is a Top menu entry
+									'titre'=>'OperationOrderTopMenu',
+									'mainmenu'=>'operationorder',
+									'leftmenu'=>'operationorder_left',			// This is the name of left menu for the next entries
+			 						'url'=>'/operationorder/list.php',
+									'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>100,
+									'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->operationorder->enabled' if entry must be visible if module is enabled.
+									'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->operationorder->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		 $r++;
+
 		// Example to declare a Left Menu entry into an existing Top menu entry:
 		// $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 		//							'type'=>'left',			                // This is a Left menu entry
@@ -271,10 +271,10 @@ class modOperationOrder extends DolibarrModules
 		// $r++;
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial',			                // Put 0 if this is a top menu
+			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',			                // Put 0 if this is a top menu
             'type'=>'left',			                // This is a Top menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrder'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left',
             'url'=>'/operationorder/list.php',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
@@ -287,12 +287,12 @@ class modOperationOrder extends DolibarrModules
         $r++;
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_create',
-            'url'=>'/operationorder/card.php?action=create',
+            'url'=>'/operationorder/operationorder_card.php?action=create',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
             'position'=>1000+$r,
             'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
@@ -304,10 +304,10 @@ class modOperationOrder extends DolibarrModules
 
 
         $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderList'),
-            'mainmenu'=>'commercial',
+            'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_list',
             'url'=>'/operationorder/list.php',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
@@ -358,7 +358,7 @@ class modOperationOrder extends DolibarrModules
 			'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
 			'mainmenu'=>'operationorder',
 			'leftmenu'=>'operationorder_left_create',
-			'url'=>'/operationorder/card.php?action=create',
+			'url'=>'/operationorder/operationorder_card.php?action=create',
 			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>100+$r,
 			'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
@@ -385,7 +385,7 @@ class modOperationOrder extends DolibarrModules
 		);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 */
-		
+
 		// Exports
 		$r=1;
 
@@ -415,10 +415,10 @@ class modOperationOrder extends DolibarrModules
 	public function init($options = '')
 	{
 		$sql = array();
-		
+
 		define('INC_FROM_DOLIBARR', true);
 
-		require dol_buildpath('/operationorder/script/create-maj-base.php');
+		require __DIR__ .'/../../script/create-maj-base.php';
 
 		$result=$this->_load_tables('/operationorder/sql/');
 

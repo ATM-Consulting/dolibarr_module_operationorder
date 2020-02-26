@@ -107,10 +107,10 @@ class mod_operationorder_standard extends ModeleNumRefOperationOrder
 	}
 
 	/**
-	 * 	Return next free value
+	 *	Returns next assigned value
 	 *
-	 *  @param  Object		$object		Object we need next value for
-	 *  @return string      			Value if KO, <0 if KO
+	 *	@param	Object		$object		Object we need next value for
+	 *	@return	string      Valeur
 	 */
 	public function getNextValue($object)
 	{
