@@ -292,7 +292,7 @@ class modOperationOrder extends DolibarrModules
             'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
             'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_create',
-            'url'=>'/operationorder/card.php?action=create',
+            'url'=>'/operationorder/operationorder_card.php?action=create',
             'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
             'position'=>1000+$r,
             'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
@@ -358,7 +358,7 @@ class modOperationOrder extends DolibarrModules
 			'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
 			'mainmenu'=>'operationorder',
 			'leftmenu'=>'operationorder_left_create',
-			'url'=>'/operationorder/card.php?action=create',
+			'url'=>'/operationorder/operationorder_card.php?action=create',
 			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>100+$r,
 			'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
