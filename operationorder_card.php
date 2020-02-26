@@ -1116,7 +1116,7 @@ $db->close();
 
 
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
-	global $langs, $user, $extrafields;
+	global $langs, $user, $extrafields, $conf;
 	if(!empty($TNested) && is_array($TNested)){
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
 		foreach ($TNested as $k => $v) {
@@ -1134,14 +1134,16 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			}
 
 			// Product
-			$text = '';
+			$label = $line->description;
+			$line->product_label = '';
 			if ($line->fk_product > 0) {
 				$product = new Product($line->db);
 				$product->fetch($line->fk_product);
 				$product->ref = $line->ref; //can change ref in hook
 				$product->label = $line->label; //can change label in hook
-				$text = $product->getNomUrl(1) . ' - ' . $product->label;
+				$label = $product->getNomUrl(1) . ' - ' . $product->label;
 
+				$line->product_label = $product->label;
 				$line->stock_reel 		= $product->stock_reel;
 				$line->stock_theorique 	= $product->stock_theorique;
 			}
@@ -1157,7 +1159,15 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 			// DESCRIPTION
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -description">';
-			$out .= $text;
+			$out .= '			<div class="line-description-label">'.$label.'</div>';
+			// Add description
+			if ($line->fk_product > 0 && !empty($conf->global->PRODUIT_DESC_IN_FORM))
+			{
+				if(!empty($line->description) && $line->description != $line->product_label)
+				{
+					$out .= '	<div class="line-description">'.dol_htmlentitiesbr($line->description).'</div>';
+				}
+			}
 			$out .= '		</div>';
 
 			// QTY ORDERED
