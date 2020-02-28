@@ -230,6 +230,11 @@ if (empty($reshook))
 
 			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
 			exit;
+		case 'confirm_validate':
+			if (!empty($user->rights->operationorder->write)) $object->setValid($user);
+
+			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+			exit;
 
 		case 'confirm_delete':
 			if (!empty($user->rights->operationorder->delete)) $object->delete($user);
