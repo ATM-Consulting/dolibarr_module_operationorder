@@ -46,8 +46,27 @@ $parameters=array();
 $reshook=$hookmanager->executeHooks('doActions', $parameters, $object);    // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
-if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massaction != 'confirm_presend')
+if (!empty($confirmmassaction) && $massaction != 'presend' && $massaction != 'confirm_presend')
 {
+	if($massaction == 'delete' && !empty($toselect)){
+		foreach ($toselect as $deleteId){
+			$objectToDelete = new OperationOrder($db);
+			$res = $objectToDelete->fetch($deleteId);
+			if($res>0){
+				if($objectToDelete->delete($user)<0)
+				{
+					setEventMessage($langs->trans('OperationOrderDeleteError', $objectToDelete->ref), 'errors');
+				}
+			}
+			else{
+				setEventMessage($langs->trans('OperationOrderNotFound'), 'warnings');
+			}
+		}
+
+		header('Location: '.dol_buildpath('/operationorder/list.php', 1));
+		exit;
+	}
+
     $massaction = '';
 }
 
@@ -101,7 +120,7 @@ $parameters=array('sql' => $sql);
 $reshook=$hookmanager->executeHooks('printFieldListWhere', $parameters, $object);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 
-$formcore = new TFormCore($_SERVER['PHP_SELF'], 'form_list_operationorder', 'GET');
+$formcore = new TFormCore($_SERVER['PHP_SELF'], 'form_list_operationorder', 'POST');
 
 $nbLine = GETPOST('limit');
 if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user->conf->MAIN_SIZE_LISTE_LIMIT : $conf->global->MAIN_SIZE_LISTE_LIMIT;
@@ -122,7 +141,7 @@ $listViewConfig = array(
 		,'messageNothing' => $langs->trans('NoOperationOrder')
 		,'picto_search' => img_picto('', 'search.png', '', 0)
 		,'massactions'=>array(
-			'yourmassactioncode'  => $langs->trans('YourMassActionLabel')
+			'delete'  => $langs->trans('Delete')
 		)
 	)
 	,'subQuery' => array()

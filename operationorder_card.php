@@ -205,9 +205,15 @@ if (empty($reshook))
 		case 'confirm_clone':
             if (!empty($user->rights->operationorder->write))
             {
-                $object->cloneObject($user);
-                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
-                exit;
+                $newid = $object->cloneObject($user);
+                if($newid>0){
+					setEventMessage('OperationOrderCloned');
+					header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+					exit;
+				}
+                else{
+                	setEventMessage('OperationOrderCloneError', 'errors');
+				}
             }
 
         case 'confirm_modify':
@@ -221,6 +227,11 @@ if (empty($reshook))
             break;
 		case 'confirm_close':
 			if (!empty($user->rights->operationorder->write)) $object->setClosed($user);
+
+			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+			exit;
+		case 'confirm_validate':
+			if (!empty($user->rights->operationorder->write)) $object->setValid($user);
 
 			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
 			exit;
@@ -1034,46 +1045,35 @@ else
                     // Send
                     //        print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
 
-                    // Modify
-                    if (!empty($user->rights->operationorder->write))
-                    {
-                        // Valid
-                        if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
+					$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=';
 
-                        // Reopen
-                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=modify">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
-                        if ($object->status == OperationOrder::STATUS_CLOSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('OperationOrderReopen').'</a></div>'."\n";
+					// Valid
+					if ($object->status == OperationOrder::STATUS_DRAFT){
+						print dolGetButtonAction($langs->trans("OperationOrderValid"), '', 'default', $actionUrl . 'valid', '', $user->rights->operationorder->write);
+					}
 
-                        // Close
-                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=close">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
+					// modifiy
+					if ($object->status == OperationOrder::STATUS_VALIDATED){
+						print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'modify', '', $user->rights->operationorder->write);
+					}
 
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
-                    }
-                    else
-                    {
-                        // Valid
-                        if ($object->status == OperationOrder::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderValid').'</a></div>'."\n";
+// Reopen			// Reopen
+					if ($object->status == OperationOrder::STATUS_CLOSED){
+						print dolGetButtonAction($langs->trans("OperationOrderReopen"), '', 'default', $actionUrl . 'reopen', '', $user->rights->operationorder->write);
+					}
 
-                        // Reopen
-                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderModify').'</a></div>'."\n";
+					// Close
+					if ($object->status == OperationOrder::STATUS_VALIDATED){
+						print dolGetButtonAction($langs->trans("OperationOrderClose"), '', 'default', $actionUrl . 'close', '', $user->rights->operationorder->write);
+					}
 
-                        // Close
-                        if ($object->status == OperationOrder::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('OperationOrderClose').'</a></div>'."\n";
+					// Clone
+					print dolGetButtonAction($langs->trans("OperationOrderClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->write);
 
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderClone").'</a></div>'."\n";
-                    }
 
-                    if (!empty($user->rights->operationorder->delete))
-                    {
-                        print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans("OperationOrderDelete").'</a></div>'."\n";
-                    }
-                    else
-                    {
-                        print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("OperationOrderDelete").'</a></div>'."\n";
-                    }
-                }
+					print dolGetButtonAction($langs->trans("OperationOrderDelete"), '', 'danger', $actionUrl . 'delete', '', $user->rights->operationorder->delete);
+
+				}
             }
             print '</div>'."\n";
 
