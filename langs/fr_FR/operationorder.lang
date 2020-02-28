@@ -85,7 +85,12 @@ ConfirmDeleteOperationOrderBody=Êtes-vous sûr de vouloir effacer cet ordre de 
 
 ConfirmCloseOperationOrderTitle=Clôturer ordre de réparation
 ConfirmCloseOperationOrderBody=Êtes-vous sûr de vouloir clôturer cet ordre de réparation ?
-
+OperationOrderCloned=Ordre de réparation cloné
+OperationOrderCloneError=Clônage en échec
+OperationOrderNotFound=Ordre de réparation non trouvé
+OperationOrderDeleteError=Erreur lors de la suppression de l'ordre de réparation %s
 
 # AJAX
 UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées
+ConfirmCloneOperationOrderTitle=Confirmation de clonage
+ConfirmCloneOperationOrderBody=Souhaitez-vous vraiment cloner cette fiche %s ?

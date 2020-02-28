@@ -229,6 +229,69 @@ class OperationOrder extends SeedObject
         return parent::create($user, $notrigger);
     }
 
+	/**
+	 * @param 	User 	$user 		object
+	 * @param	bool	$notrigger	false=launch triggers after, true=disable triggers
+	 * @return  int
+	 */
+	public function cloneObject($user, $notrigger = false)
+	{
+		$this->clear();
+
+		$result = $this->create($user, $notrigger);
+
+		if ($result > 0) {
+			if (!empty($this->lines))
+			{
+				foreach ($this->lines as $i =>& $line)
+				{
+					if(empty($line->fk_parent_line)){
+
+						$lineNeedUpdate = false;
+
+						// search new price
+						if(!empty($line->fk_product))
+						{
+							$product = new Product($this->db);
+							$res = $product->fetch( $line->fk_product);
+							if($res){
+								$line->price = $product->price;
+								$lineNeedUpdate = true;
+							}
+						}
+
+						// Update line if needed
+						if($lineNeedUpdate){
+							$this->updateline(
+								$line->id,
+								$line->description,
+								$line->qty,
+								$line->price,
+								$line->fk_warehouse,
+								$line->pc,
+								$line->time_planned,
+								$line->time_spent,
+								$line->fk_product,
+								$line->info_bits,
+								$line->date_start,
+								$line->date_end,
+								$line->type,
+								$line->fk_parent_line,
+								$line->label,
+								$line->special_code,
+								$line->array_options
+							);
+						}
+
+						// Add others products for lines
+						$this->recurciveAddChildLines($line->id, $line->fk_product, $line->qty);
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
     /**
      * Function to update object or create or delete if needed
      *
@@ -266,21 +329,16 @@ class OperationOrder extends SeedObject
         return $res;
     }
 
-    public function lineLevel($id, $level = 0){
-    	// init pour gagner en temps de traitement
-    	if(empty($this->cacheLineIdNumb)){
-			$this->cacheLineParent = array();
-
-			foreach ($this->TOperationOrderDet as $i => $det){
-				$this->cacheLineParent[$det->id] = $det->fk_parent_line;
-			}
-		}
-
-
-
-
-
-	}
+//    public function lineLevel($id, $level = 0){
+//    	// init pour gagner en temps de traitement
+//    	if(empty($this->cacheLineIdNumb)){
+//			$this->cacheLineParent = array();
+//
+//			foreach ($this->TOperationOrderDet as $i => $det){
+//				$this->cacheLineParent[$det->id] = $det->fk_parent_line;
+//			}
+//		}
+//	}
 
 
 	/**
@@ -992,6 +1050,32 @@ class OperationOrder extends SeedObject
         }
     }
 
+	/**
+	 * @return bool
+	 */
+	protected function clear()
+	{
+		// backup origins lines
+		$this->originLines = $this->lines;
+
+		if (!empty($this->lines) && !empty($this->fk_element))
+		{
+			foreach ($this->lines as $i =>& $line)
+			{
+				if(!empty($line->fk_parent_line)){
+					unset($this->lines[$i]);
+				}
+				else{
+					$line->{$this->fk_element} = 0;
+					$line->clear();
+				}
+			}
+
+			sort($this->lines);
+		}
+
+		return parent::clear();;
+	}
 
 	public function recurciveAddChildLines($fk_line_parent, $fk_product, $qty){
 		global $conf, $langs;
