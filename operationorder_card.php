@@ -1057,15 +1057,15 @@ else
 						print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'modify', '', $user->rights->operationorder->write);
 					}
 
-// Reopen			// Reopen
-					if ($object->status == OperationOrder::STATUS_CLOSED){
-						print dolGetButtonAction($langs->trans("OperationOrderReopen"), '', 'default', $actionUrl . 'reopen', '', $user->rights->operationorder->write);
-					}
+//					// Reopen
+//					if ($object->status == OperationOrder::STATUS_CLOSED){
+//						print dolGetButtonAction($langs->trans("OperationOrderReopen"), '', 'default', $actionUrl . 'reopen', '', $user->rights->operationorder->write);
+//					}
 
-					// Close
-					if ($object->status == OperationOrder::STATUS_VALIDATED){
-						print dolGetButtonAction($langs->trans("OperationOrderClose"), '', 'default', $actionUrl . 'close', '', $user->rights->operationorder->write);
-					}
+//					// Close
+//					if ($object->status == OperationOrder::STATUS_VALIDATED){
+//						print dolGetButtonAction($langs->trans("OperationOrderClose"), '', 'default', $actionUrl . 'close', '', $user->rights->operationorder->write);
+//					}
 
 					// Clone
 					print dolGetButtonAction($langs->trans("OperationOrderClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->write);

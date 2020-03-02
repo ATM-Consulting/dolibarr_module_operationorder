@@ -26,6 +26,7 @@ if (!class_exists('SeedObject'))
 
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once __DIR__ . '/unitstools.class.php';
+require_once __DIR__ . '/operationorderstatus.class.php';
 
 class OperationOrder extends SeedObject
 {
@@ -42,13 +43,13 @@ class OperationOrder extends SeedObject
 	 */
 	const STATUS_VALIDATED = 1;
 	/**
-	 * Refused status
+	 * To plan status
 	 */
-	const STATUS_REFUSED = 3; // Not used
+	const STATUS_TO_PLAN = 3;
 	/**
 	 * Accepted status
 	 */
-	const STATUS_ACCEPTED = 4; // Not used
+	const STATUS_PLANNED = 4; // Not used
 	/**
 	 * Closed status
 	 */
@@ -59,8 +60,8 @@ class OperationOrder extends SeedObject
 		self::STATUS_CANCELED => 'OperationOrderStatusShortCanceled'
 		,self::STATUS_DRAFT => 'OperationOrderStatusShortDraft'
 		,self::STATUS_VALIDATED => 'OperationOrderStatusShortValidated'
-//		,self::STATUS_REFUSED => 'OperationOrderStatusShortRefused'
-//		,self::STATUS_ACCEPTED => 'OperationOrderStatusShortAccepted'
+		,self::STATUS_TO_PLAN => 'OperationOrderStatusShortToPlan'
+//		,self::STATUS_PLANNED => 'OperationOrderStatusShortAccepted'
 		,self::STATUS_CLOSED => 'OperationOrderStatusShortClosed'
 	);
 
@@ -514,13 +515,24 @@ class OperationOrder extends SeedObject
      */
     public function setDraft($user, $notrigger = 0)
     {
+		global $conf, $langs;
+
         if ($this->status == self::STATUS_VALIDATED)
         {
             $this->status = self::STATUS_DRAFT;
             $this->withChild = false;
 
-            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'OPERATIONORDER_UNVALIDATE');
-            else return $this->update($user);
+			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'OPERATIONORDER_DRAFT');
+			else $ret =  $this->update($user);
+			if($ret  > 0 )
+			{
+				// Agenda Hack to replace standard agenda trigger event
+				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+					$eventLabel = $langs->transnoentities('OperationOrderSetStatusDraftEvent', $this->ref );
+					$this->addActionComEvent($eventLabel);
+				}
+			}
         }
 
         return 0;
@@ -533,6 +545,8 @@ class OperationOrder extends SeedObject
      */
     public function setValid($user, $notrigger = 0)
     {
+    	global $conf, $langs;
+
         if ($this->status == self::STATUS_DRAFT)
         {
             $this->ref = $this->getRef();
@@ -540,7 +554,17 @@ class OperationOrder extends SeedObject
             $this->status = self::STATUS_VALIDATED;
             $this->withChild = false;
 
-            $this->update($user);
+			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'OPERATIONORDER_VALID');
+			else $ret =  $this->update($user);
+			if($ret  > 0 )
+			{
+				// Agenda Hack to replace standard agenda trigger event
+				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+					$eventLabel = $langs->transnoentities('OperationOrderSetStatusValidatedEvent', $this->ref );
+					$this->addActionComEvent($eventLabel);
+				}
+			}
         }
 
         return 0;
@@ -551,38 +575,61 @@ class OperationOrder extends SeedObject
      * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
      * @return int
      */
-//    public function setAccepted($user, $notrigger = 0)
-//    {
-//        if ($this->status == self::STATUS_VALIDATED)
-//        {
-//            $this->fk_user_cloture = $user->id;
-//            $this->status = self::STATUS_ACCEPTED;
-//            $this->withChild = false;
-//
-//            $this->update($user);
-//        }
-//
-//        return 0;
-//    }
+    public function setAccepted($user, $notrigger = 0)
+    {
+		global $conf, $langs;
+
+        if ($this->status == self::STATUS_VALIDATED)
+        {
+            $this->fk_user_cloture = $user->id;
+            $this->status = self::STATUS_PLANNED;
+            $this->withChild = false;
+
+			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_ACCEPTED');
+			else $ret =  $this->update($user);
+			if($ret  > 0 )
+			{
+				// Agenda Hack to replace standard agenda trigger event
+				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+					$eventLabel = $langs->transnoentities('OperationOrderSetStatusAcceptedEvent', $this->ref );
+					$this->addActionComEvent($eventLabel);
+				}
+			}
+        }
+
+        return 0;
+    }
 
     /**
      * @param User  $user   User object
      * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
      * @return int
      */
-//    public function setRefused($user, $notrigger = 0)
-//    {
-//        if ($this->status == self::STATUS_VALIDATED)
-//        {
-//            $this->status = self::STATUS_REFUSED;
-//            $this->withChild = false;
-//
-//            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, self::STATUS_REFUSED, $notrigger, 'OPERATIONORDER_REFUSE');
-//            else return $this->update($user);
-//        }
-//
-//        return 0;
-//    }
+    public function setToPlan($user, $notrigger = 0)
+    {
+		global $conf, $langs;
+
+        if ($this->status == self::STATUS_VALIDATED)
+        {
+            $this->status = self::STATUS_TO_PLAN;
+            $this->withChild = false;
+
+			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_TO_PLAN');
+			else $ret =  $this->update($user);
+			if($ret  > 0 )
+			{
+				// Agenda Hack to replace standard agenda trigger event
+				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+					$eventLabel = $langs->transnoentities('OperationOrderSetStatusToPlanEvent', $this->ref );
+					$this->addActionComEvent($eventLabel);
+				}
+			}
+        }
+
+        return 0;
+    }
 
     /**
      * @param User  $user   User object
@@ -591,33 +638,76 @@ class OperationOrder extends SeedObject
      */
     public function setClosed($user, $notrigger = 0)
     {
+		global $conf, $langs;
+
         if ($this->status == self::STATUS_VALIDATED)
         {
             $this->fk_user_cloture = $user->id;
             $this->status = self::STATUS_CLOSED;
             $this->withChild = false;
 
-            return $this->update($user);
+			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_CLOSE');
+			else $ret =  $this->update($user);
+			if($ret  > 0 )
+			{
+				// Agenda Hack to replace standard agenda trigger event
+				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+					$eventLabel = $langs->transnoentities('OperationOrderSetStatusClosedEvent', $this->ref );
+					$this->addActionComEvent($eventLabel);
+				}
+			}
         }
 
         return 0;
     }
 
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setReopen($user, $notrigger = 0)
-    {
-        if ($this->status == self::STATUS_CLOSED)
-        {
-            $this->status = self::STATUS_VALIDATED;
-            $this->withChild = false;
+	/**
+	 *    Set to a status
+	 *
+	 * @param User $user Object user that modify
+	 * @param int $fk_status New status to set (often a constant like self::STATUS_XXX)
+	 * @param int $notrigger 1=Does not execute triggers, 0=Execute triggers
+	 * @param string $triggercode Trigger code to use
+	 * @return    int                        <0 if KO, >0 if OK
+	 * @throws Exception
+	 */
+	public function setStatus($user, $fk_status, $notrigger = 0, $triggercode = '')
+	{
+		global $conf, $langs;
 
-            if (method_exists($this, 'setStatusCommon')) return $this->setStatusCommon($user, $this->status, $notrigger, 'OPERATIONORDER_REOPEN');
-            else return $this->update($user);
-        }
+		$status = new OperationOrderStatus($this->db);
+		$res = $status->fetch($this->status);
+		if($res>0)
+		{
+			if($status->checkStatusTransition($user, $status))
+			{
+				$this->status = intval($status);
+				$this->withChild = false;
+
+				if (method_exists($this, 'setStatusCommon')){
+					$ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_STATUS');
+				}
+				else{
+					$ret =  $this->update($user);
+				}
+
+				if($ret  > 0 )
+				{
+					// Agenda Hack to replace standard agenda trigger event
+					$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
+					if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+						$eventLabel = $langs->transnoentities('OperationOrderSetStatus', $status->label , $this->ref );
+						$this->addActionComEvent($eventLabel);
+					}
+
+					return 1;
+				}
+			}
+			else{
+				$this->error($langs->trans('Status'));
+			}
+		}
 
         return 0;
     }
@@ -702,8 +792,8 @@ class OperationOrder extends SeedObject
         elseif ($status==self::STATUS_DRAFT) { $statusType='status0'; $statusLabel=$langs->trans('OperationOrderStatusDraft'); $statusLabelShort=$langs->trans('OperationOrderStatusShortDraft'); }
 //        elseif ($status==self::STATUS_VALIDATED) { $statusType='status1'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
         elseif ($status==self::STATUS_VALIDATED) { $statusType='status4'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
-//        elseif ($status==self::STATUS_REFUSED) { $statusType='status5'; $statusLabel=$langs->trans('OperationOrderStatusRefused'); $statusLabelShort=$langs->trans('OperationOrderStatusShortRefused'); }
-//        elseif ($status==self::STATUS_ACCEPTED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusAccepted'); $statusLabelShort=$langs->trans('OperationOrderStatusShortAccepted'); }
+//        elseif ($status==self::STATUS_TO_PLAN) { $statusType='status5'; $statusLabel=$langs->trans('OperationOrderStatusRefused'); $statusLabelShort=$langs->trans('OperationOrderStatusShortRefused'); }
+//        elseif ($status==self::STATUS_PLANNED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusAccepted'); $statusLabelShort=$langs->trans('OperationOrderStatusShortAccepted'); }
         elseif ($status==self::STATUS_CLOSED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusClosed'); $statusLabelShort=$langs->trans('OperationOrderStatusShortClosed'); }
 
         if (function_exists('dolGetStatus'))
@@ -1171,6 +1261,43 @@ class OperationOrder extends SeedObject
 		}
 
 		return 0;
+	}
+
+	/**
+	 * @param $label
+	 * @param string $note
+	 * @return int
+	 * @throws Exception
+	 */
+	function addActionComEvent($label, $note = ''){
+		global $user;
+
+		require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
+
+		$object = new ActionComm($this->db);
+		$object->code = 'AC_OTH_AUTO';
+		$object->type_code = $object->code; // if missing there is an error
+		$object->label = $label;
+		$object->note_private = $note;
+
+		$object->datep = time();
+
+		$object->fk_element = $this->id;    // Id of record
+		$object->elementid = 0;    // Id of record alternative for API
+		$object->elementtype = $this->element.'@operationorder';   // Type of record. This if property ->element of object linked to.
+
+		$object->socid = $this->fk_soc;
+		$object->userownerid = $user->id;
+		$object->percentage = -1;
+
+
+		$newEventId = $object->create($user);
+		if($newEventId < 1)
+		{
+			dol_syslog(__CLASS__ . ":".__METHOD__." launched by " . __FILE__ . ". id=" . $this->id.' error code : '.$object->error, LOG_ERR);
+			return -1;
+		}
+
 	}
 }
 

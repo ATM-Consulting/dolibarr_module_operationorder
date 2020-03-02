@@ -214,25 +214,45 @@ class modOperationOrder extends DolibarrModules
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_read';	// Permission label
-		$this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_write';	// Permission label
-		$this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'write';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_delete';	// Permission label
-		$this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'delete';		    // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
+		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+		$this->rights[$r][1] = 'operationorder_read';	// Permission label
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$r++;
+
+		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+		$this->rights[$r][1] = 'operationorder_status_read';	// Permission label
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+		$this->rights[$r][4] = 'status';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$this->rights[$r][5] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$r++;
+
+		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+		$this->rights[$r][1] = 'operationorder_status_write';	// Permission label
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+		$this->rights[$r][4] = 'status';		    // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$this->rights[$r][5] = 'write';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$r++;
 
 		// Main menu entries
 		$this->menu = array();			// List of menus to add
@@ -270,37 +290,38 @@ class modOperationOrder extends DolibarrModules
 		//							'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		// $r++;
 
-        $this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',			                // Put 0 if this is a top menu
-            'type'=>'left',			                // This is a Top menu entry
-            'titre'=>$langs->trans('LeftMenuOperationOrder'),
-            'mainmenu'=>'operationorder',
-            'leftmenu'=>'operationorder_left',
-            'url'=>'/operationorder/list.php',
-            'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'position'=>1000+$r,
-            'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
-            'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-            'target'=>'',
-            'user'=>0
-        );
-        $r++;
+		$this->menu[$r]=array(
+			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',			                // This is a Left menu entry
+			'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
+			'mainmenu'=>'operationorder',
+			'leftmenu'=>'operationorder_left_create',
+			'url'=>'/operationorder/operationorder_card.php?action=create',
+			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>1000+$r,
+			'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'perms'=> '$user->rights->operationorder->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+			'target'=>'',
+			'user'=>0
+		);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
 
-        $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-            'type'=>'left',			                // This is a Left menu entry
-            'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
-            'mainmenu'=>'operationorder',
-            'leftmenu'=>'operationorder_left_create',
-            'url'=>'/operationorder/operationorder_card.php?action=create',
-            'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'position'=>1000+$r,
-            'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'perms'=> '$user->rights->operationorder->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-            'target'=>'',
-            'user'=>0
-        );				                // 0=Menu for internal users, 1=external users, 2=both
-        $r++;
+//        $this->menu[$r]=array(
+//			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',			                // Put 0 if this is a top menu
+//            'type'=>'left',			                // This is a Top menu entry
+//            'titre'=>$langs->trans('LeftMenuOperationOrder'),
+//            'mainmenu'=>'operationorder',
+//            'leftmenu'=>'operationorder_left_list',
+//            'url'=>'/operationorder/list.php',
+//            'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+//            'position'=>1000+$r,
+//            'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
+//            'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+//            'target'=>'',
+//            'user'=>0
+//        );
+//        $r++;
+
 
 
         $this->menu[$r]=array(
@@ -319,72 +340,57 @@ class modOperationOrder extends DolibarrModules
         );				                // 0=Menu for internal users, 1=external users, 2=both
         $r++;
 
-/*
-		$this->menu[$r]=array(
-			'fk_menu'=>0,			                // Put 0 if this is a top menu
-			'type'=>'top',			                // This is a Top menu entry
-			'titre'=>$langs->trans('TopMenuOperationOrder'),
-			'mainmenu'=>'operationorder',
-			'leftmenu'=>'',
-			'url'=>'/operationorder/list.php',
-			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);
-		$r++;
+
+
 
 		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=operationorder',			                // Put 0 if this is a top menu
-			'type'=>'left',			                // This is a Top menu entry
-			'titre'=>$langs->trans('TopMenuOperationOrder'),
-			'mainmenu'=>'operationorder',
-			'leftmenu'=>'operationorder_left',
-			'url'=>'/operationorder/list.php',
-			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=>'$conf->operationorder->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->operationorder->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);
-		$r++;
-
-		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=operationorder',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>$langs->trans('LeftMenuOperationOrderCreate'),
+			'titre'=>$langs->trans('LeftMenuOperationOrderStatusMenu'),
 			'mainmenu'=>'operationorder',
-			'leftmenu'=>'operationorder_left_create',
-			'url'=>'/operationorder/operationorder_card.php?action=create',
+			'leftmenu'=>'operationorder_left_status',
+			'url'=>'/operationorder/operationorderstatus_list.php',
 			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
+			'position'=>1000+$r,
 			'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=> '$user->rights->operationorder->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+			'perms'=> '$user->rights->operationorder->status->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
 			'target'=>'',
 			'user'=>0
 		);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 
-
 		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left_status',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>$langs->trans('LeftMenuOperationOrderList'),
+			'titre'=>$langs->trans('LeftMenuOperationOrderStatusCreate'),
 			'mainmenu'=>'operationorder',
-			'leftmenu'=>'operationorder_left_list',
-			'url'=>'/operationorder/list.php',
+			'leftmenu'=>'operationorder_left_status_create',
+			'url'=>'/operationorder/operationorderstatus_card.php?action=create',
 			'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
+			'position'=>1000+$r,
 			'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=> '$user->rights->operationorder->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+			'perms'=> '$user->rights->operationorder->status->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
 			'target'=>'',
 			'user'=>0
 		);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
-*/
+
+        $this->menu[$r]=array(
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left_status',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'type'=>'left',			                // This is a Left menu entry
+            'titre'=>$langs->trans('LeftMenuOperationOrderStatusList'),
+			'mainmenu'=>'operationorder',
+			'leftmenu'=>'operationorder_left_status_list',
+            'url'=>'/operationorder/operationorderstatus_list.php',
+            'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+            'position'=>1000+$r,
+            'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+            'perms'=> '$user->rights->operationorder->status->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+            'target'=>'',
+            'user'=>0
+        );				                // 0=Menu for internal users, 1=external users, 2=both
+        $r++;
+
 
 		// Exports
 		$r=1;

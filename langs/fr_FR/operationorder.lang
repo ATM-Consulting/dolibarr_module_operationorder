@@ -22,6 +22,23 @@ LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
 OperationOrderTopMenu=Réparations
+LeftMenuOperationOrderStatusMenu=Gestion des statuts
+LeftMenuOperationOrderStatusCreate=Nouveau statut
+LeftMenuOperationOrderStatusList=Liste
+
+# EVEN ACTION COM CONF
+OperationOrderStatusChange=Changement de status d'un ordre de réparation
+OperationOrderStatusChangeDesc=permet l'historisation des changements de status des ordres de réparation
+
+# EVENT ACTION COM
+OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
+#OperationOrderSetStatusActiveEvent=Activation de l'ordre de fabrication %s
+#OperationOrderSetStatusReopenEvent=Réouverture de l'ordre de fabrication %s
+#OperationOrderSetStatusDraftEvent=Passage en brouillion de l'ordre de fabrication %s
+#OperationOrderSetStatusValidatedEvent=Validation de l'ordre de fabrication %s
+#OperationOrderSetStatusAcceptedEvent=Ordre de fabrication %s accepté
+#OperationOrderSetStatusToPlanEvent=Ordre de fabrication %s a planifier
+#OperationOrderSetStatusClosedEvent=Ordre de fabrication %s cloturé
 
 # STATUS
 OperationOrderStatusCanceled=Abandonnée (fermée)
@@ -37,6 +54,18 @@ OperationOrderStatusShortValidated=Validé
 OperationOrderStatusShortRefused=Refusée
 OperationOrderStatusShortAccepted=Acceptée
 OperationOrderStatusShortClosed=Traité
+OperationOrderStatusShortToPlan=A planifier
+
+NoOperationOrderStatus=Pas de statut
+OperationOrderStatusList=Liste des statuts
+DateCre=Date de création
+DateMaj=Date de mise à jour
+
+# RIGHTS
+operationorder_read=Peut voir les ordres de réparation
+operationorder_write=Peut créer et modifier les ordres de réparations
+operationorder_status_read=Peut consulter les différents status d'ordres de réparation
+operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -58,6 +87,9 @@ OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
 OperationOrderDetPc=Pc
+OperationOrderSetToPlan=A plannifier
+OperationOrderSetPlanned=Planifé
+
 StockPlace=Emplacement
 TimePlanned=Temps planifié
 AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation
