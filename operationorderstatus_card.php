@@ -94,6 +94,8 @@ if (empty($reshook))
 	switch ($action) {
 		case 'add':
 		case 'update':
+
+			$object->edit = 0;
 			$object->setValues($_REQUEST); // Set standard attributes
 
 			if ($object->isextrafieldmanaged)
@@ -211,9 +213,6 @@ if ($action == 'create')
 	print '<input type="hidden" name="action" value="add">';
 	print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 
-	if(!isset($_POST['ref'])){
-		$_POST['ref'] = $object->getRef();
-	}
 
 
 	dol_fiche_head(array(), '');
@@ -287,7 +286,7 @@ else
 			if (!empty($formconfirm)) print $formconfirm;
 
 
-			operationOrderStatusBannerTab($object);
+			//operationOrderStatusBannerTab($object);
 
 			print '<div class="fichecenter">';
 
@@ -319,26 +318,13 @@ else
 
 				$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=';
 
-				// Send
-				print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
-
-				print dolGetButtonAction($langs->trans("OperationOrderStatusClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->status->write);
 				print dolGetButtonAction($langs->trans("OperationOrderStatusEdit"), '', 'default', $actionUrl . 'edit', '', $user->rights->operationorder->status->write);
 
 
-
-				if ($object->status !== OperationOrderStatus::STATUS_ACTIVE && $object->status !== OperationOrderStatus::STATUS_CANCELED) {
+				if ($object->status !== OperationOrderStatus::STATUS_ACTIVE) {
 					print dolGetButtonAction($langs->trans("OperationOrderStatusActivate"), '', 'default', $actionUrl . 'activate', '', $user->rights->operationorder->status->write);
 				}
-				elseif ($object->status !== OperationOrderStatus::STATUS_ACTIVE && $object->status === OperationOrderStatus::STATUS_CANCELED) {
-					print dolGetButtonAction($langs->trans("OperationOrderStatusActivate"), '', 'default', $actionUrl . 'reactivate', '', $user->rights->operationorder->status->write);
-				}
-
-				if ($object->status === OperationOrderStatus::STATUS_DISABLED) {
-					print dolGetButtonAction($langs->trans("OperationOrderStatusCancel"), '', 'default', $actionUrl . 'cancel', '', $user->rights->operationorder->status->write);
-				}
-
-				if ($object->status !== OperationOrderStatus::STATUS_DISABLED && $object->status !== OperationOrderStatus::STATUS_CANCELED) {
+				if ($object->status !== OperationOrderStatus::STATUS_DISABLED) {
 					print dolGetButtonAction($langs->trans("OperationOrderStatusDisable"), '', 'default', $actionUrl . 'disable', '', $user->rights->operationorder->status->write);
 				}
 
@@ -349,41 +335,6 @@ else
 			}
 			print '</div>'."\n";
 
-			// Select mail models is same action as presend
-			if (GETPOST('modelselected')) {
-				$action = 'presend';
-			}
-
-			if ($action != 'presend') {
-				print '<div class="fichecenter"><div class="fichehalfleft">';
-
-
-				$linktoelem = $form->showLinkToObjectBlock($object, null, array($object->element));
-				$somethingshown = $form->showLinkedObjectBlock($object, $linktoelem);
-
-				print '</div><div class="fichehalfright"><div class="ficheaddleft">';
-
-				// List of actions on element
-				include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
-				$formactions = new FormActions($db);//actioncode
-				$somethingshown = $formactions->showactions($object, $object->element, $socid, 1);
-
-				print '</div></div></div>';
-			}
-
-
-
-//			//Select mail models is same action as presend
-//
-//			if (GETPOST('modelselected')) $action = 'presend';
-//
-//			// Presend form
-//			$modelmail='operationorderstatus';
-//			$defaulttopic='OperationorderstatusMessage';
-//			$diroutput = $conf->operationorder->dir_output.'/operationorder';
-//			$trackid = 'stockinv'.$object->id;
-//
-//			include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
 
 
 			dol_fiche_end(-1);

@@ -344,8 +344,8 @@ class modOperationOrder extends DolibarrModules
 
 
 		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=operationorder',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
+			'fk_menu'=>'fk_mainmenu=operationorder', // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left',	// This is a Left menu entry
 			'titre'=>$langs->trans('LeftMenuOperationOrderStatusMenu'),
 			'mainmenu'=>'operationorder',
 			'leftmenu'=>'operationorder_left_status',

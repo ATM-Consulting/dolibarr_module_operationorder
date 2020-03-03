@@ -41,13 +41,15 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 #OperationOrderSetStatusClosedEvent=Ordre de fabrication %s cloturé
 
 # STATUS
+OperationOrderStatusActivated=Activé
 OperationOrderStatusCanceled=Abandonnée (fermée)
 OperationOrderStatusDraft=Brouillon (à valider)
 OperationOrderStatusValidated=Validé
 OperationOrderStatusRefused=Refusée (fermée)
 OperationOrderStatusAccepted=Acceptée (fermée)
 OperationOrderStatusClosed=Traité
-
+OperationOrderStatusDisabled=Désactivé
+OperationOrderStatusShortActivated=Activé
 OperationOrderStatusShortCanceled=Abandonnée
 OperationOrderStatusShortDraft=Brouillon
 OperationOrderStatusShortValidated=Validé
@@ -55,11 +57,22 @@ OperationOrderStatusShortRefused=Refusée
 OperationOrderStatusShortAccepted=Acceptée
 OperationOrderStatusShortClosed=Traité
 OperationOrderStatusShortToPlan=A planifier
+OperationOrderStatusShortDisabled=Désactivé
 
+NewStatus=Nouveau statut
 NoOperationOrderStatus=Pas de statut
 OperationOrderStatusList=Liste des statuts
 DateCre=Date de création
 DateMaj=Date de mise à jour
+NewOperationOrderStatus=Nouveau status d'ordre de réparation
+OperationOrderStatus=Statut d'ordre de réparation
+OperationOrderStatusCard=Fiche
+OperationOrderStatusActivate=Activer
+OperationOrderStatusDisable=Désactiver
+OperationOrderStatusDelete=Supprimer
+OperationOrderStatusEdit=Modifier
+CouldEdit=Permmettre la modification
+CouldEditHelp=Si coché ce statut désactive la posibilité de modifier l'ordre de réparation. Pour pouvoir de nouveau modifier l'ordre de réparation il faut repasser sur un autre statut qui permet la modification
 
 # RIGHTS
 operationorder_read=Peut voir les ordres de réparation

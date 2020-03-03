@@ -39,6 +39,11 @@ if(GETPOST('action'))
 			}
 		}
 	}
+	if($action=='statusRank'){
+		require_once __DIR__ . '/../class/operationorderstatus.class.php';
+		$data['msg'] = 'UpdateStatus';
+		_statusRank($data);
+	}
 	elseif($action=='getProductInfos' && !empty($user->rights->produit->lire)){
 		include_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 		$productId = GETPOST('fk_product', 'int');
@@ -162,4 +167,33 @@ function _updateOperationOrderlevelHierarchy($operationOrderId, $TItem, $parent 
 	}
 
 	return $updated;
+}
+
+
+
+function _statusRank(&$data)
+{
+	global $langs;
+	$TRowOrder= GETPOST('TRowOrder');
+	if(is_array($TRowOrder) && !empty($TRowOrder))
+	{
+		foreach($TRowOrder as $rank => $value)
+		{
+			$rowid= intval($value);
+			$rank = intval($rank);
+
+			if($rowid>0)
+			{
+				OperationOrderStatus::updateRank($rowid,$rank);
+			}
+			else{
+				$data['errorMsg'] = $langs->trans('StatusNotFound'); // default message for errors
+			}
+		}
+		$data['result'] = 1;
+		return;
+	}
+	else{
+		$data['errorMsg'] = $langs->trans('StatusOrderListEmpty'); // default message for errors
+	}
 }

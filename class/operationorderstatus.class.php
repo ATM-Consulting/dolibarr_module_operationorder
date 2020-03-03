@@ -30,16 +30,16 @@ class OperationOrderStatus extends SeedObject
 	/**
 	 * Draft status
 	 */
-	const STATUS_DRAFT = 0;
+	const STATUS_DISABLED = 0;
 	/**
 	 * Validated status
 	 */
-	const STATUS_VALIDATED = 1;
+	const STATUS_ACTIVE = 1;
 
 	/** @var array $TStatus Array of translate key for each const */
 	public static $TStatus = array(
-		self::STATUS_DRAFT => 'OperationOrderStatusShortDraft'
-		,self::STATUS_VALIDATED => 'OperationOrderStatusShortValidated'
+		self::STATUS_DISABLED => 'OperationOrderStatusShortDraft'
+		,self::STATUS_ACTIVE => 'OperationOrderStatusShortValidated'
 	);
 
 	/** @var string $table_element Table name in SQL */
@@ -75,12 +75,77 @@ class OperationOrderStatus extends SeedObject
 	 */
 
 	public $fields=array(
-		'code' => array('type'=>'varchar(128)', 'label'=>'Code', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>4, 'default'=>'', 'index'=>1),
-		'label' => array('type'=>'varchar(128)', 'label'=>'Label', 'enabled'=>1, 'position'=>20, 'notnull'=>1, 'visible'=>1),
-		'color' => array('type'=>'varchar(16)', 'label'=>'Color', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1, 'default' => '#3c8dbc'),
-		'import_key' => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>1, 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
-		'status' => array('type'=>'smallint', 'label'=>'Status', 'enabled'=>1, 'position'=>1000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=> array(-1 => 'OperationOrderStatusStatusShortCanceled', 0 => 'OperationOrderStatusStatusShortDraft', 1 => 'OperationOrderStatusStatusShortValidated')),
-		'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>1200, 'notnull'=>1, 'visible'=>0,),
+		'code' => array(
+			'type'=>'varchar(128)',
+			'label'=>'Code',
+			'enabled'=>1,
+			'position'=>10,
+			'notnull'=>1,
+			'required'=>1,
+			'visible'=>1,
+			'default'=>'',
+			'index'=>1
+		),
+		'label' => array(
+			'type'=>'varchar(128)',
+			'label'=>'Label',
+			'enabled'=>1,
+			'position'=>20,
+			'notnull'=>1,
+			'required'=>1,
+			'visible'=>1
+		),
+		'color' => array(
+			'type'=>'varchar(16)',
+			'label'=>'Color', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1,
+			'default' => '#3c8dbc'
+		),
+//		'edit' => array(
+//			'type'=>'smallint',
+//			'label'=>'CouldEdit',
+//			'help' => 'CouldEditHelp',
+//			'enabled'=>1,
+//			'position'=>30,
+//			'visible'=>1
+//		),
+		'rank' => array(
+			'type'=>'int',
+			'label'=>'Rank',
+			'help' => 'RankHelp',
+			'enabled'=>1,
+			'position'=>40,
+			'visible'=>0
+		),
+		'import_key' => array(
+			'type'=>'varchar(14)',
+			'label'=>'ImportId',
+			'enabled'=>1,
+			'position'=>1000,
+			'notnull'=>-1,
+			'visible'=>-2,
+		),
+		'status' => array(
+			'type'=>'smallint',
+			'label'=>'Status',
+			'enabled'=>1,
+			'position'=>1000,
+			'notnull'=>1,
+			'visible'=>2,
+			'index'=>1,
+			'default'=>1,
+			'arrayofkeyval'=> array(
+				0 => 'OperationOrderStatusStatusShortDraft',
+				1 => 'OperationOrderStatusStatusShortValidated'
+			)
+		),
+		'entity' => array(
+			'type'=>'integer',
+			'label'=>'Entity',
+			'enabled'=>1,
+			'position'=>1200,
+			'notnull'=>1,
+			'visible'=>0,
+		),
 	);
 
 	public $code;
@@ -102,7 +167,7 @@ class OperationOrderStatus extends SeedObject
 
 		$this->init();
 
-		$this->status = self::STATUS_DRAFT;
+		$this->status = self::STATUS_DISABLED;
 		$this->entity = $conf->entity;
 	}
 
@@ -138,12 +203,12 @@ class OperationOrderStatus extends SeedObject
 	{
 		global $conf, $langs;
 
-		if ($this->status == self::STATUS_VALIDATED)
+		if ($this->status == self::STATUS_ACTIVE)
 		{
-			$this->status = self::STATUS_DRAFT;
+			$this->status = self::STATUS_DISABLED;
 			$this->withChild = false;
 
-			$this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'OPERATIONORDER_DRAFT');
+			$this->setStatusCommon($user, self::STATUS_DISABLED, $notrigger, 'OPERATIONORDER_DRAFT');
 		}
 
 		return 0;
@@ -154,17 +219,16 @@ class OperationOrderStatus extends SeedObject
 	 * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
 	 * @return int
 	 */
-	public function setValid($user, $notrigger = 0)
+	public function setActive($user, $notrigger = 0)
 	{
 		global $conf, $langs;
 
-		if ($this->status == self::STATUS_DRAFT)
+		if ($this->status == self::STATUS_DISABLED)
 		{
-			$this->ref = $this->getRef();
-			$this->status = self::STATUS_VALIDATED;
+			$this->status = self::STATUS_ACTIVE;
 			$this->withChild = false;
 
-			$ret =  $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'OPERATIONORDER_VALID');
+			$ret =  $this->setStatusCommon($user, self::STATUS_ACTIVE, $notrigger, 'OPERATIONORDER_ACTIVE');
 		}
 
 		return 0;
@@ -181,10 +245,21 @@ class OperationOrderStatus extends SeedObject
 	{
 		global $langs;
 
-		$link = dol_buildpath('/operationorder/operationorderstatus_card.php', 1).'?id='.$this->id.urlencode($moreparams);
+		$link = $this->getCardUrl($moreparams);
 
 		return $this->getBadge($link);
 	}
+
+	/**
+	 * @param string $moreparams    Add more parameters in the URL
+	 * @return string
+	 */
+	public function getCardUrl($moreparams = '')
+	{
+		return dol_buildpath('/operationorder/operationorderstatus_card.php', 1).'?id='.$this->id.urlencode($moreparams);
+	}
+
+
 
 	/**
 	 * Function getBadge
@@ -195,8 +270,9 @@ class OperationOrderStatus extends SeedObject
 	function getBadge($url = '')
 	{
 		$params = array(
+			'css' => 'badge-status',
 			'attr' => array(
-				'style' => 'background-color: '.$this->color.'; color: '.(colorIsLight($this->color)?'#ffffff':'#000000'),
+				'style' => 'background-color: '.$this->color.'; color: '.(!colorIsLight($this->color)?'#ffffff':'#000000'),
 			),
 		);
 		return dolGetBadge($this->label, '', '', '', $url, $params);
@@ -241,15 +317,15 @@ class OperationOrderStatus extends SeedObject
 		$langs->load('operationorder@operationorder');
 		$res = '';
 
-		if ($status==self::STATUS_VALIDATED) {
+		if ($status==self::STATUS_ACTIVE) {
 			$statusType='status4';
-			$statusLabel=$langs->trans('OperationOrderStatusValidated');
-			$statusLabelShort=$langs->trans('OperationOrderStatusShortValidate');
+			$statusLabel=$langs->trans('OperationOrderStatusActivated');
+			$statusLabelShort=$langs->trans('OperationOrderStatusShortActivated');
 		}
-		elseif ($status==self::STATUS_CANCELED) {
+		elseif ($status==self::STATUS_DISABLED) {
 			$statusType='status9';
-			$statusLabel=$langs->trans('OperationOrderStatusCancel');
-			$statusLabelShort=$langs->trans('OperationOrderStatusShortCancel');
+			$statusLabel=$langs->trans('OperationOrderStatusDisabled');
+			$statusLabelShort=$langs->trans('OperationOrderStatusShortDisabled');
 		}
 
 		$res = dolGetStatus($statusLabel, $statusLabelShort, '', $statusType, $mode);
@@ -283,4 +359,150 @@ class OperationOrderStatus extends SeedObject
 
 		return false;
 	}
+
+	/**
+	 * Return HTML string to show a field into a page
+	 *
+	 * @param  string  $key            Key of attribute
+	 * @param  string  $moreparam      To add more parameters on html input tag
+	 * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+	 * @return string
+	 */
+	public function showOutputFieldQuick($key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = ''){
+		return $this->showOutputField($this->fields[$key], $key, $this->{$key}, $moreparam, $keysuffix, $keyprefix, $morecss);
+	}
+
+	/**
+	 * Return HTML string to show a field into a page
+	 * Code very similar with showOutputField of extra fields
+	 *
+	 * @param  array   $val		       Array of properties of field to show
+	 * @param  string  $key            Key of attribute
+	 * @param  string  $value          Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param  string  $moreparam      To add more parametes on html input tag
+	 * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+	 * @return string
+	 */
+	public function showOutputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '')
+	{
+		global $conf, $langs, $db;
+		$out = '';
+
+		if($key == 'color')
+		{
+			$out = '<input disabled type="color" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+		}
+		elseif($key == 'status')
+		{
+			$out = $this->getLibStatut(2);
+		}
+		elseif($key == 'edit')
+		{
+			$checked = !empty($value)?' checked ':'';
+			$out ='<input disabled '.$checked.' type="checkbox" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="1" '.($moreparam?$moreparam:'').'>';
+		}
+		else{
+			$out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Return HTML string to put an input field into a page
+	 * Code very similar with showInputField of extra fields
+	 *
+	 * @param array $val Array of properties for field to show
+	 * @param string $key Key of attribute
+	 * @param string $value Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+	 * @param string $moreparam To add more parameters on html input tag
+	 * @param string $keysuffix Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param string $keyprefix Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param string|int $morecss Value for css to define style/length of field. May also be a numeric.
+	 * @param int $nonewbutton
+	 * @return string
+	 * @throws Exception
+	 */
+	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+	{
+		global $langs, $db, $conf, $user;
+
+		if(!empty($this->fields[$key]['required'])){ $moreparam.= " required"; }
+
+		if($key == 'color')
+		{
+			$out ='<input type="color" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+		}
+		elseif($key == 'edit')
+		{
+			$checked = !empty($value)?' checked ':'';
+			$out ='<input'.$checked.' type="checkbox" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="1" '.($moreparam?$moreparam:'').'>';
+		}
+		else{
+			$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * @param int  $limit       Limit element returned
+	 * @param bool $loadChild   used to load children from database
+	 * @return array
+	 */
+	public function fetchAll($limit = 0, $loadChild = true, $TFilter = array())
+	{
+		$TRes = array();
+
+		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE 1';
+		if (!empty($TFilter))
+		{
+			foreach ($TFilter as $field => $value)
+			{
+				$sql.= ' AND '.$field.' = '.$this->quote($value, $this->fields[$field]);
+			}
+		}
+
+		$sql.= ' ORDER BY rank ASC';
+
+		if ($limit) $sql.= ' LIMIT '.$limit;
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			while ($obj = $this->db->fetch_object($resql))
+			{
+				$o = new static($this->db);
+				$o->fetch($obj->rowid, $loadChild);
+
+				$TRes[] = $o;
+			}
+		}
+
+		return $TRes;
+	}
+
+
+	static public function updateRank($rowid,$rank)
+	{
+		global $db;
+
+		$status = new self($db);
+
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.$status->table_element.' SET rank = '.intval($rank);
+		$sql.= ' WHERE rowid = '.intval($rowid);
+
+		if (! $db->query($sql))
+		{
+			dol_print_error($db->db);
+			return false;
+		}
+
+		return true;
+	}
+
 }

@@ -63,7 +63,7 @@ if (!empty($confirmmassaction) && $massaction != 'presend' && $massaction != 'co
 			}
 		}
 
-		header('Location: '.dol_buildpath('/operationorder/list.php', 1));
+		header('Location: '.$_SERVER['PHP_SELF']);
 		exit;
 	}
 
@@ -104,93 +104,132 @@ $parameters=array('sql' => $sql);
 $reshook=$hookmanager->executeHooks('printFieldListSelect', $parameters, $object);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 
-$sql.= ' FROM '.MAIN_DB_PREFIX.'operationorderstatus t ';
+$sql.= ' FROM '.MAIN_DB_PREFIX.$object->table_element.' t ';
 
 if (!empty($object->isextrafieldmanaged))
 {
-    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'operationorderstatus_extrafields et ON (et.fk_object = t.rowid)';
+    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.$object->table_element.'_extrafields et ON (et.fk_object = t.rowid)';
 }
 
-$sql.= ' WHERE 1=1';
-//$sql.= ' AND t.entity IN ('.getEntity('OperationOrderStatus', 1).')';
-//if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
+$newcardbutton = dolGetButtonTitle($langs->trans('NewStatus'), '', 'fa fa-plus-circle', dol_buildpath('operationorder/operationorderstatus_card.php?action=create&idmenu=540&mainmenu=operationorder', 1), '', $user->rights->operationorder->status->write);
+print load_fiche_titre($langs->trans('OperationOrderStatusList'), $newcardbutton);
 
-// Add where from hooks
-$parameters=array('sql' => $sql);
-$reshook=$hookmanager->executeHooks('printFieldListWhere', $parameters, $object);    // Note that $action and $object may have been modified by hook
-$sql.=$hookmanager->resPrint;
 
-$formcore = new TFormCore($_SERVER['PHP_SELF'], 'form_list_operationorder', 'POST');
+$Tlist = $object->fetchAll();
+/**
+ * @var $Tlist OperationOrderStatus[]
+ */
 
-$nbLine = GETPOST('limit');
-if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user->conf->MAIN_SIZE_LISTE_LIMIT : $conf->global->MAIN_SIZE_LISTE_LIMIT;
+print '<table id="operation-order-status-list" class="liste">';
+print '<thead>';
+print '<tr class="liste_titre">';
+foreach ($object->fields as $field){
 
-// List configuration
-$listViewConfig = array(
-	'view_type' => 'list' // default = [list], [raw], [chart]
-	,'allow-fields-select' => true
-	,'limit'=>array(
-		'nbLine' => $nbLine
-	)
-	,'list' => array(
-		'title' => $langs->trans('OperationOrderStatusList')
-		,'image' => 'title_generic.png'
-		,'picto_precedent' => '<'
-		,'picto_suivant' => '>'
-		,'noheader' => 0
-		,'messageNothing' => $langs->trans('NoOperationOrderStatus')
-		,'picto_search' => img_picto('', 'search.png', '', 0)
-		,'massactions'=>array(
-			'delete'  => $langs->trans('Delete')
-		)
-	)
-	,'subQuery' => array()
-	,'link' => array()
-	,'type' => array(
-		'date_creation' => 'date' // [datetime], [hour], [money], [number], [integer]
-		,'tms' => 'date'
-	)
-	,'search' => array(
-		'date_creation' => array('search_type' => 'calendars', 'allow_is_null' => true)
-		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
-		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
-		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
-		,'status' => array('search_type' => OperationOrderStatus::$TStatus, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
-	)
-	,'translate' => array()
-	,'hide' => array(
-		'rowid' // important : rowid doit exister dans la query sql pour les checkbox de massaction
-	)
-	,'title'=>array(
-		'ref' => $langs->trans('Ref.')
-		,'label' => $langs->trans('Label')
-		,'date_creation' => $langs->trans('DateCre')
-		,'tms' => $langs->trans('DateMaj')
-	)
-	,'eval'=>array(
-//		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
-//		,'fk_user' => '_getUserNomUrl(@val@)' // Si on a un fk_user dans notre requête
-	)
-);
+	if($field['visible'] == 1 || $field['visible'] == 2)
+	{
+		print '<th>';
+		print $langs->trans($field['label']);
+		print '</th>';
+	}
+}
+print '<th></th>'; // for move plugin
 
-$r = new Listview($db, 'operationorder');
+print '</tr>';
 
-// Change view from hooks
-$parameters=array(  'listViewConfig' => $listViewConfig);
-$reshook=$hookmanager->executeHooks('listViewConfig',$parameters,$r);    // Note that $action and $object may have been modified by hook
-if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-if ($reshook>0)
-{
-	$listViewConfig = $hookmanager->resArray;
+print '</thead>';
+print '<tbody>';
+
+if(!empty($Tlist)){
+	foreach ($Tlist as $oOStatus){
+		print '<tr  data-lineid="'.$oOStatus->id.'">';
+		foreach ($object->fields as $fieldKey => $field) {
+			if($field['visible'] == 1 || $field['visible'] == 2) {
+				print '<td>';
+				if($fieldKey == 'code'){
+					print '<a href="'.$oOStatus->getCardUrl().'" >'.$oOStatus->code.'</a>';
+				}
+				elseif($fieldKey == 'label'){
+					print '<a href="'.$oOStatus->getCardUrl().'" >'.$oOStatus->label.'</a>';
+				}
+				else{
+					print $oOStatus->showOutputFieldQuick($fieldKey);
+				}
+				print '</td>';
+			}
+		}
+		print '<td class="linecolmove" ></td>';
+
+		print '</tr>';
+	}
+
+	?>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+			// target some elements
+			var moveBlockCol= $('td.linecolmove');
+
+
+			moveBlockCol.disableSelection(); // prevent selection
+
+			// apply some graphical stuff
+			moveBlockCol.css("background-image",'url(<?php echo dol_buildpath('theme/eldy/img/grip.png',2);  ?>)');
+			moveBlockCol.css("background-repeat","no-repeat");
+			moveBlockCol.css("background-position","center center");
+			moveBlockCol.css("cursor","move");
+			moveBlockCol.attr('title', '<?php echo html_entity_decode($langs->trans('MoveTitleBlock')); ?>');
+
+
+			$( "#operation-order-status-list" ).sortable({
+				cursor: "move",
+				handle: ".linecolmove",
+				items: 'tr:not(.liste_titre)',
+				delay: 150, //Needed to prevent accidental drag when trying to select
+				opacity: 0.8,
+				axis: "y", // limit y axis
+				placeholder: "ui-state-highlight",
+				start: function( event, ui ) {
+					//console.log('X:' + e.screenX, 'Y:' + e.screenY);
+					//console.log(ui.item);
+					var colCount = ui.item.children().length;
+					ui.placeholder.html('<td colspan="'+colCount+'">&nbsp;</td>');
+
+				},
+				update: function (event, ui) {
+
+					var TRowOrder = $(this).sortable('toArray', { attribute: 'data-lineid' });
+
+					// POST to server using $.post or $.ajax
+					$.ajax({
+						data: {
+							action: 'statusRank',
+							TRowOrder: TRowOrder
+						},
+						type: 'POST',
+						url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1) ; ?>',
+						success: function(data) {
+							console.log(data);
+						},
+					});
+				}
+			});
+
+		});
+	</script>
+	<style type="text/css" >
+
+		tr.ui-state-highlight td{
+			border: 1px solid #dad55e;
+			background: #fffa90;
+			color: #777620;
+		}
+	</style>
+	<?php
 }
 
-echo $r->render($sql, $listViewConfig);
+print '</tbody>';
+print '</table>';
 
-$parameters=array('sql'=>$sql);
-$reshook=$hookmanager->executeHooks('printFieldListFooter', $parameters, $object);    // Note that $action and $object may have been modified by hook
-print $hookmanager->resPrint;
-
-$formcore->end_form();
 
 llxFooter('');
 $db->close();

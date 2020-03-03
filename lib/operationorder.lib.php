@@ -182,3 +182,66 @@ function getFormConfirmOperationOrder($form, $object, $action)
 
     return $formconfirm;
 }
+
+
+
+/**
+ * Return array of tabs to used on pages for third parties cards.
+ *
+ * @param 	OperationOrderStatus	$object		Object company shown
+ * @return 	array				Array of tabs
+ */
+function operationOrderStatusPrepareHead(OperationOrderStatus $object)
+{
+	global $db, $langs, $conf;
+
+	$langs->load("operationorder@operationorder");
+
+	$h = 0;
+	$head = array();
+
+	$head[$h][0] = dol_buildpath("/operationorder/operationorderstatus_card.php", 1).'?id='.$object->id;
+	$head[$h][1] = $langs->trans("OperationOrderStatusCard");
+	$head[$h][2] = 'card';
+	$h++;
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder');
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder', 'remove');
+
+	return $head;
+}
+
+
+
+/**
+ * @param Form      $form       Form object
+ * @param OperationOrder  $object     OperationOrder object
+ * @param string    $action     Triggered action
+ * @return string
+ */
+function getFormConfirmOperationOrderStatus($form, $object, $action)
+{
+	global $langs, $user;
+
+	$formconfirm = '';
+
+	if ($action === 'valid' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmValidateOperationOrderBody', $object->getRef());
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderTitle'), $body, 'confirm_validate', '', 0, 1);
+	}
+	elseif ($action === 'modify' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmModifyOperationOrderBody', $object->ref);
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmModifyOperationOrderTitle'), $body, 'confirm_modify', '', 0, 1);
+	}
+	elseif ($action === 'delete' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmDeleteOperationOrderBody');
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmDeleteOperationOrderTitle'), $body, 'confirm_delete', '', 0, 1);
+	}
+
+
+	return $formconfirm;
+}
