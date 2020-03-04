@@ -102,3 +102,9 @@ $o->init_db_by_vars();
 
 $o=new OperationOrderStatus($db);
 $o->init_db_by_vars();
+
+$o=new OperationOrderStatusUserGroupRight($db);
+$o->init_db_by_vars();
+
+$o=new OperationOrderStatusTarget($db);
+$o->init_db_by_vars();

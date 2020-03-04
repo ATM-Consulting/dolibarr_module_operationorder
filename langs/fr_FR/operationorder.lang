@@ -71,8 +71,11 @@ OperationOrderStatusActivate=Activer
 OperationOrderStatusDisable=Désactiver
 OperationOrderStatusDelete=Supprimer
 OperationOrderStatusEdit=Modifier
-CouldEdit=Permmettre la modification
+CouldEdit=Groupes utilisateur pouvant modifier un ordre de réparation sur ce statut
 CouldEditHelp=Si coché ce statut désactive la posibilité de modifier l'ordre de réparation. Pour pouvoir de nouveau modifier l'ordre de réparation il faut repasser sur un autre statut qui permet la modification
+CouldChangeToThisStatus=Groupes utilisateur pouvant passer à ce status
+TargetableStatus=Statuts accessibles depuis ce statut
+
 
 # RIGHTS
 operationorder_read=Peut voir les ordres de réparation

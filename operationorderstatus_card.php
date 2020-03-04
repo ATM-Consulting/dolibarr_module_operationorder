@@ -31,6 +31,7 @@ $cancel = GETPOST('cancel');
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
 
+
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
 
@@ -45,6 +46,19 @@ if (!empty($id) || !empty($ref)) {
 	$object->fetch($id, true, $ref);
 	$object->fetch_thirdparty();
 }
+
+// prepare TGroupCan
+$TGroupCan = array();
+foreach ($object->TGroupRightsType as $field){
+	$TGroupCan[$field['code']] = GETPOST('TGroupCan_'.$field['code'],'array');
+	$TGroupCan[$field['code']] = array_map('intval', $TGroupCan[$field['code']]);
+}
+
+
+// prepare $TStatusAllowed
+$TStatusAllowed = GETPOST('TStatusAllowed','array');
+$TStatusAllowed = array_map('intval', $TStatusAllowed);
+
 
 $hookmanager->initHooks(array('operationordercard', 'globalcard'));
 
@@ -98,6 +112,9 @@ if (empty($reshook))
 			$object->edit = 0;
 			$object->setValues($_REQUEST); // Set standard attributes
 
+			$object->TGroupCan = $TGroupCan;
+			$object->TStatusAllowed =$TStatusAllowed;
+
 			if ($object->isextrafieldmanaged)
 			{
 				$ret = $extrafields->setOptionalsFromPost($extralabels, $object);
@@ -123,6 +140,7 @@ if (empty($reshook))
 			}
 
 			$res = $object->save($user);
+
 			if ($res <= 0)
 			{
 				setEventMessage($object->errors, 'errors');
@@ -222,6 +240,17 @@ if ($action == 'create')
 	// Common attributes
 	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
+	// Droits de groupes
+	foreach ($object->TGroupRightsType as $field)
+	{
+		print '<tr class="oddeven" id="status-group-'.$field['code'].'" >';
+		print '<td  id="coltitle-status-group-'.$field['code'].'" >'.$langs->trans($field['label']).'</td>';
+		print '<td  id="colval-status-group-'.$field['code'].'" >';
+		print $form->select_dolgroups($TGroupCan[$field['code']], 'TGroupCan['.$field['code'].']', 1, '', 0, $include = '', 1, $conf->entity, true);
+		print "</td></tr>";
+	}
+
+
 	// Other attributes
 	include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
 
@@ -263,6 +292,40 @@ else
 			// Common attributes
 			include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
 
+			//$TUserGroups = n
+
+			// Droits de groupes
+			foreach ($object->TGroupRightsType as $field){
+
+				print '<tr class="oddeven" id="status-group-'.$field['code'].'" >';
+				print '<td  id="coltitle-status-group-'.$field['code'].'" >'.$langs->trans($field['label']).'</td>';
+				print '<td  id="colval-status-group-'.$field['code'].'" >';
+				//print $form->select_dolgroups($object->TGroupCan[$field['code']], 'TGroupCan['.$field['code'].']', 1, '', 0, $include = '', 1, $conf->entity, true);
+
+				print $form->select_dolgroups($object->TGroupCan[$field['code']], 'TGroupCan_'.$field['code'], 1, '', 0, $include = '', 1, $conf->entity, true);
+
+				print "</td></tr>";
+			}
+
+			print '<tr class="oddeven" id="status-allowed" >';
+			print '<td  id="coltitle-status-allowed" >'.$langs->trans('TargetableStatus').'</td>';
+			print '<td  id="colval-status-allowed" >';
+			$TStatus = $object->fetchAll();
+			if(!empty($TStatus)){
+				$TAvailableStatus = array();
+				foreach ($TStatus as $key => $status){
+					if($status->id != $object->status){
+						$TAvailableStatus[$status->id] = $status->label;
+					}
+				}
+
+				// il faut reverifier vu que l'on a supprimer...
+				if(!empty($TStatus)){
+					print $form->multiselectarray('TStatusAllowed', $TAvailableStatus, $object->TStatusAllowed, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
+				}
+			}
+			print "</td></tr>";
+
 			// Other attributes
 			include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
@@ -297,6 +360,39 @@ else
 			// Common attributes
 			//$keyforbreak='fieldkeytoswithonsecondcolumn';
 			include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+
+			// Droits de groupes
+			foreach ($object->TGroupRightsType as $field){
+
+				print '<tr class="oddeven" id="status-group-'.$field['code'].'" >';
+				print '<td  id="coltitle-status-group-'.$field['code'].'" >'.$langs->trans($field['label']).'</td>';
+				print '<td  id="colval-status-group-'.$field['code'].'" >';
+
+				if(!empty($object->TGroupCan[$field['code']])){
+					foreach ($object->TGroupCan[$field['code']] as $groupId){
+						$group = new UserGroup($db);
+						$res = $group->fetch($groupId);
+						if($res>0){
+								print dolGetBadge($group->name, '', 'secondary');
+						}
+					}
+				}
+				print "</td></tr>";
+			}
+
+			print '<tr class="oddeven" id="status-allowed" >';
+			print '<td  id="coltitle-status-allowed" >'.$langs->trans('TargetableStatus').'</td>';
+			print '<td  id="colval-status-allowed" >';
+			if(!empty($object->TStatusAllowed)){
+				foreach ($object->TStatusAllowed as $fk_status){
+					$status = new OperationOrderStatus($db);
+					$res = $status->fetch($fk_status);
+					if($res>0){
+						print $status->getNomUrl(2);
+					}
+				}
+			}
+			print "</td></tr>";
 
 			// Other attributes
 			include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
