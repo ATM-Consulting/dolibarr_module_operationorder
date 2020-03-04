@@ -51,6 +51,13 @@ $object = new OperationOrder($db);
 
 if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
 
+$status = new Operationorderstatus($db);
+$res = $status->fetchDefault($object->status);
+if($res<0){
+	setEventMessage($langs->trans('ErrorLoadingStatus'), 'errors');
+}
+
+
 $hookmanager->initHooks(array($contextpage, 'globalcard'));
 
 
@@ -70,12 +77,8 @@ if ($object->isextrafieldmanaged)
 //    if (GETPOST('search_'.$key,'alpha')) $search[$key]=GETPOST('search_'.$key,'alpha');
 //}
 $usercanread = $user->rights->operationorder->read;
-$usercancreate = $user->rights->operationorder->write;
-
-$permissionnote = $usercancreate; // Used by the include of actions_setnotes.inc.php
-$permissiondellink = $usercancreate; // Used by the include of actions_dellink.inc.php
-$permissiontoedit = $usercancreate; // Used by the include of actions_lineupdonw.inc.php
-$permissiontoadd = $usercancreate; // Used by the include of actions_addupdatedelete.inc.php
+// $usercancreate = $user->rights->operationorder->write;
+$usercancreate = $permissionnote = $permissiontoedit = $permissiontoadd = $permissiondellink = $status->userCan($user, 'edit'); // Used by the include of actions_setnotes.inc.php
 
 /*
  * Actions
@@ -103,12 +106,10 @@ if (empty($reshook))
     include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';		// Must be include, not include_once
 
 
-
-
     $error = 0;
 	switch ($action) {
         case 'update_attribute':
-            if (!empty($user->rights->operationorder->write))
+            if (!empty($status->userCan($user, 'edit')))
             {
                 $values = array();
                 $attribute = GETPOST('attribute');
@@ -138,24 +139,11 @@ if (empty($reshook))
 		case 'update':
 			$object->setValues($_REQUEST); // Set standard attributes
 
-//    var_dump($_REQUEST);exit;
-
             if ($object->isextrafieldmanaged)
             {
                 $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
                 if ($ret < 0) $error++;
             }
-
-//			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
-
-			// Check parameters
-//			if (empty($object->date_other))
-//			{
-//				$error++;
-//				setEventMessages($langs->trans('warning_date_must_be_fill'), array(), 'warnings');
-//			}
-
-			// ...
 
 			if ($error > 0)
 			{
@@ -163,9 +151,7 @@ if (empty($reshook))
 				break;
 			}
 
-//        $object->fk_project = '';
 			$res = $object->save($user);
-//			var_dump($res, $object->db);exit;
             if ($res < 0)
             {
                 setEventMessage($object->errors, 'errors');
@@ -216,25 +202,28 @@ if (empty($reshook))
 				}
             }
 
-        case 'confirm_modify':
-			if (!empty($user->rights->operationorder->write)) $object->setDraft($user);
+        case 'confirm_setStatus':
+				$fk_status = GETPOST('fk_status' , 'int');
+
+        		if(!empty($fk_status)){
+					// vérification des droits
+					$statusAllowed = new OperationOrderStatus($db);
+					$res = $statusAllowed->fetch($fk_status);
+					if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+						if($object->setStatut($fk_status)>0){
+							setEventMessage($langs->trans('StatusChanged'));
+						}
+					}else{
+						setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+					}
+				}else{
+					setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+				}
+
+				header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
+				exit;
 
 			break;
-
-        case 'reopen':
-            if (!empty($user->rights->operationorder->write)) $object->setReopen($user);
-
-            break;
-		case 'confirm_close':
-			if (!empty($user->rights->operationorder->write)) $object->setClosed($user);
-
-			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
-			exit;
-		case 'confirm_validate':
-			if (!empty($user->rights->operationorder->write)) $object->setValid($user);
-
-			header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
-			exit;
 
 		case 'confirm_delete':
 			if (!empty($user->rights->operationorder->delete)) $object->delete($user);
@@ -713,8 +702,8 @@ else
             $morehtmlref='<div class="refidno">';
 
             // Ref bis
-            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
-            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
+            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $status->userCan($user, 'edit'), 'string', '', 0, 1);
+            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $status->userCan($user, 'edit'), 'string', '', null, null, '', 1);
 
 //            $morehtmlref.=$form->editfieldkey("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
 //            $morehtmlref.=$form->editfieldval("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
@@ -954,7 +943,7 @@ else
 
 
 			// ADD FORM
-			if($action != 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
+			if($action != 'editline' && $status->userCan($user, 'edit')){
 				print '<div class="add-line-form-wrap" >';
 				print '<div class="add-line-form-title" >';
 				print $langs->trans("AddOperationOrderLine");
@@ -964,7 +953,7 @@ else
 				print '</div>';
 				print '</div>';
 			}
-			elseif($action == 'editline' && $object->status == OperationOrder::STATUS_DRAFT){
+			elseif($action == 'editline' && $status->userCan($user, 'edit')){
 				$lineid = GETPOST('lineid', 'int');
 				if(!empty($lineid)){
 
@@ -1047,25 +1036,17 @@ else
 
 					$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=';
 
-					// Valid
-					if ($object->status == OperationOrder::STATUS_DRAFT){
-						print dolGetButtonAction($langs->trans("OperationOrderValid"), '', 'default', $actionUrl . 'valid', '', $user->rights->operationorder->write);
+
+					// status disponible
+					if(!empty($status->TStatusAllowed)){
+						foreach ($status->TStatusAllowed as $fk_status){
+							$statusAllowed = new OperationOrderStatus($db);
+							$res = $statusAllowed->fetch($fk_status);
+							if($res>0){
+								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $statusAllowed->userCan($user, 'changeToThisStatus'));
+							}
+						}
 					}
-
-					// modifiy
-					if ($object->status == OperationOrder::STATUS_VALIDATED){
-						print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'modify', '', $user->rights->operationorder->write);
-					}
-
-//					// Reopen
-//					if ($object->status == OperationOrder::STATUS_CLOSED){
-//						print dolGetButtonAction($langs->trans("OperationOrderReopen"), '', 'default', $actionUrl . 'reopen', '', $user->rights->operationorder->write);
-//					}
-
-//					// Close
-//					if ($object->status == OperationOrder::STATUS_VALIDATED){
-//						print dolGetButtonAction($langs->trans("OperationOrderClose"), '', 'default', $actionUrl . 'close', '', $user->rights->operationorder->write);
-//					}
 
 					// Clone
 					print dolGetButtonAction($langs->trans("OperationOrderClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->write);
@@ -1116,7 +1097,7 @@ $db->close();
 
 
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
-	global $langs, $user, $extrafields, $conf;
+	global $langs, $user, $extrafields, $conf, $status;
 	if(!empty($TNested) && is_array($TNested)){
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
 		foreach ($TNested as $k => $v) {
@@ -1257,7 +1238,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// ACTIONS
 			$out.= '		<div class="operation-order-sortable-list__item__title__col -action">';
 
-			if ($line->status == OperationOrder::STATUS_DRAFT && !empty($user->rights->operationorder->write)) {
+			if ($status->userCan($user, 'edit')) {
 
 				$editUrl = dol_buildpath('operationorder/operationorder_card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=editline&amp;lineid='.$line->id;
 

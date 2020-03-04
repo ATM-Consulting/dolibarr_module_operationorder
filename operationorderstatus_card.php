@@ -302,6 +302,7 @@ else
 				print '<td  id="colval-status-group-'.$field['code'].'" >';
 				//print $form->select_dolgroups($object->TGroupCan[$field['code']], 'TGroupCan['.$field['code'].']', 1, '', 0, $include = '', 1, $conf->entity, true);
 
+
 				print $form->select_dolgroups($object->TGroupCan[$field['code']], 'TGroupCan_'.$field['code'], 1, '', 0, $include = '', 1, $conf->entity, true);
 
 				print "</td></tr>";
@@ -417,10 +418,10 @@ else
 				print dolGetButtonAction($langs->trans("OperationOrderStatusEdit"), '', 'default', $actionUrl . 'edit', '', $user->rights->operationorder->status->write);
 
 
-				if ($object->status !== OperationOrderStatus::STATUS_ACTIVE) {
+				if ($object->status != OperationOrderStatus::STATUS_ACTIVE) {
 					print dolGetButtonAction($langs->trans("OperationOrderStatusActivate"), '', 'default', $actionUrl . 'activate', '', $user->rights->operationorder->status->write);
 				}
-				if ($object->status !== OperationOrderStatus::STATUS_DISABLED) {
+				if ($object->status != OperationOrderStatus::STATUS_DISABLED) {
 					print dolGetButtonAction($langs->trans("OperationOrderStatusDisable"), '', 'default', $actionUrl . 'disable', '', $user->rights->operationorder->status->write);
 				}
 

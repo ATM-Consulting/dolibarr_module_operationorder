@@ -227,6 +227,16 @@ class OperationOrder extends SeedObject
     {
         $this->fk_user_creat = $user->id;
 
+
+		$status = new Operationorderstatus($this->db);
+		$res = $status->fetchDefault($this->status);
+		if($res>0){
+			$this->status = $status->id;
+		}
+		else{
+			return -1;
+		}
+
         return parent::create($user, $notrigger);
     }
 
@@ -783,35 +793,17 @@ class OperationOrder extends SeedObject
      */
     public static function LibStatut($status, $mode)
     {
-		global $langs;
+		global $langs,$db;
 
 		$langs->load('operationorder@operationorder');
-        $res = '';
 
-        if ($status==self::STATUS_CANCELED) { $statusType='status9'; $statusLabel=$langs->trans('OperationOrderStatusCancel'); $statusLabelShort=$langs->trans('OperationOrderStatusShortCancel'); }
-        elseif ($status==self::STATUS_DRAFT) { $statusType='status0'; $statusLabel=$langs->trans('OperationOrderStatusDraft'); $statusLabelShort=$langs->trans('OperationOrderStatusShortDraft'); }
-//        elseif ($status==self::STATUS_VALIDATED) { $statusType='status1'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
-        elseif ($status==self::STATUS_VALIDATED) { $statusType='status4'; $statusLabel=$langs->trans('OperationOrderStatusValidated'); $statusLabelShort=$langs->trans('OperationOrderStatusShortValidate'); }
-//        elseif ($status==self::STATUS_TO_PLAN) { $statusType='status5'; $statusLabel=$langs->trans('OperationOrderStatusRefused'); $statusLabelShort=$langs->trans('OperationOrderStatusShortRefused'); }
-//        elseif ($status==self::STATUS_PLANNED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusAccepted'); $statusLabelShort=$langs->trans('OperationOrderStatusShortAccepted'); }
-        elseif ($status==self::STATUS_CLOSED) { $statusType='status6'; $statusLabel=$langs->trans('OperationOrderStatusClosed'); $statusLabelShort=$langs->trans('OperationOrderStatusShortClosed'); }
+		$status = new Operationorderstatus($db);
+		$res = $status->fetchDefault($status);
+		if($res>0){
+			return $status->getBadge();
+		}
 
-        if (function_exists('dolGetStatus'))
-        {
-            $res = dolGetStatus($statusLabel, $statusLabelShort, '', $statusType, $mode);
-        }
-        else
-        {
-            if ($mode == 0) $res = $statusLabel;
-            elseif ($mode == 1) $res = $statusLabelShort;
-            elseif ($mode == 2) $res = img_picto($statusLabel, $statusType).$statusLabelShort;
-            elseif ($mode == 3) $res = img_picto($statusLabel, $statusType);
-            elseif ($mode == 4) $res = img_picto($statusLabel, $statusType).$statusLabel;
-            elseif ($mode == 5) $res = $statusLabelShort.img_picto($statusLabel, $statusType);
-            elseif ($mode == 6) $res = $statusLabel.img_picto($statusLabel, $statusType);
-        }
-
-        return $res;
+		return 'err';
     }
 
     /**
