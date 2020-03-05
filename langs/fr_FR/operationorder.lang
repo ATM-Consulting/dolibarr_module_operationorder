@@ -22,21 +22,68 @@ LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
 OperationOrderTopMenu=Réparations
+LeftMenuOperationOrderStatusMenu=Gestion des statuts
+LeftMenuOperationOrderStatusCreate=Nouveau statut
+LeftMenuOperationOrderStatusList=Liste
+
+# EVEN ACTION COM CONF
+OperationOrderStatusChange=Changement de status d'un ordre de réparation
+OperationOrderStatusChangeDesc=permet l'historisation des changements de status des ordres de réparation
+
+# EVENT ACTION COM
+OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
+#OperationOrderSetStatusActiveEvent=Activation de l'ordre de fabrication %s
+#OperationOrderSetStatusReopenEvent=Réouverture de l'ordre de fabrication %s
+#OperationOrderSetStatusDraftEvent=Passage en brouillion de l'ordre de fabrication %s
+#OperationOrderSetStatusValidatedEvent=Validation de l'ordre de fabrication %s
+#OperationOrderSetStatusAcceptedEvent=Ordre de fabrication %s accepté
+#OperationOrderSetStatusToPlanEvent=Ordre de fabrication %s a planifier
+#OperationOrderSetStatusClosedEvent=Ordre de fabrication %s cloturé
 
 # STATUS
+OperationOrderStatusActivated=Activé
 OperationOrderStatusCanceled=Abandonnée (fermée)
 OperationOrderStatusDraft=Brouillon (à valider)
 OperationOrderStatusValidated=Validé
 OperationOrderStatusRefused=Refusée (fermée)
 OperationOrderStatusAccepted=Acceptée (fermée)
 OperationOrderStatusClosed=Traité
-
+OperationOrderStatusDisabled=Désactivé
+OperationOrderStatusShortActivated=Activé
 OperationOrderStatusShortCanceled=Abandonnée
 OperationOrderStatusShortDraft=Brouillon
 OperationOrderStatusShortValidated=Validé
 OperationOrderStatusShortRefused=Refusée
 OperationOrderStatusShortAccepted=Acceptée
 OperationOrderStatusShortClosed=Traité
+OperationOrderStatusShortToPlan=A planifier
+OperationOrderStatusShortDisabled=Désactivé
+
+NewStatus=Nouveau statut
+NoOperationOrderStatus=Pas de statut
+OperationOrderStatusList=Liste des statuts
+DateCre=Date de création
+DateMaj=Date de mise à jour
+NewOperationOrderStatus=Nouveau status d'ordre de réparation
+OperationOrderStatus=Statut d'ordre de réparation
+OperationOrderStatusCard=Fiche
+OperationOrderStatusActivate=Activer
+OperationOrderStatusDisable=Désactiver
+OperationOrderStatusDelete=Supprimer
+OperationOrderStatusEdit=Modifier
+CouldEdit=Groupes utilisateur pouvant modifier un ordre de réparation sur ce statut
+CouldEditHelp=Si coché ce statut désactive la posibilité de modifier l'ordre de réparation. Pour pouvoir de nouveau modifier l'ordre de réparation il faut repasser sur un autre statut qui permet la modification
+CouldChangeToThisStatus=Groupes utilisateur pouvant passer à ce status
+TargetableStatus=Statuts accessibles depuis ce statut
+ConfirmValidateOperationOrderStatusBody=Êtes-vous sûr de vouloir passer cet ordre de réparation sous la référence <b>%s</b> à l'état <b>%s</b> ?
+ConfirmValidateOperationOrderStatusTitle=Passer l'ordre de réparation à l'état %s
+StatusChanged=Status modifié
+
+# RIGHTS
+operationorder_read=Peut voir les ordres de réparation
+operationorder_write=Peut créer et modifier les ordres de réparations
+operationorder_status_read=Peut consulter les différents status d'ordres de réparation
+operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -58,6 +105,9 @@ OperationOrderReopen=Rouvrir
 OperationOrderCancel=Abandonner
 OperationOrderDelete=Supprimer
 OperationOrderDetPc=Pc
+OperationOrderSetToPlan=A plannifier
+OperationOrderSetPlanned=Planifé
+
 StockPlace=Emplacement
 TimePlanned=Temps planifié
 AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation

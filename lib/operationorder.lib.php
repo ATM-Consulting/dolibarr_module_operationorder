@@ -130,36 +130,41 @@ function getFormConfirmOperationOrder($form, $object, $action)
 
     $formconfirm = '';
 
-    if ($action === 'valid' && !empty($user->rights->operationorder->write))
+    if ($action === 'setStatus' && !empty($user->rights->operationorder->write))
     {
-        $body = $langs->trans('ConfirmValidateOperationOrderBody', $object->getRef());
-        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderTitle'), $body, 'confirm_validate', '', 0, 1);
-    }
+
+		$fk_status = GETPOST('fk_status' , 'int');
+
+		if(!empty($fk_status)){
+			// vérification des droits
+			$statusAllowed = new OperationOrderStatus($object->db);
+			$res = $statusAllowed->fetch($fk_status);
+			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+				if($object->setStatut($fk_status)>0){
+
+					$body = $langs->trans('ConfirmValidateOperationOrderStatusBody', $object->ref, $statusAllowed->label);
+					$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderStatusTitle', $statusAllowed->label), $body, 'confirm_setStatus', '', 0, 1);
+				}
+			}else{
+				setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+			}
+		}
+		else{
+			setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+		}
+
+
+         }
     elseif ($action === 'close' && !empty($user->rights->operationorder->write))
     {
         $body = $langs->trans('ConfirmCloseOperationOrderBody');
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmCloseOperationOrderTitle'), $body, 'confirm_close', '', 0, 1);
     }
-//    elseif ($action === 'accept' && !empty($user->rights->operationorder->write))
-//    {
-//        $body = $langs->trans('ConfirmAcceptOperationOrderBody', $object->ref);
-//        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmAcceptOperationOrderTitle'), $body, 'confirm_accept', '', 0, 1);
-//    }
-//    elseif ($action === 'refuse' && !empty($user->rights->operationorder->write))
-//    {
-//        $body = $langs->trans('ConfirmRefuseOperationOrderBody', $object->ref);
-//        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmRefuseOperationOrderTitle'), $body, 'confirm_refuse', '', 0, 1);
-//    }
     elseif ($action === 'modify' && !empty($user->rights->operationorder->write))
     {
         $body = $langs->trans('ConfirmModifyOperationOrderBody', $object->ref);
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmModifyOperationOrderTitle'), $body, 'confirm_modify', '', 0, 1);
     }
-//    elseif ($action === 'reopen' && !empty($user->rights->operationorder->write))
-//    {
-//        $body = $langs->trans('ConfirmReopenOperationOrderBody', $object->ref);
-//        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmReopenOperationOrderTitle'), $body, 'confirm_reopen', '', 0, 1);
-//    }
     elseif ($action === 'delete' && !empty($user->rights->operationorder->write))
     {
         $body = $langs->trans('ConfirmDeleteOperationOrderBody');
@@ -174,11 +179,69 @@ function getFormConfirmOperationOrder($form, $object, $action)
     {
         $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.GETPOST('lineid'), $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
     }
-//    elseif ($action === 'cancel' && !empty($user->rights->operationorder->write))
-//    {
-//        $body = $langs->trans('ConfirmCancelOperationOrderBody', $object->ref);
-//        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmCancelOperationOrderTitle'), $body, 'confirm_cancel', '', 0, 1);
-//    }
 
     return $formconfirm;
+}
+
+
+
+/**
+ * Return array of tabs to used on pages for third parties cards.
+ *
+ * @param 	OperationOrderStatus	$object		Object company shown
+ * @return 	array				Array of tabs
+ */
+function operationOrderStatusPrepareHead(OperationOrderStatus $object)
+{
+	global $db, $langs, $conf;
+
+	$langs->load("operationorder@operationorder");
+
+	$h = 0;
+	$head = array();
+
+	$head[$h][0] = dol_buildpath("/operationorder/operationorderstatus_card.php", 1).'?id='.$object->id;
+	$head[$h][1] = $langs->trans("OperationOrderStatusCard");
+	$head[$h][2] = 'card';
+	$h++;
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder');
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder', 'remove');
+
+	return $head;
+}
+
+
+
+/**
+ * @param Form      $form       Form object
+ * @param OperationOrder  $object     OperationOrder object
+ * @param string    $action     Triggered action
+ * @return string
+ */
+function getFormConfirmOperationOrderStatus($form, $object, $action)
+{
+	global $langs, $user;
+
+	$formconfirm = '';
+
+	if ($action === 'valid' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmValidateOperationOrderBody', $object->getRef());
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderTitle'), $body, 'confirm_validate', '', 0, 1);
+	}
+	elseif ($action === 'modify' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmModifyOperationOrderBody', $object->ref);
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmModifyOperationOrderTitle'), $body, 'confirm_modify', '', 0, 1);
+	}
+	elseif ($action === 'delete' && !empty($user->rights->operationorder->write))
+	{
+		$body = $langs->trans('ConfirmDeleteOperationOrderBody');
+		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmDeleteOperationOrderTitle'), $body, 'confirm_delete', '', 0, 1);
+	}
+
+
+	return $formconfirm;
 }
