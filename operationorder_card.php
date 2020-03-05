@@ -1048,6 +1048,9 @@ else
 						}
 					}
 
+					// modifiy
+					print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'edit', '', $status->userCan($user, 'edit'));
+
 					// Clone
 					print dolGetButtonAction($langs->trans("OperationOrderClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->write);
 
