@@ -1549,7 +1549,7 @@ class OperationOrderDet extends SeedObject
 		}
 		elseif($key == 'qty')
 		{
-			$out ='<input type="number" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+			$out ='<input type="number" min="0" step="any" class="flat '.$morecss.'"  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
 		}
 		elseif ($key == 'time_planned')
 		{
