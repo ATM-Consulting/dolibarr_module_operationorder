@@ -806,7 +806,7 @@ class OperationOrderStatus extends SeedObject
 				$o = new static($this->db);
 				$o->fetch($obj->rowid, $loadChild);
 
-				$TRes[] = $o;
+				$TRes[$obj->rowid] = $o;
 			}
 		}
 

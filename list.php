@@ -125,6 +125,17 @@ $formcore = new TFormCore($_SERVER['PHP_SELF'], 'form_list_operationorder', 'POS
 $nbLine = GETPOST('limit');
 if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user->conf->MAIN_SIZE_LISTE_LIMIT : $conf->global->MAIN_SIZE_LISTE_LIMIT;
 
+// TODO : add this to a OperationOrderStatus method
+// prepare status cache
+$statusStatic = new OperationOrderStatus($db);
+$TStatusList = $statusStatic->fetchAll(0, false, array('status' => 1));
+$TStatusSearchList = array(); // for search form
+if(!empty($TStatusList)){
+	foreach ($TStatusList as $status ){
+		$TStatusSearchList[$status->id] = $status->label;
+	}
+}
+
 // List configuration
 $listViewConfig = array(
 	'view_type' => 'list' // default = [list], [raw], [chart]
@@ -155,7 +166,7 @@ $listViewConfig = array(
 		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
 		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
-		,'status' => array('search_type' => OperationOrder::$TStatus, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+		,'status' => array('search_type' => $TStatusSearchList, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
 	)
 	,'translate' => array()
 	,'hide' => array(
@@ -166,9 +177,11 @@ $listViewConfig = array(
 		,'label' => $langs->trans('Label')
 		,'date_creation' => $langs->trans('DateCre')
 		,'tms' => $langs->trans('DateMaj')
+		,'status' => $langs->trans('Status')
 	)
 	,'eval'=>array(
 		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
+		,'status' => '_getOperationOrderStatus(\'@status@\')'
 //		,'fk_user' => '_getUserNomUrl(@val@)' // Si on a un fk_user dans notre requête
 	)
 );
@@ -223,6 +236,22 @@ function _getUserNomUrl($fk_user)
 	if ($u->fetch($fk_user) > 0)
 	{
 		return $u->getNomUrl(1);
+	}
+
+	return '';
+}
+
+
+
+function _getOperationOrderStatus($fk_status)
+{
+	global $db, $TStatusList;
+
+	if(!empty($TStatusList) && isset($TStatusList[$fk_status])) {
+
+		$status = $TStatusList[$fk_status];
+
+		return $status->getBadge();
 	}
 
 	return '';
