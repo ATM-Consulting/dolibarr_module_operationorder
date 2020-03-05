@@ -194,9 +194,14 @@ class OperationOrderStatus extends SeedObject
 	 */
 	public function save($user, $notrigger = false)
 	{
-		$this->updateStatusUserGroupRight(true);
-		$this->updateStatusAllowed(true);
-		return $this->create($user, $notrigger);
+		$res = $this->create($user, $notrigger);
+
+		if($res>0){
+			$this->updateStatusUserGroupRight(true);
+			$this->updateStatusAllowed(true);
+		}
+
+		return $res;
 	}
 
 	/**

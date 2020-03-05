@@ -241,14 +241,37 @@ if ($action == 'create')
 	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
 	// Droits de groupes
-	foreach ($object->TGroupRightsType as $field)
-	{
+	foreach ($object->TGroupRightsType as $field){
+
 		print '<tr class="oddeven" id="status-group-'.$field['code'].'" >';
 		print '<td  id="coltitle-status-group-'.$field['code'].'" >'.$langs->trans($field['label']).'</td>';
 		print '<td  id="colval-status-group-'.$field['code'].'" >';
-		print $form->select_dolgroups($TGroupCan[$field['code']], 'TGroupCan['.$field['code'].']', 1, '', 0, $include = '', 1, $conf->entity, true);
+		//print $form->select_dolgroups($object->TGroupCan[$field['code']], 'TGroupCan['.$field['code'].']', 1, '', 0, $include = '', 1, $conf->entity, true);
+
+
+		print $form->select_dolgroups($TGroupCan[$field['code']], 'TGroupCan_'.$field['code'], 1, '', 0, $include = '', 1, $conf->entity, true);
+
 		print "</td></tr>";
 	}
+
+	print '<tr class="oddeven" id="status-allowed" >';
+	print '<td  id="coltitle-status-allowed" >'.$langs->trans('TargetableStatus').'</td>';
+	print '<td  id="colval-status-allowed" >';
+	$TStatus = $object->fetchAll();
+	if(!empty($TStatus)){
+		$TAvailableStatus = array();
+		foreach ($TStatus as $key => $status){
+			if($status->id != $object->status){
+				$TAvailableStatus[$status->id] = $status->label;
+			}
+		}
+
+		// il faut reverifier vu que l'on a supprimer...
+		if(!empty($TStatus)){
+			print $form->multiselectarray('TStatusAllowed', $TAvailableStatus, $TStatusAllowed, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
+		}
+	}
+	print "</td></tr>";
 
 
 	// Other attributes
