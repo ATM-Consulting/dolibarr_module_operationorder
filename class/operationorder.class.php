@@ -794,11 +794,10 @@ class OperationOrder extends SeedObject
     public static function LibStatut($status, $mode)
     {
 		global $langs,$db;
-
 		$langs->load('operationorder@operationorder');
 
 		$status = new Operationorderstatus($db);
-		$res = $status->fetchDefault($status);
+		$res = $status->fetchDefault($status->id);
 		if($res>0){
 			return $status->getBadge();
 		}

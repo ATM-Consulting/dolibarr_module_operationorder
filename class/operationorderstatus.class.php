@@ -229,6 +229,7 @@ class OperationOrderStatus extends SeedObject
 	 */
 	function userGroupCan($user, $action = ''){
 
+		//var_dump($action, $this->TGroupCan[$action]);
 		if(!isset($this->TGroupCan[$action]) || empty($this->TGroupCan[$action])){
 			return false;
 		}
@@ -237,6 +238,7 @@ class OperationOrderStatus extends SeedObject
 		$TGroup = $userGroup->listGroupsForUser($user->id);
 		if(!empty($TGroup)){
 			foreach ($TGroup as $fk_group => $group){
+				//var_dump(array('notinarray', $fk_group, $action, $this->TGroupCan, in_array($fk_group, $this->TGroupCan[$action])));
 				if(in_array($fk_group, $this->TGroupCan[$action])){
 					// l'utilisateur fait parti d'un group authorisé
 					return true;
@@ -323,7 +325,7 @@ class OperationOrderStatus extends SeedObject
 			$resql = $this->db->query($sql);
 			if($resql){
 				$row = $this->db->fetch_object($resql);
-				$res = self::fetch($row->rowid);
+				$res = $this->fetch($row->rowid);
 			}
 		}
 
