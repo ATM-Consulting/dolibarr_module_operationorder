@@ -242,7 +242,7 @@ function _getUserNomUrl($fk_user)
 }
 
 
-
+// TODO : add this to a OperationOrderStatus a static method with cache
 function _getOperationOrderStatus($fk_status)
 {
 	global $db, $TStatusList;

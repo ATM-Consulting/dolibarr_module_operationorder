@@ -392,6 +392,9 @@ if (empty($reshook))
                 }
 
             }
+            else{
+            	setEventMessage($langs->trans('NotEnoughtRights'), 'errors');
+			}
 
             break;
         case 'confirm_deleteline':
