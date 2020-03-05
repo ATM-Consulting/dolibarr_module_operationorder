@@ -61,7 +61,7 @@ foreach ($object->fields as $key => $val)
 	if (!empty($val['help'])) print $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
 	else print $langs->trans($val['label']);
 
-    if ($object->status == 0 && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
+    if ( $status->userCan($user, 'edit') && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
     {
         $fieldid = 'id';
         if ($object->table_element == 'societe') $fieldid = 'socid';
@@ -141,7 +141,7 @@ foreach ($object->fields as $key => $val)
 	if (!empty($val['help'])) print $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
 	else print $langs->trans($val['label']);
 
-	if ($object->status == 0 && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
+	if ( $status->userCan($user, 'edit') && $permok && empty($val['noteditable']) && ($action != 'edit_attribute' || GETPOST('attribute') != $key))
     {
         $fieldid = 'id';
         if ($object->table_element == 'societe') $fieldid = 'socid';
