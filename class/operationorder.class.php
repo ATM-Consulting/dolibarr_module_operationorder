@@ -210,6 +210,7 @@ class OperationOrder extends SeedObject
         if (!empty($this->is_clone))
         {
             // TODO determinate if auto generate
+			$this->status = 0;
             $this->ref = '(PROV'.$this->id.')';
         }
 
@@ -518,159 +519,7 @@ class OperationOrder extends SeedObject
     }
 
 
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setDraft($user, $notrigger = 0)
-    {
-		global $conf, $langs;
 
-        if ($this->status == self::STATUS_VALIDATED)
-        {
-            $this->status = self::STATUS_DRAFT;
-            $this->withChild = false;
-
-			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'OPERATIONORDER_DRAFT');
-			else $ret =  $this->update($user);
-			if($ret  > 0 )
-			{
-				// Agenda Hack to replace standard agenda trigger event
-				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
-				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-					$eventLabel = $langs->transnoentities('OperationOrderSetStatusDraftEvent', $this->ref );
-					$this->addActionComEvent($eventLabel);
-				}
-			}
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setValid($user, $notrigger = 0)
-    {
-    	global $conf, $langs;
-
-        if ($this->status == self::STATUS_DRAFT)
-        {
-            $this->ref = $this->getRef();
-            $this->fk_user_valid = $user->id;
-            $this->status = self::STATUS_VALIDATED;
-            $this->withChild = false;
-
-			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'OPERATIONORDER_VALID');
-			else $ret =  $this->update($user);
-			if($ret  > 0 )
-			{
-				// Agenda Hack to replace standard agenda trigger event
-				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
-				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-					$eventLabel = $langs->transnoentities('OperationOrderSetStatusValidatedEvent', $this->ref );
-					$this->addActionComEvent($eventLabel);
-				}
-			}
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setAccepted($user, $notrigger = 0)
-    {
-		global $conf, $langs;
-
-        if ($this->status == self::STATUS_VALIDATED)
-        {
-            $this->fk_user_cloture = $user->id;
-            $this->status = self::STATUS_PLANNED;
-            $this->withChild = false;
-
-			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_ACCEPTED');
-			else $ret =  $this->update($user);
-			if($ret  > 0 )
-			{
-				// Agenda Hack to replace standard agenda trigger event
-				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
-				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-					$eventLabel = $langs->transnoentities('OperationOrderSetStatusAcceptedEvent', $this->ref );
-					$this->addActionComEvent($eventLabel);
-				}
-			}
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setToPlan($user, $notrigger = 0)
-    {
-		global $conf, $langs;
-
-        if ($this->status == self::STATUS_VALIDATED)
-        {
-            $this->status = self::STATUS_TO_PLAN;
-            $this->withChild = false;
-
-			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_TO_PLAN');
-			else $ret =  $this->update($user);
-			if($ret  > 0 )
-			{
-				// Agenda Hack to replace standard agenda trigger event
-				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
-				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-					$eventLabel = $langs->transnoentities('OperationOrderSetStatusToPlanEvent', $this->ref );
-					$this->addActionComEvent($eventLabel);
-				}
-			}
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @param int	$notrigger		1=Does not execute triggers, 0=Execute triggers
-     * @return int
-     */
-    public function setClosed($user, $notrigger = 0)
-    {
-		global $conf, $langs;
-
-        if ($this->status == self::STATUS_VALIDATED)
-        {
-            $this->fk_user_cloture = $user->id;
-            $this->status = self::STATUS_CLOSED;
-            $this->withChild = false;
-
-			if (method_exists($this, 'setStatusCommon')) $ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_CLOSE');
-			else $ret =  $this->update($user);
-			if($ret  > 0 )
-			{
-				// Agenda Hack to replace standard agenda trigger event
-				$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
-				if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-					$eventLabel = $langs->transnoentities('OperationOrderSetStatusClosedEvent', $this->ref );
-					$this->addActionComEvent($eventLabel);
-				}
-			}
-        }
-
-        return 0;
-    }
 
 	/**
 	 *    Set to a status
@@ -787,17 +636,17 @@ class OperationOrder extends SeedObject
     }
 
     /**
-     * @param int       $status   Status
+     * @param int       $fk_status
      * @param int       $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
      * @return string
      */
-    public static function LibStatut($status, $mode)
+    public static function LibStatut($fk_status, $mode)
     {
 		global $langs,$db;
 		$langs->load('operationorder@operationorder');
 
 		$status = new Operationorderstatus($db);
-		$res = $status->fetchDefault($status->id);
+		$res = $status->fetchDefault($fk_status);
 		if($res>0){
 			return $status->getBadge();
 		}

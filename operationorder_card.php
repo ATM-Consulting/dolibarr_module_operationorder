@@ -214,10 +214,10 @@ if (empty($reshook))
 							setEventMessage($langs->trans('StatusChanged'));
 						}
 					}else{
-						setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+						setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
 					}
 				}else{
-					setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
+					setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
 				}
 
 				header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
