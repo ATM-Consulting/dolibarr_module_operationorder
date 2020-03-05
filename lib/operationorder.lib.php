@@ -142,7 +142,7 @@ function getFormConfirmOperationOrder($form, $object, $action)
 			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				if($object->setStatut($fk_status)>0){
 
-					$body = $langs->trans('ConfirmValidateOperationOrderStatus', $object->ref, $statusAllowed->label);
+					$body = $langs->trans('ConfirmValidateOperationOrderStatusBody', $object->ref, $statusAllowed->label);
 					$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderStatusTitle'), $body, 'confirm_setStatus', '', 0, 1);
 				}
 			}else{
