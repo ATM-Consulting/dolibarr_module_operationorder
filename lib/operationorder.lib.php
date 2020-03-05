@@ -143,7 +143,7 @@ function getFormConfirmOperationOrder($form, $object, $action)
 				if($object->setStatut($fk_status)>0){
 
 					$body = $langs->trans('ConfirmValidateOperationOrderStatusBody', $object->ref, $statusAllowed->label);
-					$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderStatusTitle'), $body, 'confirm_setStatus', '', 0, 1);
+					$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ConfirmValidateOperationOrderStatusTitle', $statusAllowed->label), $body, 'confirm_setStatus', '', 0, 1);
 				}
 			}else{
 				setEventMessage($langs->trans('StatusNotAllowed'), 'errors');
