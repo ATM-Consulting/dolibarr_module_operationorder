@@ -210,7 +210,6 @@ class OperationOrder extends SeedObject
         if (!empty($this->is_clone))
         {
             // TODO determinate if auto generate
-			$this->status = 0;
             $this->ref = '(PROV'.$this->id.')';
         }
 
@@ -987,6 +986,7 @@ class OperationOrder extends SeedObject
 	{
 		// backup origins lines
 		$this->originLines = $this->lines;
+		$this->status = 0;
 
 		if (!empty($this->lines) && !empty($this->fk_element))
 		{
