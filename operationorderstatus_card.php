@@ -372,6 +372,17 @@ else
 			$formconfirm = getFormConfirmOperationOrderStatus($form, $object, $action);
 			if (!empty($formconfirm)) print $formconfirm;
 
+			$linkback = '<a href="' .dol_buildpath('/operationorder/operationorderstatus_list.php', 1) . '?restore_lastsearch_values=1">' . $langs->trans('BackToList') . '</a>';
+
+			$morehtmlref='<div class="refidno">';
+			// Ref bis
+			$morehtmlref.=$form->editfieldval("Label", 'label', $object->label, $object, $object->userCan($user, 'edit'), 'string', '', null, null, '', 1);
+
+			$morehtmlref.='</div>';
+
+			$morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
+			dol_banner_tab($object, 'rowid', $linkback, 0, 'rowid', 'code', $morehtmlref, '', 0, '', $morehtmlstatus);
+
 
 			//operationOrderStatusBannerTab($object);
 

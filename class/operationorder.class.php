@@ -47,6 +47,9 @@ class OperationOrder extends SeedObject
     /** @var $objStatus OperationOrderStatus used for cache */
     public $objStatus;
 
+	/** @var string $picto a picture file in [@...]/img/object_[...@].png  */
+	public $picto = 'operationorder@operationorder';
+
     /**
      *  'type' is the field format.
      *  'label' the translation key.
