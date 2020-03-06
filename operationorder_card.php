@@ -203,14 +203,14 @@ if (empty($reshook))
             }
 
         case 'confirm_setStatus':
+				/** @var  $object OperationOrder */
 				$fk_status = GETPOST('fk_status' , 'int');
-
         		if(!empty($fk_status)){
 					// vérification des droits
 					$statusAllowed = new OperationOrderStatus($db);
 					$res = $statusAllowed->fetch($fk_status);
 					if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
-						if($object->setStatut($fk_status)>0){
+						if($object->setStatus($user, $fk_status)>0){
 							setEventMessage($langs->trans('StatusChanged'));
 						}
 					}else{

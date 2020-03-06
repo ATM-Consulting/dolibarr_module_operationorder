@@ -665,6 +665,7 @@ class OperationOrderStatus extends SeedObject
 	 * @return bool
 	 */
 	public function checkStatusTransition($user, $newStatusId){
+		/** TODO */
 		return true;
 	}
 

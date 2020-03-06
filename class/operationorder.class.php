@@ -180,7 +180,9 @@ class OperationOrder extends SeedObject
         if (!empty($this->is_clone))
         {
             // TODO determinate if auto generate
-            $this->ref = '(PROV'.$this->id.')';
+            // $this->ref = '(PROV'.$this->id.')';
+			$this->ref = $this->getNextNumRef();
+			// $this->fk_user_valid = $user->id;
         }
 
         return $this->create($user, $notrigger);
@@ -195,6 +197,7 @@ class OperationOrder extends SeedObject
      */
     public function create(User &$user, $notrigger = false)
     {
+
         $this->fk_user_creat = $user->id;
 
 
@@ -543,25 +546,64 @@ class OperationOrder extends SeedObject
 	 * @return    int                        <0 if KO, >0 if OK
 	 * @throws Exception
 	 */
-	public function setStatus($user, $fk_status, $notrigger = 0, $triggercode = '')
+	public function setStatus($user, $fk_status, $notrigger = 0, $triggercode = 'OPERATIONORDER_STATUS')
 	{
 		global $conf, $langs;
+
+		$error = 0;
+
 
 		$status = new OperationOrderStatus($this->db);
 		$res = $status->fetch($this->status);
 		if($res>0)
 		{
-			if($status->checkStatusTransition($user, $status))
+			if($status->checkStatusTransition($user, $fk_status))
 			{
-				$this->status = intval($status);
+				$this->status = intval($fk_status);
 				$this->withChild = false;
 
-				if (method_exists($this, 'setStatusCommon')){
-					$ret =  $this->setStatusCommon($user, self::STATUS_TO_PLAN, $notrigger, 'OPERATIONORDER_STATUS');
+				$this->db->begin();
+				$sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element;
+				$sql .= " SET status = ".$this->status;
+
+				$newref = $this->getRef();
+				if($this->ref != $newref)
+				{
+					$this->ref = $newref;
+					$sql .= " , ref = '".$this->db->escape($this->ref)."' ";
 				}
-				else{
-					$ret =  $this->update($user);
+
+				$sql .= " WHERE rowid = ".$this->id;
+
+				if ($this->db->query($sql))
+				{
+					if (!$error)
+					{
+						$this->oldcopy = clone $this;
+					}
+
+					if (!$error && !$notrigger) {
+						// Call trigger
+						$result = $this->call_trigger($triggercode, $user);
+						if ($result < 0) $error++;
+					}
+
+					if (!$error) {
+						$this->status = $status;
+						$this->db->commit();
+						$ret = 1;
+					} else {
+						$this->db->rollback();
+						$ret = -1;
+					}
 				}
+				else
+				{
+					$this->error = $this->db->error();
+					$this->db->rollback();
+					$ret = -1;
+				}
+
 
 				if($ret  > 0 )
 				{
