@@ -78,7 +78,7 @@ if ($object->isextrafieldmanaged)
 //}
 $usercanread = $user->rights->operationorder->read;
 // $usercancreate = $user->rights->operationorder->write;
-$usercancreate = $permissionnote = $permissiontoedit = $permissiontoadd = $permissiondellink = $status->userCan($user, 'edit'); // Used by the include of actions_setnotes.inc.php
+$usercancreate = $permissionnote = $permissiontoedit = $permissiontoadd = $permissiondellink = $object->userCan($user, 'edit'); // Used by the include of actions_setnotes.inc.php
 
 /*
  * Actions
@@ -109,7 +109,7 @@ if (empty($reshook))
     $error = 0;
 	switch ($action) {
         case 'update_attribute':
-            if (!empty($status->userCan($user, 'edit')))
+            if (!empty($object->userCan($user, 'edit')))
             {
                 $values = array();
                 $attribute = GETPOST('attribute');
@@ -252,6 +252,7 @@ if (empty($reshook))
                 else $idprod = GETPOST('fk_product', 'int');
 
                 $qty = GETPOST('qty'.$predef);
+				$qty = price2num($qty);
                 $price = GETPOST('price'.$predef);
                 $fk_warehouse = GETPOST('fk_warehouse');
                 $pc = GETPOST('pc'.$predef);
@@ -283,7 +284,7 @@ if (empty($reshook))
                     $error++;
                 }
 
-                if (!$error && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
+                if (empty($error) && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
                     // Clean parameters
                     $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
                     $date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
@@ -705,8 +706,8 @@ else
             $morehtmlref='<div class="refidno">';
 
             // Ref bis
-            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $status->userCan($user, 'edit'), 'string', '', 0, 1);
-            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $status->userCan($user, 'edit'), 'string', '', null, null, '', 1);
+            $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, $object->userCan($user, 'edit'), 'string', '', 0, 1);
+            $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, $object->userCan($user, 'edit'), 'string', '', null, null, '', 1);
 
 //            $morehtmlref.=$form->editfieldkey("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', 0, 1);
 //            $morehtmlref.=$form->editfieldval("Thirdparty", 'fk_soc', $object->ref_client, $object, $user->rights->operationorder->write, 'string', '', null, null, '', 1);
@@ -946,7 +947,7 @@ else
 
 
 			// ADD FORM
-			if($action != 'editline' && $status->userCan($user, 'edit')){
+			if($action != 'editline' && $object->userCan($user, 'edit')){
 				print '<div class="add-line-form-wrap" >';
 				print '<div class="add-line-form-title" >';
 				print $langs->trans("AddOperationOrderLine");
@@ -956,7 +957,7 @@ else
 				print '</div>';
 				print '</div>';
 			}
-			elseif($action == 'editline' && $status->userCan($user, 'edit')){
+			elseif($action == 'editline' && $object->userCan($user, 'edit')){
 				$lineid = GETPOST('lineid', 'int');
 				if(!empty($lineid)){
 
@@ -1052,7 +1053,7 @@ else
 					}
 
 					// modifiy
-					print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'edit', '', $status->userCan($user, 'edit'));
+					print dolGetButtonAction($langs->trans("OperationOrderModify"), '', 'default', $actionUrl . 'edit', '', $object->userCan($user, 'edit'));
 
 					// Clone
 					print dolGetButtonAction($langs->trans("OperationOrderClone"), '', 'default', $actionUrl . 'clone', '', $user->rights->operationorder->write);
@@ -1103,7 +1104,7 @@ $db->close();
 
 
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
-	global $langs, $user, $extrafields, $conf, $status;
+	global $langs, $user, $extrafields, $conf, $object;
 	if(!empty($TNested) && is_array($TNested)){
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
 		foreach ($TNested as $k => $v) {
@@ -1244,7 +1245,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// ACTIONS
 			$out.= '		<div class="operation-order-sortable-list__item__title__col -action">';
 
-			if ($status->userCan($user, 'edit')) {
+			if ($object->userCan($user, 'edit')) {
 
 				$editUrl = dol_buildpath('operationorder/operationorder_card.php', 1).'?id='. $line->fk_operation_order.'&amp;action=editline&amp;lineid='.$line->id;
 

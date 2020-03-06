@@ -30,40 +30,7 @@ require_once __DIR__ . '/operationorderstatus.class.php';
 
 class OperationOrder extends SeedObject
 {
-    /**
-     * Canceled status
-     */
-    const STATUS_CANCELED = -1; // Not used
-    /**
-     * Draft status
-     */
-    const STATUS_DRAFT = 0;
-	/**
-	 * Validated status
-	 */
-	const STATUS_VALIDATED = 1;
-	/**
-	 * To plan status
-	 */
-	const STATUS_TO_PLAN = 3;
-	/**
-	 * Accepted status
-	 */
-	const STATUS_PLANNED = 4; // Not used
-	/**
-	 * Closed status
-	 */
-	const STATUS_CLOSED = 5;
 
-	/** @var array $TStatus Array of translate key for each const */
-	public static $TStatus = array(
-		self::STATUS_CANCELED => 'OperationOrderStatusShortCanceled'
-		,self::STATUS_DRAFT => 'OperationOrderStatusShortDraft'
-		,self::STATUS_VALIDATED => 'OperationOrderStatusShortValidated'
-		,self::STATUS_TO_PLAN => 'OperationOrderStatusShortToPlan'
-//		,self::STATUS_PLANNED => 'OperationOrderStatusShortAccepted'
-		,self::STATUS_CLOSED => 'OperationOrderStatusShortClosed'
-	);
 
 	/** @var string $table_element Table name in SQL */
 	public $table_element = 'operationorder';
@@ -76,6 +43,9 @@ class OperationOrder extends SeedObject
 
     /** @var int $ismultientitymanaged 0=No test on entity, 1=Test with field entity, 2=Test with link by societe */
     public $ismultientitymanaged = 1;
+
+    /** @var $objStatus OperationOrderStatus used for cache */
+    public $objStatus;
 
     /**
      *  'type' is the field format.
@@ -191,7 +161,7 @@ class OperationOrder extends SeedObject
 
 		$this->init();
 
-		$this->status = self::STATUS_DRAFT;
+		$this->status = 0;
 		$this->entity = $conf->entity;
 
 		$this->lines = &$this->TOperationOrderDet;
@@ -517,7 +487,50 @@ class OperationOrder extends SeedObject
         }
     }
 
+	/**
+	 * @param $user User
+	 * @return bool
+	 */
+	public function isEditable($user){
+		return $this->userCan($user, 'edit');
+	}
 
+	/**
+	 * @param $user User
+	 * @param string $action
+	 * @return bool
+	 */
+	public function userCan($user, $action = ''){
+
+		if($this->loadStatusObj()){
+			return $this->objStatus->userCan($user, $action);
+		}
+
+		return false;
+	}
+
+
+
+	/**
+	 * @param $user User
+	 * @param bool $forceReload false = use cache ; true = force reload status
+	 * @return bool
+	 */
+	public function loadStatusObj($forceReload = false){
+
+		if(empty($this->objStatus) || is_object($this->objStatus) || $forceReload){
+			$this->objStatus = new Operationorderstatus($this->db);
+			$res = $this->objStatus->fetchDefault($this->status);
+			if($res>0){
+				return true;
+			}
+		}
+		elseif($this->status != $this->objStatus->id){
+			return $this->loadStatusObj(true);
+		}
+
+		return true;
+	}
 
 
 	/**
@@ -717,7 +730,7 @@ class OperationOrder extends SeedObject
         $logtext .= ", date_end=$date_end, type=$type special_code=$special_code, origin=$origin, origin_id=$origin_id";
         dol_syslog(get_class($this).$logtext, LOG_DEBUG);
 
-        if ($this->status == self::STATUS_DRAFT)
+        if ($this->isEditable($user))
         {
 //            include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
@@ -843,7 +856,7 @@ class OperationOrder extends SeedObject
 
         dol_syslog(get_class($this)."::updateline id=$rowid, desc=$desc, info_bits=$info_bits, date_start=$date_start, date_end=$date_end, type=$type, fk_parent_line=$fk_parent_line, special_code=$special_code");
 
-        if ($this->status == OperationOrder::STATUS_DRAFT)
+        if ($this->isEditable($user))
         {
             // Clean parameters
             if (empty($qty)) $qty = 0;
