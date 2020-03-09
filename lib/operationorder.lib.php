@@ -60,6 +60,33 @@ function operationorderAdminPrepareHead()
     return $head;
 }
 
+
+/**
+ * @return array
+ */
+function operationorderStatusAdminPrepareHead()
+{
+	global $langs, $conf, $db;
+
+	$object = new OperationOrderStatus($db);
+
+	$langs->load('operationorder@operationorder');
+
+	$h = 0;
+	$head = array();
+
+	$head[$h][0] = dol_buildpath("/operationorder/admin/operationorderstatus_setup.php", 1);
+	$head[$h][1] = $langs->trans("Parameters");
+	$head[$h][2] = 'settings';
+	$h++;
+
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorderstatus');
+
+	return $head;
+}
+
+
 /**
  * Return array of tabs to used on pages for third parties cards.
  *

@@ -37,7 +37,7 @@ dol_include_once('operationorder/class/operationorder.class.php');
 $langs->loadLangs(array('operationorder@operationorder', 'admin', 'other'));
 
 // Access control
-if (! $user->admin) {
+if (! $user->admin && empty($user->rights->operationorder->status->write)) {
     accessforbidden();
 }
 

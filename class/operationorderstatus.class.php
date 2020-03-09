@@ -837,6 +837,51 @@ class OperationOrderStatus extends SeedObject
 		return true;
 	}
 
+	/**
+	 * @param $htmlname
+	 * @param $selected
+	 * @param int $status -1 for all
+	 * @param bool $multiselect
+	 * @param int $limit
+	 * @param array $TFilter
+	 * @return string
+	 */
+	static public function formSelectStatus($htmlname, $selected, $status = 0, $multiselect = true, $limit = 0, $TFilter = array()){
+		global $db, $form;
+		$oOStatus = new self($db);
+
+		if($status>=0){
+			$TFilter['status'] = 1;
+		}
+
+		$TStatus = $oOStatus->fetchAll($limit, false, $TFilter);
+
+		if(!empty($TStatus)){
+			$TAvailableStatus = array();
+			foreach ($TStatus as $key => $oOStatus){
+				if($oOStatus->id != $oOStatus->status){
+					$TAvailableStatus[$oOStatus->id] = $oOStatus->label;
+				}
+			}
+
+			// il faut reverifier vu que l'on a supprimer...
+			if(!empty($TStatus)){
+				if($multiselect){
+					// au cas ou ...
+					if(!is_array($selected)){
+						$selected = array($selected);
+					}
+					return $form->multiselectarray('TStatusAllowed', $TAvailableStatus, $selected, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
+				}
+				else
+				{
+					//($htmlname, $array, $id = '', $show_empty = 0, $key_in_label = 0, $value_as_key = 0, $moreparam = '', $translate = 0, $maxlen = 0, $disabled = 0, $sort = '', $morecss = '', $addjscombo = 0, $moreparamonempty = '', $disablebademail = 0, $nohtmlescape = 0)
+					//return $form->selectArray('TStatusAllowed', $TAvailableStatus, $selected, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
+				}
+			}
+		}
+	}
+
 }
 
 

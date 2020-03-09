@@ -180,14 +180,6 @@ class OperationOrder extends SeedObject
      */
     public function save($user, $notrigger = false)
     {
-        if (!empty($this->is_clone))
-        {
-            // TODO determinate if auto generate
-            // $this->ref = '(PROV'.$this->id.')';
-			$this->ref = $this->getNextNumRef();
-			// $this->fk_user_valid = $user->id;
-        }
-
         return $this->create($user, $notrigger);
     }
 
@@ -200,18 +192,35 @@ class OperationOrder extends SeedObject
      */
     public function create(User &$user, $notrigger = false)
     {
-
+		global $conf;
         $this->fk_user_creat = $user->id;
 
+		if (!empty($this->is_clone))
+		{
+			// TODO determinate if auto generate
+			// $this->ref = '(PROV'.$this->id.')';
+			$this->ref = $this->getNextNumRef();
+			// $this->fk_user_valid = $user->id;
+		}
 
-		$status = new Operationorderstatus($this->db);
-		$res = $status->fetchDefault($this->status);
-		if($res>0){
-			$this->status = $status->id;
+
+		if(!empty($this->is_clone) && !empty($conf->global->OPODER_STATUS_ON_CLONE))
+		{
+			// Set status by default conf
+			$this->status = $conf->global->OPODER_STATUS_ON_CLONE;
 		}
-		else{
-			return -1;
+		else
+		{
+			$status = new Operationorderstatus($this->db);
+			$res = $status->fetchDefault($this->status);
+			if($res>0){
+				$this->status = $status->id;
+			}
+			else{
+				return -1;
+			}
 		}
+
 
         return parent::create($user, $notrigger);
     }
@@ -223,11 +232,22 @@ class OperationOrder extends SeedObject
 	 */
 	public function cloneObject($user, $notrigger = false)
 	{
+		global $conf;
+
 		$this->clear();
+		$this->is_clone = 1;
 
 		$result = $this->create($user, $notrigger);
 
 		if ($result > 0) {
+			if(!empty($this->is_clone) && !empty($conf->global->OPODER_STATUS_ON_CLONE))
+			{
+				// Set status by default conf
+				$this->setStatus($user,$conf->global->OPODER_STATUS_ON_CLONE);
+			}
+
+
+
 			if (!empty($this->lines))
 			{
 				foreach ($this->lines as $i =>& $line)
@@ -389,7 +409,7 @@ class OperationOrder extends SeedObject
      */
     public function clearUniqueFields()
     {
-        $this->ref = 'Copy of '.$this->ref;
+
     }
 
 

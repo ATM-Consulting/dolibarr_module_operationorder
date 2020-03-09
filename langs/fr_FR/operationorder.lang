@@ -144,3 +144,8 @@ OperationOrderDeleteError=Erreur lors de la suppression de l'ordre de réparatio
 UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées
 ConfirmCloneOperationOrderTitle=Confirmation de clonage
 ConfirmCloneOperationOrderBody=Souhaitez-vous vraiment cloner cette fiche %s ?
+
+# PARAMS
+OPODER_STATUS_ON_CLONE=Statut à utiliser lors d'un clone d'un ordre de réparation
+OperationOrderStatusAdmin=Paramètres des statuts
+LeftMenuOperationOrderStatusAdmin=Paramètres
