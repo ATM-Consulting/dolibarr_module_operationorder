@@ -904,7 +904,12 @@ else
 						// Sometimes ul/ols are dynamically generated and so they have not some attributes as natural ul/ols.
 						// Be careful also if the hint is not visible. It has only display none so it is at the previouse place where it was before(excluding first moves before showing).
 
-						if( target.data(\'id\') != cEl.data(\'parent\') )
+						if(target.data(\'id\') == undefined && cEl.data(\'parent\') == 0){
+							hint.removeClass( "hint-desabled" );
+							hint.addClass( "hint-enabled" );
+							return true;
+						}
+						else if( target.data(\'id\') != cEl.data(\'parent\') )
 						{
 							hint.addClass( "hint-desabled" );
 							hint.removeClass( "hint-enabled" );
@@ -1140,7 +1145,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			$out .= ' data-id="' . $line->id . '" ';
 			$out .= ' data-ref="' . dol_escape_htmltag($line->ref) . '" ';
 			$out .= ' data-rank="' . dol_escape_htmltag($line->rang) . '" ';
-			$out .= ' data-parent="' . $line->fk_parent_line . '" ';
+			$out .= ' data-parent="' . intval($line->fk_parent_line) . '" ';
 			$out .= '>';
 			$out .= '<div class="operation-order-sortable-list__item__title">';
 			$out .= '	<div class="operation-order-sortable-list__item__title__flex">';
