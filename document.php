@@ -70,7 +70,7 @@ if ($id > 0 || !empty($ref)) $upload_dir = $conf->operationorder->multidir_outpu
 // Security check - Protection if external user
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
-//$result = restrictedArea($user, 'operationorder', $object->id);
+$result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 
 $permissiontoadd = $user->rights->operationorder->write; // Used by the include of actions_addupdatedelete.inc.php
 

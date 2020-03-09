@@ -51,6 +51,9 @@ $object = new OperationOrder($db);
 
 if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
 
+$result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
+
+
 $status = new Operationorderstatus($db);
 $res = $status->fetchDefault($object->status);
 if($res<0){

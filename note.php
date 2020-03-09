@@ -49,7 +49,9 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 // Security check - Protection if external user
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
-//$result = restrictedArea($user, 'operationorder', $id);
+
+$result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
+
 
 // Load object
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once  // Must be include, not include_once. Include fetch and fetch_thirdparty but not fetch_optionals
