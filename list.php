@@ -111,8 +111,7 @@ if (!empty($object->isextrafieldmanaged))
     $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'operationorder_extrafields et ON (et.fk_object = t.rowid)';
 }
 
-$sql.= ' WHERE 1=1';
-//$sql.= ' AND t.entity IN ('.getEntity('OperationOrder', 1).')';
+$sql.= ' WHERE  t.entity IN ('.getEntity('operationorder', 1).')';
 //if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
 
 // Add where from hooks

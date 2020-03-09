@@ -149,3 +149,6 @@ ConfirmCloneOperationOrderBody=Souhaitez-vous vraiment cloner cette fiche %s ?
 OPODER_STATUS_ON_CLONE=Statut à utiliser lors d'un clone d'un ordre de réparation
 OperationOrderStatusAdmin=Paramètres des statuts
 LeftMenuOperationOrderStatusAdmin=Paramètres
+ActivateOperationorderSharing=Activer le partage des des ordres de réparation entre entités (pensez à configurer le partage ci-dessous)
+MulticompanyConfiguration=Configuration des partages entre entités
+Multicompany=Options du module multi sociétés
