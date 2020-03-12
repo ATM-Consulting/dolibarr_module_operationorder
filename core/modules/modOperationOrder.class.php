@@ -90,6 +90,11 @@ class modOperationOrder extends DolibarrModules
 		//                        );
 		$this->module_parts = array(
 		    'models' => 1,
+			'triggers' => 1,
+			'hooks' => array(
+				'ordersuppliercard'
+				,'hookcontext2'
+			)
         );
 
 		// Data directories to create when module is enabled.

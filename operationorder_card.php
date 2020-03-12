@@ -1043,7 +1043,13 @@ else
 
                 if (empty($reshook))
                 {
-                    // Send
+
+					// Supplier order
+					$actionSupplierOrderUrl = DOL_MAIN_URL_ROOT.'/fourn/commande/card.php?operation_order_origin='.$object->element.'&operation_order_originid='.$object->id.'&amp;action=create&leftmenu=orders_suppliers';
+					print dolGetButtonAction($langs->trans("OperationOrderCreateSupplierOrder"), '', 'default', $actionSupplierOrderUrl, '', $user->rights->fournisseur->commande->creer);
+
+
+					// Send
                     //        print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
 
 					$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=';
