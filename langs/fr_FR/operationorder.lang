@@ -16,6 +16,7 @@ OperationOrderDictTypeLabel=Type d'ordre de réparation
 ParamLabel=Nom du paramètre
 ParamDesc=Une description si besoin
 ParamHelp=Le contenu de l'aide
+OperationOrderExtrafieldPage=Attributs supplémentaires d'ordre de réparation
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -39,6 +40,12 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 #OperationOrderSetStatusAcceptedEvent=Ordre de fabrication %s accepté
 #OperationOrderSetStatusToPlanEvent=Ordre de fabrication %s a planifier
 #OperationOrderSetStatusClosedEvent=Ordre de fabrication %s cloturé
+
+
+# Extrafields
+oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande founisseur
+oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
+
 
 # STATUS
 OperationOrderStatusActivated=Activé
@@ -96,6 +103,9 @@ OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
 ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 OperationOrderCreateSupplierOrder=Créer commande fournisseur
+CreateSupplierOrder=Créer commande fournisseur
+supplierMissingSocId=Fournisseur manquant
+supplierFieldMissing=Champs manquant
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
