@@ -448,6 +448,7 @@ if (empty($reshook))
         	$objPrefix = 'order_';
         	$linePrefix = 'orderline_';
 
+        	// check && prepare order
 			$supplierOrder = new CommandeFournisseur($object->db);
 			$TSupplierOrderFields = array('fk_soc');
 
@@ -455,20 +456,61 @@ if (empty($reshook))
 			foreach($TSupplierOrderFields as $key){
 				$val = $supplierOrder->fields[$key];
 
-				$supplierOrder->{$key} = GETPOST($objPrefix.$key);
+				$objKey = $key;
+				if($key = 'fk_soc'){
+                    $objKey = 'socid'; // for compatibility
+                }
+
+				$supplierOrder->{$objKey} = GETPOST($objPrefix.$key);
 
 				// test empty value
-				if(!empty($val['notnull']) && empty($supplierOrder->{$key})){
+				if(!empty($val['notnull']) && empty($supplierOrder->{$objKey})){
 						setEventMessage($langs->trans('supplierFieldMissing').' : '.$langs->trans($val['label']), 'warnings');
 						$error++;
 				}
 			}
 
 
-			$TSupplierOrderLineFields = array('product_type', 'price', 'qty', 'description');
+			// Check & prepare line
+			$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc');
 
+            $supplierOrderLine = new CommandeFournisseurLigne($object->db);
+            // Auto set values
+            foreach($TSupplierOrderLineFields as $key){
+                $supplierOrderLine->{$key} = GETPOST($linePrefix.$key);
+                // test empty value
+                if(empty($supplierOrderLine->{$key}) && !is_numeric($supplierOrderLine->{$key})){
+                    setEventMessage($langs->trans('supplierFieldMissing').' : '.$langs->trans($linePrefix.$key), 'warnings');
+                    $error++;
+                }
+            }
+            $supplierOrder->lines[] = $supplierOrderLine;
 
-			$error = 1; // TODO : remove this test
+            if(empty($error)){
+
+                // create new supplier order
+                $resSupplierOrder = $supplierOrder->create($user);
+                if($resSupplierOrder>0)
+                {
+                    $supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
+                    $supplierOrder->add_object_linked('operationorderdet', $lineid);// and link to line origin for user interface
+
+                    setEventMessage($langs->trans('SupplierOrderCreated').' : '.$supplierOrder->getNomUrl(1));
+
+                    $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                    $url.= '#item_'.$lineid;
+                    header('Location: ' . $url);
+                    exit;
+                }
+                else{
+                    $error++;
+                    setEventMessage($langs->trans('SupplierOrderSaveError').' : '.$supplierOrder->error, 'errors');
+                    if(!empty($supplierOrder->errors)){
+                        setEventMessage($supplierOrder->errors, 'errors');
+                    }
+                }
+            }
+
 
 			if($error>0){
 				$url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
@@ -660,7 +702,7 @@ $formcontrat = new FormContract($db);
 $title=$langs->trans('OperationOrder');
 $arrayofjs = '';
 $arrayofcss = array(
-	'/operationorder/css/operation-order-card.css',
+	'/operationorder/css/operation-order-card.css.php',
 	'/operationorder/css/animate.css'
 );
 llxHeader('', $title , '', '', 0, 0, $arrayofjs, $arrayofcss);
@@ -1201,13 +1243,14 @@ function _displayDialogSupplierOrder($lineid){
 		// Bon les champs sont pas définis... mais ils le serons un jour non ?
 		$supplierOrderLine->fields=array(
 			//'fk_product' => array ( 'type' => 'integer:Product:product/class/product.class.php:1', 'required' => 1, 'label' => 'Product', 'enabled' => 1, 'position' => 35, 'notnull' => -1, 'visible' => -1, 'index' => 1  ),
-			'price' => array ( 'type' => 'real', 'label' => 'UnitPrice', 'enabled' => 1, 'position' => 40, 'notnull' => 0, 'required' => 1, 'visible' => 1  ),
-			'description' => array ( 'type' => 'html', 'label' => 'Description', 'enabled' => 1, 'position' => 40, 'notnull' => 0, 'visible' => 3  ),
-			'qty' => array ( 'type' => 'real', 'required' => 1, 'label' => 'Qty', 'enabled' => 1, 'position' => 45, 'notnull' => 0, 'visible' => 1, 'isameasure' => '1', 'css' => 'maxwidth75imp'  ),
+			'subprice' => array ( 'type' => 'real', 'label' => 'UnitPrice', 'enabled' => 1, 'position' => 40, 'notnull' => 1, 'required' => 1, 'visible' => 1  ),
+			'desc' => array ( 'type' => 'html', 'label' => 'Description', 'enabled' => 1, 'position' => 40, 'notnull' => 1, 'visible' => 3  ),
+			'qty' => array ( 'type' => 'real', 'required' => 1, 'label' => 'Qty', 'enabled' => 1, 'position' => 45, 'notnull' => 1, 'visible' => 1, 'isameasure' => '1', 'css' => 'maxwidth75imp'  ),
 			'product_type' => array ( 'type' => 'select', 'required' => 1,'label' => 'ProductType', 'enabled' => 1, 'position' => 90, 'notnull' => 1, 'visible' => 1,  'arrayofkeyval' => array('0' =>"Product", '1'=>"Service") ),
+            'tva_tx'  => array ( 'type' => 'real', 'required' => 1,'label' => 'TVA', 'enabled' => 1, 'position' => 90, 'notnull' => 1, 'visible' => 1, 'fieldCallBack' => '_showVatField'),
 		);
 
-		$TSupplierOrderLineFields = array('product_type', 'price', 'qty', 'description');
+		$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
 		foreach($TSupplierOrderLineFields as $key){
 			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_');
 		}
@@ -1241,26 +1284,32 @@ function _displayDialogSupplierOrder($lineid){
 		if(height > 600){ height = 600; }
 		//console.log(height);
 		dialogBox.dialog({
-			autoOpen: true,
-			resizable: true,
-	//		height: height,
-			title: "'.dol_escape_js($langs->transnoentitiesnoconv('CreateSupplierOrder')).'",
-			width: width,
-			modal: true,
-			buttons: {
-				"'.$langs->transnoentitiesnoconv('Create').'": function() {
-					dialogBox.find("form").submit();
-				},
-				"'.$langs->transnoentitiesnoconv('Cancel').'": function() {
-					dialogBox.dialog( "close" );
-				}
-			},
-			close: function( event, ui ) {
-				window.location.replace(cardUrl + itemHash);
-			}
+            autoOpen: true,
+            resizable: true,
+            //		height: height,
+            title: "'.dol_escape_js($langs->transnoentitiesnoconv('CreateSupplierOrder')).'",
+            width: width,
+            modal: true,
+            buttons: {
+                "'.$langs->transnoentitiesnoconv('Create').'": function() {
+                    dialogBox.find("form").submit();
+                },
+                "'.$langs->transnoentitiesnoconv('Cancel').'": function() {
+                    dialogBox.dialog( "close" );
+                }
+            },
+            close: function( event, ui ) {
+                window.location.replace(cardUrl + itemHash);
+            },
+            open: function(){
+                // center dialog verticaly on open
+                $([document.documentElement, document.body]).animate({
+                    scrollTop: $("#dialog-supplier-order").offset().top
+                }, 300);
+            }
 		});
 
-		//dialogBox.dialog( "open" );
+		dialogBox.dialog( "open" );
 
 	});
 	</script>';
@@ -1287,12 +1336,17 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// Product
 			$label = $line->description;
 			$line->product_label = '';
+            $availableForSupplierOrder = false;
 			if ($line->fk_product > 0) {
 				$product = new Product($line->db);
 				$product->fetch($line->fk_product);
 				$product->ref = $line->ref; //can change ref in hook
 				$product->label = $line->label; //can change label in hook
 				$label = $product->getNomUrl(1) . ' - ' . $product->label;
+
+				if(!empty($product->array_options['options_oorder_available_for_supplier_order'])){
+                    $availableForSupplierOrder = true;
+                }
 
 				$line->product_label = $product->label;
 				$line->stock_reel 		= $product->stock_reel;
@@ -1402,6 +1456,35 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// STOCK
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
 			$out .= $line->stockStatus();
+
+			// display object linked on line
+            $line->fetchObjectLinked();
+            if(!empty($line->linkedObjects)){
+                $out .= '		<div class="operation-order-det-element-element">';
+                foreach ($line->linkedObjects as $keyObjecttype => $objecttype){
+                    foreach ($objecttype as $linkedObject){
+                        if(is_callable(array($linkedObject, 'getNomUrl'))){
+                            $out .= $linkedObject->getNomUrl(1).' ';
+                        }
+                    }
+                }
+                $out .= '		</div>';
+            }
+
+            // Display creation supplyer order link
+            if($availableForSupplierOrder && empty($line->linkedObjects['order_supplier'])){
+
+                // action to open dialog box
+                $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                $url.= '&action=dialog-supplier-order&lineid='.$line->id;
+                $url.= '#item_'.$line->id;
+
+
+                $out .= '		<div class="operation-order-det-element-element-action-btn">';
+                $out .= '           <a class="button-xs" href="'.$url.'" ><i class="fa fa-plus"></i> '.$langs->trans('CreateSupplierOrder').'</a>';
+                $out .= '		</div>';
+            }
+
 			$out .= '		</div>';
 
 
@@ -1548,9 +1631,10 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
  * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
  * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
  * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+ * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
  * @return string
  */
-function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = ''){
+function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0){
 
 	global $langs, $form;
 
@@ -1594,15 +1678,42 @@ function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $k
 		else $value = GETPOST($key, 'alpha');
 	}
 
-	if($mode == 'edit'){
-		$outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
-	}
-	else{
-		$outForm.=  $object->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
-	}
+	if(!empty($val['fieldCallBack']) && is_callable($val['fieldCallBack'])){
+        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+    }else{
+        if($mode == 'edit'){
+            $outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+        else{
+            $outForm.=  $object->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+    }
+
 	$outForm.=  '</td>';
 
 	$outForm.=  '</tr>';
 
 	return $outForm;
 }
+
+/**
+ * Return HTML string to put an input field into a page
+ * Code very similar with showInputField of extra fields
+ *
+ * @param  array   		$val	       Array of properties for field to show (used only if ->fields not defined)
+ * @param  string  		$key           Key of attribute
+ * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+ * @param  string  		$moreparam     To add more parameters on html input tag
+ * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
+ * @param  int			$nonewbutton   Force to not show the new button on field that are links to object
+ * @return string
+ */
+function _showVatField($object, $val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+{
+    global $form, $mysoc, $conf;
+    $tva_tx = empty($value)?'20':$value;
+    return $form->load_tva($keyprefix.$key.$keysuffix, $tva_tx, $mysoc);
+}
+

@@ -106,6 +106,9 @@ OperationOrderCreateSupplierOrder=Créer commande fournisseur
 CreateSupplierOrder=Créer commande fournisseur
 supplierMissingSocId=Fournisseur manquant
 supplierFieldMissing=Champs manquant
+SupplierOrderSaveError=Sauvegarde de la commande fournisseur en erreur
+ProductType=Type
+SupplierOrderCreated=Commande fournisseur créée
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
