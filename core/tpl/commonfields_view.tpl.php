@@ -49,7 +49,7 @@ foreach ($object->fields as $key => $val)
 
 	$value = $object->$key;
 
-	print '<tr><td class="titlefield">';
+	print '<tr class="trcommonfield_'.$key.'"><td class="titlefield">';
     print '<table class="nobordernopadding centpercent">';
     print '<tr>';
 
