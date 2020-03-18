@@ -134,7 +134,7 @@ class InterfaceOperationOrdertrigger
         // Put here code you want to execute when a Dolibarr business events occurs.
         // Data and type of action are stored into $object and $action
         // Users
-		$methodName = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $action))));
+		$methodName = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', strtolower($action)))));
 		$callback = array($this, $methodName);
 		if(is_callable($callback)){
 			dol_syslog(
@@ -157,7 +157,7 @@ class InterfaceOperationOrdertrigger
 	 * 	@param		conf		$conf		Object conf
 	 * 	@return		int						<0 if KO, 0 if no triggered ran, >0 if OK
 	 */
-//    public function OrderSupplierCreate($action, $object, $user, $langs, $conf){
+//    public function orderSupplierCreate($action, $object, $user, $langs, $conf){
 //
 //
 //		// rend possible de passer une commande fournisseur depuis un OR. Cette commande fournisseur est lié à l’OR
