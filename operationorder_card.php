@@ -1250,6 +1250,11 @@ function _displayDialogSupplierOrder($lineid){
             'tva_tx'  => array ( 'type' => 'real', 'required' => 1,'label' => 'TVA', 'enabled' => 1, 'position' => 90, 'notnull' => 1, 'visible' => 1, 'fieldCallBack' => '_showVatField'),
 		);
 
+		if(!empty($conf->global->OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE)){
+            $supplierOrderLine->fields['product_type']['visible'] = 0;
+            $outForm.= '<input type="hidden" name="orderline_product_type" value="1">' . "\n";
+        }
+
 		$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
 
 		$params = array(

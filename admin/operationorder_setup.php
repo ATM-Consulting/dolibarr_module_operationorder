@@ -217,10 +217,10 @@ if(!function_exists('setup_print_title')){
 
 print '<table class="noborder" width="100%">';
 
-//setup_print_title("Parameters");
+setup_print_title("Parameters");
 
 // Example with a yes / no select
-//setup_print_on_off('CONSTNAME', $langs->trans('ParamLabel'), 'ParamDesc');
+setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
