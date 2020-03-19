@@ -440,13 +440,24 @@ class modOperationOrder extends DolibarrModules
 	 */
 	public function init($options = '')
 	{
+		global $langs;
 		$sql = array();
+
+		$langs->load('operationorder@operationorder');
 
 		define('INC_FROM_DOLIBARR', true);
 
 		require __DIR__ .'/../../script/create-maj-base.php';
 
 		$result=$this->_load_tables('/operationorder/sql/');
+
+		// Création des extrafields
+		dol_include_once('/core/class/extrafields.class.php');
+
+		// product
+		$e = new ExtraFields($this->db);
+		$res = $e->addExtraField('oorder_available_for_supplier_order', "oorder_available_for_supplier_order", 'boolean', 0, 1, 'product', 0, 0, '', '', 1, 1, 1, "oorder_available_for_supplier_order_help", "", 0, 'operationorder@operationorder');
+
 
 		return $this->_init($sql, $options);
 	}

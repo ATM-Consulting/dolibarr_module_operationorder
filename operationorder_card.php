@@ -23,13 +23,13 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcontract.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
+require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
 
 if(empty($user->rights->operationorder->read)) accessforbidden();
 
-$langs->load('operationorder@operationorder');
-$langs->load('bills');
+$langs->loadLangs(array('operationorder@operationorder', 'orders', 'companies', 'bills', 'products', 'other'));
 
 $action = GETPOST('action', 'alpha');
 $id = GETPOST('id', 'int');
@@ -386,8 +386,17 @@ if (empty($reshook))
                         unset($_POST['date_endmonth']);
                         unset($_POST['date_endyear']);
 
+						$url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+						if(!empty($prod->array_options['options_oorder_available_for_supplier_order'])){
+							// action to open dialog box
+							$url.= '&action=dialog-supplier-order&lineid='.$result;
+							$url.= '#item_'.$line->id;
+						}else{
+							$url.= "#addline";
+						}
+
                         setEventMessage($langs->trans('OperationOrderLineAdded'));
-						header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id)."#addline";
+						header('Location: ' . $url);
 						exit;
 
                     } else {
@@ -433,6 +442,89 @@ if (empty($reshook))
                 }
             }
             break;
+        case 'create-supplier-order';
+        	$langs->load('supplier');
+        	$error = 0;
+        	$objPrefix = 'order_';
+        	$linePrefix = 'orderline_';
+
+        	// check && prepare order
+			$supplierOrder = new CommandeFournisseur($object->db);
+			$TSupplierOrderFields = array('fk_soc');
+
+			// Auto set values
+			foreach($TSupplierOrderFields as $key){
+				$val = $supplierOrder->fields[$key];
+
+				$objKey = $key;
+				if($key = 'fk_soc'){
+                    $objKey = 'socid'; // for compatibility
+                }
+
+				$supplierOrder->{$objKey} = GETPOST($objPrefix.$key);
+
+				// test empty value
+				if(!empty($val['notnull']) && empty($supplierOrder->{$objKey})){
+						setEventMessage($langs->trans('supplierFieldMissing').' : '.$langs->trans($val['label']), 'warnings');
+						$error++;
+				}
+			}
+
+
+			// Check & prepare line
+			$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
+
+            $supplierOrderLine = new CommandeFournisseurLigne($object->db);
+            // Auto set values
+            foreach($TSupplierOrderLineFields as $key){
+                $supplierOrderLine->{$key} = GETPOST($linePrefix.$key);
+                // test empty value
+                if(empty($supplierOrderLine->{$key}) && !is_numeric($supplierOrderLine->{$key})){
+                    setEventMessage($langs->trans('supplierFieldMissing').' : '.$langs->trans($linePrefix.$key), 'warnings');
+                    $error++;
+                }
+            }
+            $supplierOrder->lines[] = $supplierOrderLine;
+
+            if(empty($error)){
+
+                // create new supplier order
+                $resSupplierOrder = $supplierOrder->create($user);
+                if($resSupplierOrder>0)
+                {
+                    $supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
+                    $supplierOrder->add_object_linked('operationorderdet', $lineid);// and link to line origin for user interface
+
+                    if(!empty($conf->global->OPODER_SUPPLIER_ORDER_AUTO_VALIDATE)){
+                        $supplierOrder->valid($user);
+                    }
+
+                    setEventMessage($langs->trans('SupplierOrderCreated').' : '.$supplierOrder->getNomUrl(1));
+
+                    $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                    $url.= '#item_'.$lineid;
+                    header('Location: ' . $url);
+                    exit;
+                }
+                else{
+                    $error++;
+                    setEventMessage($langs->trans('SupplierOrderSaveError').' : '.$supplierOrder->error, 'errors');
+                    if(!empty($supplierOrder->errors)){
+                        setEventMessage($supplierOrder->errors, 'errors');
+                    }
+                }
+            }
+
+
+			if($error>0){
+				$url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+				$url.= '&action=dialog-supplier-order&lineid='.$lineid;
+				$url.= '#item_'.$lineid;
+				header('Location: ' . $url);
+				exit;
+			}
+
+			break;
 	}
 
     /*
@@ -614,7 +706,7 @@ $formcontrat = new FormContract($db);
 $title=$langs->trans('OperationOrder');
 $arrayofjs = '';
 $arrayofcss = array(
-	'/operationorder/css/operation-order-card.css',
+	'/operationorder/css/operation-order-card.css.php',
 	'/operationorder/css/animate.css'
 );
 llxHeader('', $title , '', '', 0, 0, $arrayofjs, $arrayofcss);
@@ -953,6 +1045,10 @@ else
 			</script>';
 
 
+			if($action == 'dialog-supplier-order' && !empty($lineid) && !empty($user->rights->fournisseur->commande->creer) ){
+				print _displayDialogSupplierOrder($lineid);
+			}
+
 
 			// ADD FORM
 			if($action != 'editline' && $object->userCan($user, 'edit')){
@@ -1115,7 +1211,123 @@ else
 llxFooter();
 $db->close();
 
+function _displayDialogSupplierOrder($lineid){
+	global $langs, $user, $conf, $object, $form;
 
+	$line= new OperationOrderDet($object->db);
+	$res = $line->fetch($lineid);
+
+	print '<div id="dialog-supplier-order" style="display: none;" >';
+	print '<div id="dialog-supplier-order-item_'.$lineid.'" class="dialog-supplier-order-form-wrap" title="'.$line->ref.'" >';
+	print '<div class="dialog-supplier-order-form-body" >';
+	if($res>0) {
+		// here the form
+
+
+		// Ancors
+		$actionUrl= '#item_' . $line->id;
+		$outForm = '<form name="create-supplier-order-form" action="' . $_SERVER["PHP_SELF"] . $actionUrl . '" method="POST">' . "\n";
+		$outForm.= '<input type="hidden" name="token" value="' . newToken() . '">' . "\n";
+		$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+		$outForm.= '<input type="hidden" name="lineid" value="' . $line->id . '">' . "\n";
+		$outForm.= '<input type="hidden" name="action" value="create-supplier-order">' . "\n";
+
+		$outForm.= '<table class="table-full">';
+
+		// Cette partie permet une evolution du formulaire de creation de commandes fournisseur
+
+		$supplierOrder = new CommandeFournisseur($object->db);
+		$supplierOrder->fields['fk_soc']['label']='Supplier';
+		$TSupplierOrderFields = array('fk_soc');
+		foreach($TSupplierOrderFields as $key){
+			$outForm.=  _getFieldCardOutput($supplierOrder, $key, '', '', 'order_');
+		}
+
+		$supplierOrderLine = new CommandeFournisseurLigne($object->db);
+		// Bon les champs sont pas définis... mais ils le serons un jour non ?
+		$supplierOrderLine->fields=array(
+			//'fk_product' => array ( 'type' => 'integer:Product:product/class/product.class.php:1', 'required' => 1, 'label' => 'Product', 'enabled' => 1, 'position' => 35, 'notnull' => -1, 'visible' => -1, 'index' => 1  ),
+			'subprice' => array ( 'type' => 'real', 'label' => 'UnitPrice', 'enabled' => 1, 'position' => 40, 'notnull' => 1, 'required' => 1, 'visible' => 1  ),
+			'desc' => array ( 'type' => 'html', 'label' => 'Description', 'enabled' => 1, 'position' => 40, 'notnull' => 1, 'visible' => 3  ),
+			'qty' => array ( 'type' => 'real', 'required' => 1, 'label' => 'Qty', 'enabled' => 1, 'position' => 45, 'notnull' => 1, 'visible' => 1, 'isameasure' => '1', 'css' => 'maxwidth75imp'  ),
+			'product_type' => array ( 'type' => 'select', 'required' => 1,'label' => 'ProductType', 'enabled' => 1, 'position' => 90, 'notnull' => 1, 'visible' => 1,  'arrayofkeyval' => array('0' =>"Product", '1'=>"Service") ),
+            'tva_tx'  => array ( 'type' => 'real', 'required' => 1,'label' => 'TVA', 'enabled' => 1, 'position' => 90, 'notnull' => 1, 'visible' => 1, 'fieldCallBack' => '_showVatField'),
+		);
+
+		if(!empty($conf->global->OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE)){
+            $supplierOrderLine->fields['product_type']['visible'] = 0;
+            $outForm.= '<input type="hidden" name="orderline_product_type" value="1">' . "\n";
+        }
+
+		$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
+
+		$params = array(
+		    'OperationOrderDet' => $line
+        );
+
+		foreach($TSupplierOrderLineFields as $key){
+			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
+		}
+
+		$outForm.= '</table>';
+		$outForm.= '</form>';
+
+
+		print $outForm;
+	}
+	else{
+		print $langs->trans('LineNotFound');
+	}
+	print '</div>';
+	print '</div>';
+	print '</div>';
+
+
+	// MISE A JOUR AJAX DE L'ORDRE DES LIGNES
+	print '
+	<script type="text/javascript">
+	$(function()
+	{
+		var cardUrl = "'.$_SERVER["PHP_SELF"].'?id='.$object->id.'";
+		var itemHash = "#item_'.$line->id.'";
+
+		var dialogBox = jQuery("#dialog-supplier-order");
+		var width = $(window).width();
+		var height = $(window).height();
+		if(width > 700){ width = 700; }
+		if(height > 600){ height = 600; }
+		//console.log(height);
+		dialogBox.dialog({
+            autoOpen: true,
+            resizable: true,
+            //		height: height,
+            title: "'.dol_escape_js($langs->transnoentitiesnoconv('CreateSupplierOrder')).'",
+            width: width,
+            modal: true,
+            buttons: {
+                "'.$langs->transnoentitiesnoconv('Create').'": function() {
+                    dialogBox.find("form").submit();
+                },
+                "'.$langs->transnoentitiesnoconv('Cancel').'": function() {
+                    dialogBox.dialog( "close" );
+                }
+            },
+            close: function( event, ui ) {
+                window.location.replace(cardUrl + itemHash);
+            },
+            open: function(){
+                // center dialog verticaly on open
+                $([document.documentElement, document.body]).animate({
+                    scrollTop: $("#dialog-supplier-order").offset().top - 50 - $("#id-top").height()
+                }, 300);
+            }
+		});
+
+		dialogBox.dialog( "open" );
+
+	});
+	</script>';
+}
 
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 	global $langs, $user, $extrafields, $conf, $object;
@@ -1138,12 +1350,17 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// Product
 			$label = $line->description;
 			$line->product_label = '';
+            $availableForSupplierOrder = false;
 			if ($line->fk_product > 0) {
 				$product = new Product($line->db);
 				$product->fetch($line->fk_product);
 				$product->ref = $line->ref; //can change ref in hook
 				$product->label = $line->label; //can change label in hook
 				$label = $product->getNomUrl(1) . ' - ' . $product->label;
+
+				if(!empty($product->array_options['options_oorder_available_for_supplier_order'])){
+                    $availableForSupplierOrder = true;
+                }
 
 				$line->product_label = $product->label;
 				$line->stock_reel 		= $product->stock_reel;
@@ -1253,6 +1470,35 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 			// STOCK
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
 			$out .= $line->stockStatus();
+
+			// display object linked on line
+            $line->fetchObjectLinked();
+            if(!empty($line->linkedObjects)){
+                $out .= '		<div class="operation-order-det-element-element">';
+                foreach ($line->linkedObjects as $keyObjecttype => $objecttype){
+                    foreach ($objecttype as $linkedObject){
+                        if(is_callable(array($linkedObject, 'getNomUrl'))){
+                            $out .= $linkedObject->getNomUrl(1).' ';
+                        }
+                    }
+                }
+                $out .= '		</div>';
+            }
+
+            // Display creation supplyer order link
+            if($availableForSupplierOrder && empty($line->linkedObjects['order_supplier'])){
+
+                // action to open dialog box
+                $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                $url.= '&action=dialog-supplier-order&lineid='.$line->id;
+                $url.= '#item_'.$line->id;
+
+
+                $out .= '		<div class="operation-order-det-element-element-action-btn">';
+                $out .= '           <a class="button-xs" href="'.$url.'" ><i class="fa fa-plus"></i> '.$langs->trans('CreateSupplierOrder').'</a>';
+                $out .= '		</div>';
+            }
+
 			$out .= '		</div>';
 
 
@@ -1353,56 +1599,11 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 
 	$line->fields = dol_sort_array($line->fields, 'position');
 
+
 	$outForm.= '<table class="table-full">';
-	foreach($line->fields as $key => $val)
-	{
-		// Discard if extrafield is a hidden field on form
-		if (abs($val['visible']) != 1 && abs($val['visible']) != 3) continue;
-
-		$mode = 'edit'; // edit or view
-
-		// for some case if you need to change display mode
-		if($key == 'xxxxxx' && $action == 'edit') {
-			$mode = 'view';
-		}
-
-		if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) continue;	// We don't want this field
-
-		$outForm.=  '<tr id="field_'.$key.'">';
-		$outForm.=  '<td';
-		$outForm.=  ' class="titlefieldcreate';
-		if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
-		if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
-		$outForm.=  '"';
-		$outForm.=  '>';
-
-		if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
-		else $outForm.=  $langs->trans($val['label']);
-		$outForm.=  '</td>';
-
-		$outForm.=  '<td>';
-
-		// Load value from object
-		$value = '';
-		if(isset($line->{$key})){
-			$value = $line->{$key};
-		}
-
-		if(GETPOSTISSET($key)){
-			if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
-			elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
-			else $value = GETPOST($key, 'alpha');
-		}
-
-		if($mode == 'edit'){
-			$outForm.=  $line->showInputField($val, $key, $value, '', '', '', 0);
-		}
-		else{
-			$outForm.=  $line->showOutputField($val, $key, $value, '', '', '', 0);
-		}
-		$outForm.=  '</td>';
-
-		$outForm.=  '</tr>';
+	// Display each line fields
+	foreach($line->fields as $key => $val){
+		$outForm.= _getFieldCardOutput($line, $key);
 	}
 
 	if($showSubmitBtn){
@@ -1433,3 +1634,102 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 
 	return $outForm;
 }
+
+/**
+ * Return HTML string to show a field into a page
+ * Code very similar with showOutputField of extra fields
+ *
+ * @param  CommonObject   $object		       Array of properties of field to show
+ * @param  string  $key            Key of attribute
+ * @param  string  $moreparam      To add more parametes on html input tag
+ * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+ * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
+ * @return string
+ */
+function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
+
+	global $langs, $form;
+
+	$val = $object->fields[$key];
+
+	// Discard if extrafield is a hidden field on form
+	if (abs($val['visible']) != 1 && abs($val['visible']) != 3) return;
+
+	$mode = 'edit'; // edit or view
+
+	// for some case if you need to change display mode
+	if($key == 'xxxxxx') {
+		$mode = 'view';
+	}
+
+	if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) return;	// We don't want this field
+
+	$outForm=  '<tr id="field_'.$key.'">';
+	$outForm.=  '<td';
+	$outForm.=  ' class="titlefieldcreate';
+	if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
+	if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
+	$outForm.=  '"';
+	$outForm.=  '>';
+
+	if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
+	else $outForm.=  $langs->trans($val['label']);
+	$outForm.=  '</td>';
+
+	$outForm.=  '<td>';
+
+	// Load value from object
+	$value = '';
+	if(isset($object->{$key})){
+		$value = $object->{$key};
+	}
+
+	if(GETPOSTISSET($key)){
+		if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
+		elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
+		else $value = GETPOST($key, 'alpha');
+	}
+
+	if(!empty($val['fieldCallBack']) && is_callable($val['fieldCallBack'])){
+        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton, $params);
+    }else{
+        if($mode == 'edit'){
+            $outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+        else{
+            $outForm.=  $object->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+    }
+
+	$outForm.=  '</td>';
+
+	$outForm.=  '</tr>';
+
+	return $outForm;
+}
+
+/**
+ * Return HTML string to put an input field into a page
+ * Code very similar with showInputField of extra fields
+ *
+ * @param  array   		$val	       Array of properties for field to show (used only if ->fields not defined)
+ * @param  string  		$key           Key of attribute
+ * @param  string  		$value         Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+ * @param  string  		$moreparam     To add more parameters on html input tag
+ * @param  string  		$keysuffix     Prefix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string  		$keyprefix     Suffix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string|int	$morecss       Value for css to define style/length of field. May also be a numeric.
+ * @param  int			$nonewbutton   Force to not show the new button on field that are links to object
+ * @return string
+ */
+function _showVatField($object, $val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0, $params = array())
+{
+    global $form, $mysoc, $conf;
+
+    $tva_tx = !empty($params['OperationOrderDet']->tva_tx)?$params['OperationOrderDet']->tva_tx:'20'; // TODO : add module default value selection to replace 20
+    $tva_tx = empty($value)?$tva_tx:$value;
+    return $form->load_tva($keyprefix.$key.$keysuffix, $tva_tx, $mysoc);
+}
+
