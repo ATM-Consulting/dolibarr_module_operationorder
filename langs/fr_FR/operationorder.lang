@@ -28,6 +28,7 @@ OperationOrderTopMenu=Réparations
 LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
 LeftMenuOperationOrderStatusList=Liste
+OperationOrderInfo=Suivi
 
 # EVEN ACTION COM CONF
 OperationOrderStatusChange=Changement de status d'un ordre de réparation
