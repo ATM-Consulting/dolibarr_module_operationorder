@@ -472,7 +472,7 @@ if (empty($reshook))
 
 
 			// Check & prepare line
-			$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc');
+			$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
 
             $supplierOrderLine = new CommandeFournisseurLigne($object->db);
             // Auto set values
@@ -1251,8 +1251,13 @@ function _displayDialogSupplierOrder($lineid){
 		);
 
 		$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
+
+		$params = array(
+		    'OperationOrderDet' => $line
+        );
+
 		foreach($TSupplierOrderLineFields as $key){
-			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_');
+			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
 		}
 
 		$outForm.= '</table>';
@@ -1304,7 +1309,7 @@ function _displayDialogSupplierOrder($lineid){
             open: function(){
                 // center dialog verticaly on open
                 $([document.documentElement, document.body]).animate({
-                    scrollTop: $("#dialog-supplier-order").offset().top
+                    scrollTop: $("#dialog-supplier-order").offset().top - 50 - $("#id-top").height()
                 }, 300);
             }
 		});
@@ -1634,7 +1639,7 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
  * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
  * @return string
  */
-function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0){
+function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
 
 	global $langs, $form;
 
@@ -1679,7 +1684,7 @@ function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $k
 	}
 
 	if(!empty($val['fieldCallBack']) && is_callable($val['fieldCallBack'])){
-        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton, $params);
     }else{
         if($mode == 'edit'){
             $outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
@@ -1710,10 +1715,12 @@ function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $k
  * @param  int			$nonewbutton   Force to not show the new button on field that are links to object
  * @return string
  */
-function _showVatField($object, $val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+function _showVatField($object, $val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0, $params = array())
 {
     global $form, $mysoc, $conf;
-    $tva_tx = empty($value)?'20':$value;
+
+    $tva_tx = !empty($params['OperationOrderDet']->tva_tx)?$params['OperationOrderDet']->tva_tx:'20'; // TODO : add module default value selection to replace 20
+    $tva_tx = empty($value)?$tva_tx:$value;
     return $form->load_tva($keyprefix.$key.$keysuffix, $tva_tx, $mysoc);
 }
 
