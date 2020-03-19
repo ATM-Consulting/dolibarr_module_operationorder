@@ -219,8 +219,10 @@ print '<table class="noborder" width="100%">';
 
 setup_print_title("Parameters");
 
-// Example with a yes / no select
+
 setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
+
+setup_print_on_off('OPODER_SUPPLIER_ORDER_AUTO_VALIDATE');
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));

@@ -495,6 +495,10 @@ if (empty($reshook))
                     $supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
                     $supplierOrder->add_object_linked('operationorderdet', $lineid);// and link to line origin for user interface
 
+                    if(!empty($conf->global->OPODER_SUPPLIER_ORDER_AUTO_VALIDATE)){
+                        $supplierOrder->valid($user);
+                    }
+
                     setEventMessage($langs->trans('SupplierOrderCreated').' : '.$supplierOrder->getNomUrl(1));
 
                     $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;

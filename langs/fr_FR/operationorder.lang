@@ -18,6 +18,7 @@ ParamDesc=Une description si besoin
 ParamHelp=Le contenu de l'aide
 OperationOrderExtrafieldPage=Attributs supplémentaires d'ordre de réparation
 OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE=Limiter les commandes fournisseurs effectués depuis les lignes d'ordre de réparation à des services.
+OPODER_SUPPLIER_ORDER_AUTO_VALIDATE=Valider automatiquement les commandes fournisseurs effectués depuis les lignes d'ordre de réparation
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
