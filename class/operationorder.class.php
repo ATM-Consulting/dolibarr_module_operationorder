@@ -76,7 +76,7 @@ class OperationOrder extends SeedObject
         'ref_client' => array('type'=>'varchar(128)', 'label'=>'RefCustomer', 'enabled'=>1, 'position'=>20, 'notnull'=>0, 'visible'=>1),
         'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'help'=>"LinkToThirparty"),
         'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1, 'index'=>1),
-        'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>1, 'index'=>1,),
+        'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>3, 'index'=>1), // n'aparait pas je comprend pas et surtout je sais pas si on l'affiche en vrai ...
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
         'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
         'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 0),
@@ -86,13 +86,13 @@ class OperationOrder extends SeedObject
         'fk_c_operationorder_type' => array('type'=>'integer:OperationOrderDictType:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrderType', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'c_operationorder_type.rowid',),
 
         'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
-        'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>-2,),
-        'fk_user_valid' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserValid', 'enabled'=>1, 'position'=>512, 'notnull'=>0, 'visible'=>-2,),
-        'fk_user_cloture' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserClose', 'enabled'=>1, 'position'=>513, 'notnull'=>0, 'visible'=>-2,),
+        'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'position'=>511, 'notnull'=>0, 'visible'=>0,),
+        'fk_user_valid' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserValid', 'enabled'=>1, 'position'=>512, 'notnull'=>0, 'visible'=>0,),
+        'fk_user_cloture' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserClose', 'enabled'=>1, 'position'=>513, 'notnull'=>0, 'visible'=>0,),
         'import_key' => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>1, 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
         'model_pdf' => array('type'=>'varchar(255)', 'label'=>'Model pdf', 'enabled'=>1, 'position'=>1010, 'notnull'=>-1, 'visible'=>0,),
         'status' => array('type'=>'int', 'label'=>'Status', 'enabled'=>1, 'position'=>1000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=> array(-1 => 'OperationOrderStatusShortCanceled', 0 => 'OperationOrderStatusShortDraft', 1 => 'OperationOrderStatusShortValidated')),
-        'last_main_doc' => array('type'=>'varchar(255)', 'label'=>'LastMainDoc', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>0,),
+       'last_main_doc' => array('type'=>'varchar(255)', 'label'=>'LastMainDoc', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>0,),
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>1200, 'notnull'=>1, 'visible'=>0,),
     );
 
@@ -122,6 +122,7 @@ class OperationOrder extends SeedObject
     public $status;
     public $last_main_doc;
     public $entity;
+    public $overshot;
 
     /**
      * @var int    Name of subtable line
@@ -1217,6 +1218,110 @@ class OperationOrder extends SeedObject
 		}
 
 	}
+
+    /**
+     * Return HTML string to show a field into a page
+     * Code very similar with showOutputField of extra fields
+     *
+     * @param  array   $val		       Array of properties of field to show
+     * @param  string  $key            Key of attribute
+     * @param  string  $value          Preselected value to show (for date type it must be in timestamp format, for amount or price it must be a php numeric value)
+     * @param  string  $moreparam      To add more parametes on html input tag
+     * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+     * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+     * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+     * @return string
+     */
+    public function showOutputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '')
+    {
+        global $conf, $langs, $db;
+        $out = '';
+        if ($key == 'fk_contrat')
+        {
+            if(!empty($value)){
+                include_once DOL_DOCUMENT_ROOT . '/contrat/class/contrat.class.php';
+                $contract = new Contrat($db);
+                if($contract->fetch($value)>0){
+                    $out = $contract->getNomUrl(1);
+                }
+            }
+        }
+        else{
+            $out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Return HTML string to show a field into a page
+     *
+     * @param  string  $key            Key of attribute
+     * @param  string  $moreparam      To add more parameters on html input tag
+     * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+     * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+     * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+     * @return string
+     */
+    public function showOutputFieldQuick($key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = ''){
+        return $this->showOutputField($this->fields[$key], $key, $this->{$key}, $moreparam, $keysuffix, $keyprefix, $morecss);
+    }
+
+    public function getOvershoot($useCache = true){
+
+        if($useCache && is_object($this->overshot)){
+            return $this->overshot;
+        }
+
+        $sql = ' SELECT SUM(l.time_planned) sum_time_planned,  SUM(l.time_spent) sum_time_spent';
+        $sql.= ' FROM '.MAIN_DB_PREFIX.'operationorderdet l ';
+        $sql.= ' WHERE l.fk_operation_order = '.$this->id;
+
+        $resql = $this->db->query($sql);
+        if ($resql) {
+            $this->overshot = $this->db->fetch_object($resql);
+        }else{
+            $this->overshot = false;
+        }
+
+        return $this->overshot;
+    }
+
+    public function getOvershootStatus($useCache = true){
+        global $langs;
+
+        $out='';
+
+        if($this->getOvershoot($useCache)){
+            if (!empty($this->overshot->sum_time_planned) && !empty($this->overshot->sum_time_spent)){
+                $ecart = intval($this->overshot->sum_time_planned) - intval($this->overshot->sum_time_spent);
+                $sign = '';
+                if($ecart>0){
+                    $textClass = "text-success";
+                    $iconClass = "fa-caret-down";
+                    $sign = '-';
+                }elseif($ecart==0){
+                    $textClass = "text-warning";
+                    $iconClass = "fa-caret-left";
+                }else{
+                    $textClass = "text-danger";
+                    $iconClass = "fa-caret-up";
+                    $sign = '+';
+                }
+
+                $out.= '<span class="'.$textClass.' classfortooltip paddingrightonly" title="'.$langs->trans('TimeDifference').'" ><i class="fa '.$iconClass.'"></i> '.$sign. dol_print_date(abs($ecart), '%HH%M', true).'</span>';
+
+            }else{
+                $out .= ' -- ';
+            }
+        }
+        else{
+            $out='error';
+        }
+
+
+        return $out;
+    }
 }
 
 

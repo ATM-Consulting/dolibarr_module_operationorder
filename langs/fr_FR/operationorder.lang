@@ -98,6 +98,9 @@ operationorder_status_write=Peut créer/modifier les différents status d'ordres
 # LIST
 OperationOrderList=Liste ordre de réparation
 NoOperationOrder=(vide)
+overshootStatus=Dépassement
+overshootStatus_Over=En dépassement
+overshootStatus_inTime=Dans les temps
 
 # CARD
 ShowOperationOrder=Ordre de réparation
