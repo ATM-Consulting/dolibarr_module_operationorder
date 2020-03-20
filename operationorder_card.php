@@ -499,12 +499,22 @@ if (empty($reshook))
                         $supplierOrder->valid($user);
                     }
 
-                    setEventMessage($langs->trans('SupplierOrderCreated').' : '.$supplierOrder->getNomUrl(1));
+                    $parameters=array(
+                        'supplierOrder' =>& $supplierOrder,
+                        'supplierOrderId' => $resSupplierOrder
+                    );
+                    $reshook = $hookmanager->executeHooks('doActionsAfterAddSupplierOrderFromLine', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
+                    if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
-                    $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
-                    $url.= '#item_'.$lineid;
-                    header('Location: ' . $url);
-                    exit;
+                    if (empty($reshook))
+                    {
+                        setEventMessage($langs->trans('SupplierOrderCreated').' : '.$supplierOrder->getNomUrl(1));
+
+                        $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                        $url.= '#item_'.$lineid;
+                        header('Location: ' . $url);
+                        exit;
+                    }
                 }
                 else{
                     $error++;
