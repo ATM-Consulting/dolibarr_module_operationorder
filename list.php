@@ -97,12 +97,23 @@ if (!empty($object->isextrafieldmanaged))
 	}
 }
 
+
+$listViewName = 'operationorder';
+$inputPrefix  = 'Listview_'.$listViewName.'_search_';
+$search_overshootStatus = GETPOST($inputPrefix.'overshootstatus', 'int');
+
 $sql = 'SELECT '.$fieldList;
 
 // Add fields from hooks
 $parameters=array('sql' => $sql);
 $reshook=$hookmanager->executeHooks('printFieldListSelect', $parameters, $object);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
+
+// overshootStatus
+$sqlSub = ' (SELECT (SUM(subsel.time_spent) - SUM(subsel.time_planned)) ';
+$sqlSub.= ' FROM '.MAIN_DB_PREFIX.'operationorderdet subsel ';
+$sqlSub.= ' WHERE subsel.fk_operation_order = t.rowid ) as overshootstatus ';
+$sql.= ' ,'.$sqlSub;
 
 $sql.= ' FROM '.MAIN_DB_PREFIX.'operationorder t ';
 
@@ -111,8 +122,28 @@ if (!empty($object->isextrafieldmanaged))
     $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'operationorder_extrafields et ON (et.fk_object = t.rowid)';
 }
 
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON (s.rowid = t.fk_soc)';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_operationorder_type ctype ON (ctype.rowid = t.fk_c_operationorder_type)';
+
 $sql.= ' WHERE  t.entity IN ('.getEntity('operationorder', 1).')';
 //if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
+
+if(!empty($search_overshootStatus) && $search_overshootStatus > 0){
+
+
+    $sqlSub = ' (SELECT (SUM(sub.time_spent) - SUM(sub.time_planned)) ';
+    $sqlSub.= ' FROM '.MAIN_DB_PREFIX.'operationorderdet sub ';
+    $sqlSub.= ' WHERE sub.fk_operation_order = t.rowid ) ';
+
+    if(intval($search_overshootStatus) === 2){
+        $sqlSub.= ' >= 0 ';
+    }else{
+        $sqlSub.= ' < 0 ';
+    }
+
+    $sql.= ' AND '.$sqlSub;
+}
+
 
 // Add where from hooks
 $parameters=array('sql' => $sql);
@@ -134,6 +165,13 @@ if(!empty($TStatusList)){
 		$TStatusSearchList[$status->id] = $status->label;
 	}
 }
+$htmlName = 'overshootstatus';
+$selectArray = array(
+    2 => $langs->trans('overshootStatus_Over'),
+    1 => $langs->trans('overshootStatus_inTime'),
+);
+
+$formOvershootStatus = $form->selectarray($inputPrefix.$htmlName , $selectArray, $search_overshootStatus, 1);
 
 // List configuration
 $listViewConfig = array(
@@ -163,32 +201,57 @@ $listViewConfig = array(
 	,'search' => array(
 		'date_creation' => array('search_type' => 'calendars', 'allow_is_null' => true)
 		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
-		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
+        ,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
+        ,'ref_client' => array('search_type' => true, 'table' => 't', 'field' => 'ref_client')
+        ,'fk_soc' => array('search_type' => true, 'table' => 's', 'field' => array('nom','name_alias')) // input text de recherche sur plusieurs champs
+        ,'fk_c_operationorder_type' => array('search_type' => true, 'table' => 'ctype', 'field' => array('code','label')) // input text de recherche sur plusieurs champs
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
 		,'status' => array('search_type' => $TStatusSearchList, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+        ,'overshootstatus' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootStatus)
 	)
 	,'translate' => array()
 	,'hide' => array(
 		'rowid' // important : rowid doit exister dans la query sql pour les checkbox de massaction
 	)
-	,'title'=>array(
-		'ref' => $langs->trans('Ref.')
-		,'label' => $langs->trans('Label')
-		,'date_creation' => $langs->trans('DateCre')
-		,'tms' => $langs->trans('DateMaj')
-		,'status' => $langs->trans('Status')
-	)
+	,'title'=>array (
+	    'ref' => $langs->trans($object->fields['ref']['label']),
+        'ref_client' => $langs->trans($object->fields['ref_client']['label']),
+        'fk_soc' => $langs->trans($object->fields['fk_soc']['label']),
+        'fk_project' => $langs->trans($object->fields['fk_project']['label']),
+        'fk_c_operationorder_type' => $langs->trans($object->fields['fk_c_operationorder_type']['label']),
+        'overshootstatus' => $langs->trans('overshootStatus'),
+        'status' => $langs->trans($object->fields['status']['label']),
+    )
 	,'eval'=>array(
-		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
-		,'status' => '_getOperationOrderStatus(\'@status@\')'
-//		,'fk_user' => '_getUserNomUrl(@val@)' // Si on a un fk_user dans notre requête
-	)
+        'overshootstatus' => '_getOvershootStatus(\'@rowid@\')'
+    )
 );
+
+
+
+foreach ($object->fields as $key => $field){
+    // visible' says if field is visible in list (Examples: 0=Not visible, 1=Visible on list and create/update/view forms, 2=Visible on list only, 3=Visible on create/update/view form only (not list), 4=Visible on list and update/view form only (not create).
+    // Using a negative value means field is not shown by default on list but can be selected for viewing)
+
+    if(!isset($listViewConfig['title'][$key]) && !empty($field['visible']) && in_array($field['visible'], array(1,2,4)) ) {
+        $listViewConfig['title'][$key] = $langs->trans($field['label']);
+    }
+
+    if(!isset($listViewConfig['hide'][$key]) && (empty($field['visible']) || $field['visible'] <= -1)){
+        $listViewConfig['hide'][] = $key;
+    }
+
+    if(!isset($listViewConfig['eval'][$key])){
+        $listViewConfig['eval'][$key] = '_getObjectOutputField(\''.$key.'\', \'@rowid@\', \'@val@\')';
+    }
+}
+
+
 
 $r = new Listview($db, 'operationorder');
 
 // Change view from hooks
-$parameters=array(  'listViewConfig' => $listViewConfig);
+$parameters=array('listViewConfig' => $listViewConfig);
 $reshook=$hookmanager->executeHooks('listViewConfig',$parameters,$r);    // Note that $action and $object may have been modified by hook
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 if ($reshook>0)
@@ -207,51 +270,39 @@ $formcore->end_form();
 llxFooter('');
 $db->close();
 
-/**
- * TODO remove if unused
- */
-function _getObjectNomUrl($id, $ref)
+
+function _getObjectOutputField($key, $fk_operationOrder = 0, $val = '')
 {
-	global $db;
+    $operationOrder = getOperationOrderFromCache($fk_operationOrder);
+    if(!$operationOrder){return 'error';}
 
-	$o = new OperationOrder($db);
-	$res = $o->fetch($id, false, $ref);
-	if ($res > 0)
-	{
-		return $o->getNomUrl(1);
-	}
-
-	return '';
+    return $operationOrder->showOutputFieldQuick($key);
 }
 
-/**
- * TODO remove if unused
- */
-function _getUserNomUrl($fk_user)
+function _getOvershootStatus($fk_operationOrder = 0)
 {
-	global $db;
+    $operationOrder = getOperationOrderFromCache($fk_operationOrder);
+    if(!$operationOrder){return 'error';}
 
-	$u = new User($db);
-	if ($u->fetch($fk_user) > 0)
-	{
-		return $u->getNomUrl(1);
-	}
-
-	return '';
+    return $operationOrder->getOvershootStatus();
 }
 
+function getOperationOrderFromCache($fk_operationOrder){
+    global $db, $TOperationOrderCache;
 
-// TODO : add this to a OperationOrderStatus a static method with cache
-function _getOperationOrderStatus($fk_status)
-{
-	global $db, $TStatusList;
 
-	if(!empty($TStatusList) && isset($TStatusList[$fk_status])) {
+    if(empty($TOperationOrderCache[$fk_operationOrder])){
+        $operationOrder = new OperationOrder($db);
+        if($operationOrder->fetch($fk_operationOrder, false) <= 0)
+        {
+            return false;
+        }
 
-		$status = $TStatusList[$fk_status];
+        $TOperationOrderCache[$fk_operationOrder] = $operationOrder;
+    }
+    else{
+        $operationOrder = $TOperationOrderCache[$fk_operationOrder];
+    }
 
-		return $status->getBadge();
-	}
-
-	return '';
+    return $operationOrder;
 }
