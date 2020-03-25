@@ -871,7 +871,7 @@ class OperationOrderStatus extends SeedObject
 					if(!is_array($selected)){
 						$selected = array($selected);
 					}
-					return $form->multiselectarray('TStatusAllowed', $TAvailableStatus, $selected, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
+					return $form->multiselectarray($htmlname, $TAvailableStatus, $selected, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
 				}
 				else
 				{
