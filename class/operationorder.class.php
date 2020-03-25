@@ -570,7 +570,7 @@ class OperationOrder extends SeedObject
 	 * @return    int                        <0 if KO, >0 if OK
 	 * @throws Exception
 	 */
-	public function setStatus($user, $fk_status, $notrigger = 0, $triggercode = 'OPERATIONORDER_STATUS')
+	public function setStatus($user, $fk_status, $notrigger = 0, $triggercode = 'OPERATIONORDER_STATUS_CHANGE')
 	{
 		global $conf, $langs;
 
@@ -634,6 +634,7 @@ class OperationOrder extends SeedObject
 					// Agenda Hack to replace standard agenda trigger event
 					$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
 					if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
+						$langs->load('operationorder@operationorder');
 						$eventLabel = $langs->transnoentities('OperationOrderSetStatus', $status->label , $this->ref );
 						$this->addActionComEvent($eventLabel);
 					}
@@ -1203,7 +1204,7 @@ class OperationOrder extends SeedObject
 
 		$object->fk_element = $this->id;    // Id of record
 		$object->elementid = 0;    // Id of record alternative for API
-		$object->elementtype = $this->element.'@operationorder';   // Type of record. This if property ->element of object linked to.
+		$object->elementtype = 'operationorder';   // Type of record. This if property ->element of object linked to.
 
 		$object->socid = $this->fk_soc;
 		$object->userownerid = $user->id;
