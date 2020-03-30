@@ -390,7 +390,7 @@ function getOperationOrderFromCache($fk_operationOrder){
 }
 
 
-function _getObjectExtrafieldOutputField($key, $fk_operationOrder = 0, $val = '')
+function _getObjectExtrafieldOutputField($key, $fk_operationOrder = 0)
 {
 	global $extrafields;
 
