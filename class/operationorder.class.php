@@ -1636,6 +1636,18 @@ class OperationOrderDet extends SeedObject
 				$out.= $warehouse->getNomUrl(1);
 			}
 		}
+		elseif ($key == 'time_planned')
+		{
+			if (!empty($this->time_planned)){
+				if(!function_exists('convertSecondToTime')){
+					include_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+				}
+
+				$out.= convertSecondToTime(intval($this->time_planned), 'allhourmin') ;
+			}else{
+				$out .= ' -- ';
+			}
+		}
 		else{
 			$out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
 		}

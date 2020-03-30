@@ -698,7 +698,7 @@ if (empty($reshook))
 
     // Actions to build doc
     $upload_dir = $conf->operationorder->multidir_output[$object->entity];
-    $permissiontoadd = $usercancreate;
+    $permissiontoadd = $user->rights->operationorder->read;
     include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
 
 }
