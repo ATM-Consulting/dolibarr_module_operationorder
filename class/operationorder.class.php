@@ -634,9 +634,14 @@ class OperationOrder extends SeedObject
 					// Agenda Hack to replace standard agenda trigger event
 					$actionTriggerKey = 'MAIN_AGENDA_ACTIONAUTO_OPERATIONORDER_STATUS';
 					if(!empty($conf->agenda->enabled) && !empty($conf->global->{$actionTriggerKey})){
-						$langs->load('operationorder@operationorder');
-						$eventLabel = $langs->transnoentities('OperationOrderSetStatus', $status->label , $this->ref );
-						$this->addActionComEvent($eventLabel);
+
+						$newStatus = new OperationOrderStatus($this->db);
+						if($newStatus->fetch($fk_status) > 0)
+						{
+							$langs->load('operationorder@operationorder');
+							$eventLabel = $langs->transnoentities('OperationOrderSetStatus', '"'.$status->label . '" => "' . $newStatus->label.'"' , $this->ref );
+							$this->addActionComEvent($eventLabel);
+						}
 					}
 
 					return 1;
@@ -1629,6 +1634,18 @@ class OperationOrderDet extends SeedObject
 			$res = $warehouse->fetch($value);
 			if($res>0){
 				$out.= $warehouse->getNomUrl(1);
+			}
+		}
+		elseif ($key == 'time_planned')
+		{
+			if (!empty($this->time_planned)){
+				if(!function_exists('convertSecondToTime')){
+					include_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+				}
+
+				$out.= convertSecondToTime(intval($this->time_planned), 'allhourmin') ;
+			}else{
+				$out .= ' -- ';
 			}
 		}
 		else{

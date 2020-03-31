@@ -100,7 +100,13 @@ if (!empty($object->isextrafieldmanaged))
 
 $listViewName = 'operationorder';
 $inputPrefix  = 'Listview_'.$listViewName.'_search_';
+
+// Search value
 $search_overshootStatus = GETPOST($inputPrefix.'overshootstatus', 'int');
+if(GETPOSTISSET('button_removefilter_x')){
+	$search_overshootStatus = '';
+}
+
 
 $sql = 'SELECT '.$fieldList;
 
@@ -221,10 +227,8 @@ $listViewConfig = array(
 	    'ref' => $langs->trans($object->fields['ref']['label']),
         'ref_client' => $langs->trans($object->fields['ref_client']['label']),
         'fk_soc' => $langs->trans($object->fields['fk_soc']['label']),
-        'fk_project' => $langs->trans($object->fields['fk_project']['label']),
         'fk_c_operationorder_type' => $langs->trans($object->fields['fk_c_operationorder_type']['label']),
-        'overshootstatus' => $langs->trans('overshootStatus'),
-        'status' => $langs->trans($object->fields['status']['label']),
+        'overshootstatus' => $langs->trans('overshootStatus')
     )
 	,'eval'=>array(
         'overshootstatus' => '_getOvershootStatus(\'@rowid@\')'
@@ -237,7 +241,11 @@ foreach ($object->fields as $key => $field){
     // visible' says if field is visible in list (Examples: 0=Not visible, 1=Visible on list and create/update/view forms, 2=Visible on list only, 3=Visible on create/update/view form only (not list), 4=Visible on list and update/view form only (not create).
     // Using a negative value means field is not shown by default on list but can be selected for viewing)
 
-    if(!isset($listViewConfig['title'][$key]) && !empty($field['visible']) && in_array($field['visible'], array(1,2,4)) ) {
+	if($key == 'fk_project' && empty($conf->projet->enabled)){
+		$field['enabled'] = 0;
+	}
+
+    if(!empty($field['enabled']) && !isset($listViewConfig['title'][$key]) && !empty($field['visible']) && in_array($field['visible'], array(1,2,4)) ) {
         $listViewConfig['title'][$key] = $langs->trans($field['label']);
     }
 
@@ -250,6 +258,80 @@ foreach ($object->fields as $key => $field){
     }
 }
 
+// Extrafields
+if (!empty($object->isextrafieldmanaged) && !empty($extralabels))
+{
+	if (is_array($extrafields->attributes[$object->table_element]['label']) && count($extrafields->attributes[$object->table_element]['label']) > 0)
+	{
+		foreach ($extrafields->attributes[$object->table_element]['label'] as $key=>$label)
+		{
+			$enabled = 1;
+
+			// skip separation
+			if ($extrafields->attributes[$object->table_element]['type'][$key] == 'separate'){
+				continue;
+			}
+
+			// skip hidden
+			if(!empty($extrafields->attributes[$object->table_element]['hidden'][$key])){
+				continue;
+			}
+
+			$visibility = 1;
+			if ($visibility && isset($extrafields->attributes[$object->table_element]['list'][$key]))
+			{
+				$visibility = dol_eval($extrafields->attributes[$object->table_element]['list'][$key], 1);
+			}
+
+			$perms = 1;
+			if ($perms && isset($extrafields->attributes[$object->table_element]['perms'][$key]))
+			{
+				$perms = dol_eval($extrafields->attributes[$object->table_element]['perms'][$key], 1);
+			}
+
+			if (abs($visibility) != 1 && abs($visibility) != 2 && abs($visibility) != 5) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list
+
+			if (empty($perms)) continue;
+
+			// Load language if required
+			if (!empty($extrafields->attributes[$object->table_element]['langfile'][$key])) $langs->load($extrafields->attributes[$object->table_element]['langfile'][$key]);
+
+			$labeltoshow = $langs->trans($label);
+			if (!empty($extrafields->attributes[$object->table_element]['help'][$key])) $labeltoshow = $form->textwithpicto($labeltoshow, $extrafields->attributes[$object->table_element]['help'][$key]);
+
+			$listKeyName = "options_".$key;
+
+			if($visibility<0) {
+				$listViewConfig['hide'][] = $listKeyName;
+			}
+
+			$listViewConfig['title'][$listKeyName] = $labeltoshow;
+			$listViewConfig['eval'][$listKeyName] = '_getObjectExtrafieldOutputField(\''.$key.'\', \'@rowid@\', \'@val@\')';
+
+			// Search value
+			$searchValue = GETPOST($inputPrefix.$listKeyName);
+			if(GETPOSTISSET('button_removefilter_x')){
+				$searchValue = '';
+			}
+
+			$listViewConfig['search'][$listKeyName] = array(
+				'search_type' => 'override',
+			    'table' => array('et', 'et'),
+				'field' => array($key),
+				'override' => $extrafields->showInputField($key, $searchValue, '', '', $inputPrefix, 0, $object->id, $object->table_element)
+			);
+
+			if(in_array($extrafields->attributes[$object->table_element]['type'][$key], array('link'))){
+				$listViewConfig['operator'][$listKeyName] = '=';
+			}
+
+		}
+	}
+}
+
+// Keep status as last col
+if(isset($listViewConfig['title']['status'])){ unset($listViewConfig['title']['status']); }
+$listViewConfig['title']['status'] = $langs->trans($object->fields['status']['label']);
 
 
 $r = new Listview($db, 'operationorder');
@@ -309,4 +391,17 @@ function getOperationOrderFromCache($fk_operationOrder){
     }
 
     return $operationOrder;
+}
+
+
+function _getObjectExtrafieldOutputField($key, $fk_operationOrder = 0)
+{
+	global $extrafields;
+
+	$operationOrder = getOperationOrderFromCache($fk_operationOrder);
+	if(!$operationOrder){return 'error';}
+
+	$value = $operationOrder->array_options["options_".$key];
+
+	return  $extrafields->showOutputField($key, $value);
 }

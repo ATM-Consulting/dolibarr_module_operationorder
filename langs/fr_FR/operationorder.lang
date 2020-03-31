@@ -131,6 +131,7 @@ OperationOrderSetPlanned=Planifé
 
 StockPlace=Emplacement
 TimePlanned=Temps planifié
+TimeSpent=Temps passé
 AddOperationOrderLine=Ajouter une ligne à l'ordre de réparation
 OperationOrderLineAdded=ligne ajoutée l'ordre de réparation
 LineNotFound=Ligne introuvable
@@ -173,3 +174,8 @@ LeftMenuOperationOrderStatusAdmin=Paramètres
 ActivateOperationorderSharing=Activer le partage des des ordres de réparation entre entités (pensez à configurer le partage ci-dessous)
 MulticompanyConfiguration=Configuration des partages entre entités
 Multicompany=Options du module multi sociétés
+
+# PDF
+PdfCustomOrderTitle=Ordre de réparation
+OperationOrderDate=Date
+PDFolafDescription=Modèle standard des ordres de réparations
