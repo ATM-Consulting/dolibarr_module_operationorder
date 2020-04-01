@@ -131,6 +131,10 @@ if (!empty($object->isextrafieldmanaged))
 $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON (s.rowid = t.fk_soc)';
 $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_operationorder_type ctype ON (ctype.rowid = t.fk_c_operationorder_type)';
 
+$parameters=array('sql' => $sql);
+$reshook=$hookmanager->executeHooks('printFieldListJoin', $parameters, $object);    // Note that $action and $object may have been modified by hook
+$sql.=$hookmanager->resPrint;
+
 $sql.= ' WHERE  t.entity IN ('.getEntity('operationorder', 1).')';
 //if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
 
