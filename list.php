@@ -27,6 +27,13 @@ $langs->load('operationorder@operationorder');
 $massaction = GETPOST('massaction', 'alpha');
 $confirmmassaction = GETPOST('confirmmassaction', 'alpha');
 $toselect = GETPOST('toselect', 'array');
+$search_by=GETPOST('search_by', 'alpha');
+if (!empty($search_by)) {
+    $sall=GETPOST('sall');
+    if (!empty($sall)) {
+        $_GET[$search_by]=$sall;
+    }
+}
 
 $object = new OperationOrder($db);
 
@@ -96,7 +103,6 @@ if (!empty($object->isextrafieldmanaged))
 		$fieldList .= ', et.' . implode(', et.', $keys);
 	}
 }
-
 
 $listViewName = 'operationorder';
 $inputPrefix  = 'Listview_'.$listViewName.'_search_';
