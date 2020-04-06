@@ -76,7 +76,6 @@ class OperationOrder extends SeedObject
         'ref_client' => array('type'=>'varchar(128)', 'label'=>'RefCustomer', 'enabled'=>1, 'position'=>20, 'notnull'=>0, 'visible'=>1),
         'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'help'=>"LinkToThirparty"),
         'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1, 'index'=>1),
-        'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php:1', 'label'=>'Contract', 'enabled'=>1, 'position'=>54, 'notnull'=>0, 'visible'=>3, 'index'=>1), // n'aparait pas je comprend pas et surtout je sais pas si on l'affiche en vrai ...
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
         'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
         'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 0),
