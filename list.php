@@ -303,7 +303,7 @@ if (!empty($object->isextrafieldmanaged) && !empty($extralabels))
 			if (!empty($extrafields->attributes[$object->table_element]['langfile'][$key])) $langs->load($extrafields->attributes[$object->table_element]['langfile'][$key]);
 
 			$labeltoshow = $langs->trans($label);
-			if (!empty($extrafields->attributes[$object->table_element]['help'][$key])) $labeltoshow = $form->textwithpicto($labeltoshow, $extrafields->attributes[$object->table_element]['help'][$key]);
+			//if (!empty($extrafields->attributes[$object->table_element]['help'][$key])) $labeltoshow = $form->textwithpicto($labeltoshow, $extrafields->attributes[$object->table_element]['help'][$key]);
 
 			$listKeyName = "options_".$key;
 
