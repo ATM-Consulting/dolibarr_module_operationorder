@@ -1596,6 +1596,7 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 	$outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
 	$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
 	$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+	$outForm.= '<input type="hidden" name="fk_parent_line" value="' . intval($line->fk_parent_line) . '">' . "\n";
 	$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
 
 	if($action == 'edit') {

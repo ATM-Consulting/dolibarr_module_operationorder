@@ -336,6 +336,23 @@ class OperationOrder extends SeedObject
         return $res;
     }
 
+	public function fetchLines(){
+		$TNested = $this->fetch_all_children_nested();
+		$this->lines = array();
+		$this->fetchNestedLines($TNested);
+	}
+
+	public function fetchNestedLines($TNested, $level = 0){
+		if(!empty($TNested) && is_array($TNested)) {
+			foreach ($TNested as $k => $v) {
+				$v['object']->level = $level;
+				$this->lines[] = $v['object'];
+				$this->fetchNestedLines($v['children'], $level +1 );
+			}
+		}
+	}
+
+
 //    public function lineLevel($id, $level = 0){
 //    	// init pour gagner en temps de traitement
 //    	if(empty($this->cacheLineIdNumb)){
@@ -1360,6 +1377,8 @@ class OperationOrderDet extends SeedObject
 		),
 		'fk_parent_line' => array (
 			'type' => 'integer',
+			'enabled' => 1,
+			'visible' => 0,
 		),
 		'price' => array (
 			'type' => 'real',
