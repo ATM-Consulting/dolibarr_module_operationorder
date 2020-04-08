@@ -335,6 +335,26 @@ if (!empty($object->isextrafieldmanaged) && !empty($extralabels))
 	}
 }
 
+// Multicompagny
+if (!empty($conf->multicompany->enabled)) {
+	$listViewConfig['title']['entity'] = $langs->trans('Entity');
+	$listViewConfig['eval']['entity'] = '_getEntity(\'@entity@\')';
+
+	$aMulticompany = new ActionsMulticompany($db);
+
+	$selected = GETPOST('Listview_operationorder_search_entity');
+	if(empty($selected)){
+		$selected = -1;
+	}
+
+	$listViewConfig['search']['entity'] = array(
+		'search_type' => 'override',
+		'table' => array('t', 't'),
+		'field' => array('entity'),
+		'override' => $aMulticompany->select_entities($selected, 'Listview_operationorder_search_entity', '', false, false, 1, false, '', 'minwidth200imp', true, true)
+	);
+}
+
 // Keep status as last col
 if(isset($listViewConfig['title']['status'])){ unset($listViewConfig['title']['status']); }
 $listViewConfig['title']['status'] = $langs->trans($object->fields['status']['label']);
@@ -411,3 +431,29 @@ function _getObjectExtrafieldOutputField($key, $fk_operationOrder = 0)
 
 	return  $extrafields->showOutputField($key, $value);
 }
+
+function _getEntity($val = '')
+{
+	global $db, $TEntityCache;
+
+	if(empty($val)){
+		return '';
+	}
+	$val = intval($val);
+
+	if(empty($TEntityCache[$val])){
+		$daoMulticompany = new DaoMulticompany($db);
+		if($daoMulticompany->fetch(intval($val)) <= 0)
+		{
+			return '';
+		}
+
+		$TEntityCache[$val] = $daoMulticompany;
+	}
+	else{
+		$daoMulticompany = $TEntityCache[$val];
+	}
+
+	return  htmlentities($daoMulticompany->name);
+}
+
