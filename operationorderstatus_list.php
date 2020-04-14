@@ -83,39 +83,12 @@ if (empty($reshook))
 
 llxHeader('', $langs->trans('OperationOrderStatusList'), '', '');
 
-//$type = GETPOST('type');
-//if (empty($user->rights->operationorder->all->read)) $type = 'mine';
-
-// TODO ajouter les champs de son objet que l'on souhaite afficher
-$keys = array_keys($object->fields);
-$fieldList = 't.'.implode(', t.', $keys);
-if (!empty($object->isextrafieldmanaged))
-{
-    $keys = array_keys($extralabels);
-	if(!empty($keys)) {
-		$fieldList .= ', et.' . implode(', et.', $keys);
-	}
-}
-
-$sql = 'SELECT '.$fieldList;
-
-// Add fields from hooks
-$parameters=array('sql' => $sql);
-$reshook=$hookmanager->executeHooks('printFieldListSelect', $parameters, $object);    // Note that $action and $object may have been modified by hook
-$sql.=$hookmanager->resPrint;
-
-$sql.= ' FROM '.MAIN_DB_PREFIX.$object->table_element.' t ';
-
-if (!empty($object->isextrafieldmanaged))
-{
-    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.$object->table_element.'_extrafields et ON (et.fk_object = t.rowid)';
-}
 
 $newcardbutton = dolGetButtonTitle($langs->trans('NewStatus'), '', 'fa fa-plus-circle', dol_buildpath('operationorder/operationorderstatus_card.php?action=create&idmenu=540&mainmenu=operationorder', 1), '', $user->rights->operationorder->status->write);
 print load_fiche_titre($langs->trans('OperationOrderStatusList'), $newcardbutton);
 
 
-$Tlist = $object->fetchAll();
+$Tlist = $object->fetchAll(0,false, array('entity'=> $conf->entity ));
 /**
  * @var $Tlist OperationOrderStatus[]
  */

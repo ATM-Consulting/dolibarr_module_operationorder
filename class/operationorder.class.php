@@ -204,6 +204,7 @@ class OperationOrder extends SeedObject
 		}
 
 
+
 		if(!empty($this->is_clone) && !empty($conf->global->OPODER_STATUS_ON_CLONE))
 		{
 			// Set status by default conf
@@ -211,8 +212,12 @@ class OperationOrder extends SeedObject
 		}
 		else
 		{
+			if(empty($this->entity)){
+				$this->entity = $conf->entity;
+			}
+
 			$status = new Operationorderstatus($this->db);
-			$res = $status->fetchDefault($this->status);
+			$res = $status->fetchDefault($this->status, $this->entity);
 			if($res>0){
 				$this->status = $status->id;
 			}
@@ -563,7 +568,7 @@ class OperationOrder extends SeedObject
 
 		if(empty($this->objStatus) || is_object($this->objStatus) || $forceReload){
 			$this->objStatus = new Operationorderstatus($this->db);
-			$res = $this->objStatus->fetchDefault($this->status);
+			$res = $this->objStatus->fetchDefault($this->status, $this->entity);
 			if($res>0){
 				return true;
 			}
@@ -732,7 +737,7 @@ class OperationOrder extends SeedObject
      */
     public function getLibStatut($mode = 0)
     {
-        return self::LibStatut($this->status, $mode);
+        return self::LibStatut($this->status, $mode, $this->entity);
     }
 
     /**
@@ -740,13 +745,13 @@ class OperationOrder extends SeedObject
      * @param int       $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
      * @return string
      */
-    public static function LibStatut($fk_status, $mode)
+    public static function LibStatut($fk_status, $mode, $force_entity  = 0)
     {
 		global $langs,$db;
 		$langs->load('operationorder@operationorder');
 
 		$status = new Operationorderstatus($db);
-		$res = $status->fetchDefault($fk_status);
+		$res = $status->fetchDefault($fk_status, $force_entity );
 		if($res>0){
 			return $status->getBadge();
 		}

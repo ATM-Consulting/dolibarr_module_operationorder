@@ -55,7 +55,7 @@ $result = restrictedArea($user, $object->element, $id, $object->table_element.'&
 
 
 $status = new Operationorderstatus($db);
-$res = $status->fetchDefault($object->status);
+$res = $status->fetchDefault($object->status, $object->entity);
 if($res<0){
 	setEventMessage($langs->trans('ErrorLoadingStatus'), 'errors');
 }

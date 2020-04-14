@@ -316,29 +316,35 @@ class OperationOrderStatus extends SeedObject
 	}
 
 	/**
-	 *	Get object and children from database
+	 *    Get object and children from database
 	 *
-	 *	@param      int			$id       		Id of object to load
-	 * 	@param		bool		$loadChild		used to load children from database
-	 *  @param      string      $ref            Ref
-	 *	@return     int         				>0 if OK, <0 if KO, 0 if not found
+	 * @param int $id Id of object to load
+	 * @param int $force_entity
+	 * @return     int                        >0 if OK, <0 if KO, 0 if not found
 	 */
-	public function fetchDefault($id)
+	public function fetchDefault($id, $force_entity = 0)
 	{
 		$res = $this->fetch(intval($id));
 		if($res>0){
-			return $res;
+			return intval($id);
 		}
 		else{
-			$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE status = 1 ORDER BY rank ASC LIMIT 1 ;';
+			$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE status = 1 ';
+			if ($force_entity>0) $sql .= " AND entity IN (0,".intval($force_entity).") ";
+			$sql.= ' ORDER BY rank ASC LIMIT 1 ;';
 			$resql = $this->db->query($sql);
 			if($resql){
 				$row = $this->db->fetch_object($resql);
 				$res = $this->fetch($row->rowid);
+				if($res>0){
+					return $row->rowid;
+				}else{
+					return $res;
+				}
 			}
 		}
 
-		return $res;
+		return 0;
 	}
 
 

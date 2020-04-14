@@ -257,7 +257,7 @@ if ($action == 'create')
 	print '<tr class="oddeven" id="status-allowed" >';
 	print '<td  id="coltitle-status-allowed" >'.$langs->trans('TargetableStatus').'</td>';
 	print '<td  id="colval-status-allowed" >';
-	$TStatus = $object->fetchAll();
+	$TStatus = $object->fetchAll(0,false, array('entity'=> $conf->entity ));
 	if(!empty($TStatus)){
 		$TAvailableStatus = array();
 		foreach ($TStatus as $key => $status){
@@ -334,11 +334,14 @@ else
 			print '<tr class="oddeven" id="status-allowed" >';
 			print '<td  id="coltitle-status-allowed" >'.$langs->trans('TargetableStatus').'</td>';
 			print '<td  id="colval-status-allowed" >';
-			$TStatus = $object->fetchAll();
+			$TStatus = $object->fetchAll(0,false, array('entity'=> $conf->entity ));
 			if(!empty($TStatus)){
 				$TAvailableStatus = array();
 				foreach ($TStatus as $key => $status){
 					if($status->id != $object->status){
+						if($status->id == $object->id){
+							continue;
+						}
 						$TAvailableStatus[$status->id] = $status->label;
 					}
 				}
