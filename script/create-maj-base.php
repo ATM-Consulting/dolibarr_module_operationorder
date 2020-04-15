@@ -108,3 +108,6 @@ $o->init_db_by_vars();
 
 $o=new OperationOrderStatusTarget($db);
 $o->init_db_by_vars();
+
+// Multientity patch
+$db->query("UPDATE '.MAIN_DB_PREFIX.'operationorder_status SET entity = '1' WHERE `entity` = 0;");

@@ -6,4 +6,4 @@ INSERT INTO `llx_operationorder_status` (`rowid`, `date_creation`, `tms`, `code`
 INSERT INTO `llx_operationorder_status` (`rowid`, `date_creation`, `tms`, `code`, `label`, `color`, `import_key`, `status`, `entity`, `rank`) VALUES(9, '2020-03-03 17:18:54', '2020-03-03 16:35:58', 'FINISHED', 'Terminé', '#9ae009', NULL, '1', 1, 5);
 INSERT INTO `llx_operationorder_status` (`rowid`, `date_creation`, `tms`, `code`, `label`, `color`, `import_key`, `status`, `entity`, `rank`) VALUES(10, '2020-03-03 17:32:10', '2020-03-03 16:35:58', 'CLOSABLE', 'Clôturable', '#99c084', NULL, '1', 1, 6);
 INSERT INTO `llx_operationorder_status` (`rowid`, `date_creation`, `tms`, `code`, `label`, `color`, `import_key`, `status`, `entity`, `rank`) VALUES(11, '2020-03-03 17:33:06', '2020-03-03 16:35:58', 'CLOSED', 'Clôturé', '#e9e9e9', NULL, '1', 1, 7);
-UPDATE `llx_operationorder_status` SET `entity` = '1' WHERE `entity` = 0;
+
