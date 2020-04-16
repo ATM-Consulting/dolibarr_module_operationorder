@@ -68,6 +68,7 @@ OperationOrderStatusShortAccepted=Acceptée
 OperationOrderStatusShortClosed=Traité
 OperationOrderStatusShortToPlan=A planifier
 OperationOrderStatusShortDisabled=Désactivé
+ErrorLoadingStatus=Erreur : aucun statut actif détecté, cela signifie généralement que la configuration des statuts n'est pas terminée
 
 NewStatus=Nouveau statut
 NoOperationOrderStatus=Pas de statut
