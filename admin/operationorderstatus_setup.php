@@ -108,7 +108,7 @@ _printInputFormPart('CONF', $langs->trans('ConfTradKey'), '', $metas);*/
 
 
 $staticStatus = new OperationOrderStatus($db);
-$Tstatus = $staticStatus->fetchAll(0, false, array('status' => 1));
+$Tstatus = $staticStatus->fetchAll(0, false, array('status' => 1, 'entity' => $conf->entity));
 $TstatusAvailable = array();
 if(!empty($Tstatus)){
 	foreach ($Tstatus as $status){
