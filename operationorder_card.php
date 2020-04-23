@@ -1293,7 +1293,7 @@ function _displayDialogSupplierOrder($lineid){
 	print '</div>';
 
 
-	// MISE A JOUR AJAX DE L'ORDRE DES LIGNES
+	// OUVERTURE DE LA BOITE DE DIALOGUE DE COMMANDE FOURN
 	print '
 	<script type="text/javascript">
 	$(function()
@@ -1580,7 +1580,7 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true)
 	else{
 		$action = 'create';
 		$line=new OperationOrderDet($db);
-
+		$line->fk_operation_order = $object->id; // for js and hook
 		// set default values
 		$line->qty = '';
 		$line->price = '';

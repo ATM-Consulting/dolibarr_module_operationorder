@@ -1729,7 +1729,9 @@ class OperationOrderDet extends SeedObject
 									url: "' . dol_buildpath('operationorder/scripts/interface.php?action=getProductInfos', 1) . '",
 									method: "POST",
 									data: {
-										\'fk_product\' : $( this ).val()
+										\'fk_product\' : $( this ).val(),
+										\'element\' : \'operationorder\',
+										\'element_id\' : '.intval($this->fk_operation_order).'
 									},
 									dataType: "json",
 
@@ -1739,7 +1741,7 @@ class OperationOrderDet extends SeedObject
 										console.log(data);
 										if(data.result > 0 ){
 										   // ok case
-										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(data.fk_default_warehouse);
+										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(data.fk_default_warehouse).change();
 										   $("#' . $keyprefix . 'price' . $keysuffix . '").val(data.price);
 
 										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").val(data.time_plannedhour);
@@ -1747,7 +1749,7 @@ class OperationOrderDet extends SeedObject
 										}
 										else{
 										   // nothing to do ?
-										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(-1);
+										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(-1).change();
 										   $("#' . $keyprefix . 'price' . $keysuffix . '").val("");
 										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").val("");
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val("");
@@ -1757,7 +1759,6 @@ class OperationOrderDet extends SeedObject
 											$.jnotify(data.errorMsg, "error", true);
 										}
 
-										$("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").change();
 									},
 									// La fonction à appeler si la requête n\'a pas abouti
 									error: function( jqXHR, textStatus ) {
