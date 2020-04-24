@@ -593,31 +593,11 @@ function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $k
     return $outForm;
 }
 
-function addLineToOR ($object){
+function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $label = ''){
 
     global $langs, $db, $conf;
 
-    $langs->load('errors');
-    $error = 0;
-
-    // Set if we used free entry or predefined product
-    $predef = '';
-    $product_desc = (GETPOST('description') ? GETPOST('description') : '');
-
-    $prod_entry_mode = GETPOST('prod_entry_mode');
-    if ($prod_entry_mode == 'free') $idprod = 0;
-    else $idprod = GETPOST('fk_product', 'int');
-
-
-    $time_plannedhour = intval(GETPOST('time_plannedhour', 'int'));
-    $time_plannedmin = intval(GETPOST('time_plannedmin', 'int'));
-    $time_spenthour = intval(GETPOST('time_spenthour', 'int'));
-    $time_spentmin = intval(GETPOST('time_spentmin', 'int'));
-    $qty = GETPOST('qty'.$predef);
     $qty = price2num($qty);
-    $price = GETPOST('price'.$predef);
-    $fk_warehouse = GETPOST('fk_warehouse');
-    $pc = GETPOST('pc'.$predef);
     $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
     $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
 
@@ -626,65 +606,51 @@ function addLineToOR ($object){
     $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
     $array_options = $extrafields->getOptionalsFromPost($object->table_element_line, $predef);
     // Unset extrafield
-    if (is_array($extralabelsline))
-    {
+    if (is_array($extralabelsline)) {
         // Get extra fields
-        foreach ($extralabelsline as $key => $value)
-        {
+        foreach ($extralabelsline as $key => $value) {
             unset($_POST["options_".$key]);
         }
     }
 
-    if ($prod_entry_mode == 'free' && empty($idprod) && GETPOST('type') < 0)
-    {
+    if (empty($fk_product) && $type < 0) {
         setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
         $error++;
     }
-    if ($qty == '')
-    {
+    if ($qty == '') {
         setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
         $error++;
     }
-    if ($prod_entry_mode == 'free' && empty($idprod) && empty($product_desc))
-    {
+    if (empty($fk_product) && empty($product_desc)) {
         setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
         $error++;
     }
 
-    if (empty($error) && ($qty >= 0) && (!empty($product_desc) || !empty($idprod)))
-    {
-        // Clean parameters
-        $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
-        $date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
+    if (empty($error) && ($qty >= 0) && (!empty($product_desc) || !empty($fk_product))) {
 
-        if (!empty($idprod))
-        {
+        if (!empty($fk_product)) {
             $prod = new Product($db);
-            $prod->fetch($idprod);
+            $prod->fetch($fk_product);
 
-            $label = ((GETPOST('product_label') && GETPOST('product_label') != $prod->label) ? GETPOST('product_label') : '');
+            $label = (($label && $label != $prod->label) ? $label : '');
 
             $desc = '';
 
             // Define output language
-            if (!empty($conf->global->MAIN_MULTILANGS) && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE))
-            {
+            if (!empty($conf->global->MAIN_MULTILANGS) && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
                 $outputlangs = $langs;
                 $newlang = '';
                 if (empty($newlang) && GETPOST('lang_id', 'aZ09'))
                     $newlang = GETPOST('lang_id', 'aZ09');
                 if (empty($newlang))
                     $newlang = $object->thirdparty->default_lang;
-                if (!empty($newlang))
-                {
+                if (!empty($newlang)) {
                     $outputlangs = new Translate("", $conf);
                     $outputlangs->setDefaultLang($newlang);
                 }
 
                 $desc = (!empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
-            }
-            else
-            {
+            } else {
                 $desc = $prod->description;
             }
 
@@ -692,12 +658,8 @@ function addLineToOR ($object){
             else $desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
 
             $type = $prod->type;
-        }
-        else
-        {
-            $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
+        } else {
             $desc = $product_desc;
-            $type = GETPOST('type');
         }
 
         $desc = dol_htmlcleanlastbr($desc);
@@ -705,18 +667,16 @@ function addLineToOR ($object){
         $info_bits = 0;
 
         // Insert line
-        $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+        $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
 
-        if ($result > 0)
-        {
+        if ($result > 0) {
 
-            $recusiveAddResult = $object->recurciveAddChildLines($result, $idprod, $qty);
+            $recusiveAddResult = $object->recurciveAddChildLines($result,$fk_product, $qty);
 
-            if ($recusiveAddResult < 0)
+            if($recusiveAddResult<0)
             {
                 setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
-                if (!empty($this->errors))
-                {
+                if(!empty($this->errors)){
                     setEventMessages($this->errors, 'errors');
                 }
             }
