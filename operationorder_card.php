@@ -246,168 +246,98 @@ if (empty($reshook))
                 $langs->load('errors');
                 $error = 0;
 
+                $langs->load('errors');
+                $error = 0;
+
                 // Set if we used free entry or predefined product
-                $predef = '';
-                $product_desc = (GETPOST('description') ?GETPOST('description') : '');
-
-                $prod_entry_mode = GETPOST('prod_entry_mode');
-                if ($prod_entry_mode == 'free') $idprod = 0;
-                else $idprod = GETPOST('fk_product', 'int');
-
+                $fk_product = GETPOST('fk_product');
+                $product_desc = (GETPOST('description') ? GETPOST('description') : '');
+                $time_plannedhour = intval(GETPOST('time_plannedhour', 'int'));
+                $time_plannedmin = intval(GETPOST('time_plannedmin', 'int'));
+                $time_spenthour = intval(GETPOST('time_spenthour', 'int'));
+                $time_spentmin = intval(GETPOST('time_spentmin', 'int'));
                 $qty = GETPOST('qty'.$predef);
-				$qty = price2num($qty);
                 $price = GETPOST('price'.$predef);
                 $fk_warehouse = GETPOST('fk_warehouse');
                 $pc = GETPOST('pc'.$predef);
-                $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
-                $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
+                $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
+                $date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
+                $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
 
-                // Extrafields
-                $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
-                $array_options = $extrafields->getOptionalsFromPost($object->table_element_line, $predef);
-                // Unset extrafield
-                if (is_array($extralabelsline)) {
-                    // Get extra fields
-                    foreach ($extralabelsline as $key => $value) {
-                        unset($_POST["options_".$key]);
-                    }
-                }
+                $ret = addLineAndChildToOR(
+                    $object
+                    , $fk_product
+                    , $qty
+                    , $price
+                    , $type
+                    , $product_desc
+                    , $predef
+                    , $time_plannedhour
+                    , $time_plannedmin
+                    , $time_spenthour
+                    , $time_spentmin
+                    , $fk_warehouse
+                    , $pc
+                    , $date_start
+                    , $date_end
+                    , $label
+                );
 
-
-                if ($prod_entry_mode == 'free' && empty($idprod) && GETPOST('type') < 0) {
-                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
-                    $error++;
-                }
-                if ($qty == '') {
-                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
-                    $error++;
-                }
-                if ($prod_entry_mode == 'free' && empty($idprod) && empty($product_desc)) {
-                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
-                    $error++;
-                }
-
-                if (empty($error) && ($qty >= 0) && (!empty($product_desc) || !empty($idprod))) {
-                    // Clean parameters
-                    $date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
-                    $date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
-
-                    if (!empty($idprod)) {
-                        $prod = new Product($db);
-                        $prod->fetch($idprod);
-
-                        $label = ((GETPOST('product_label') && GETPOST('product_label') != $prod->label) ? GETPOST('product_label') : '');
-
-                        $desc = '';
-
-                        // Define output language
-                        if (!empty($conf->global->MAIN_MULTILANGS) && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
-                            $outputlangs = $langs;
-                            $newlang = '';
-                            if (empty($newlang) && GETPOST('lang_id', 'aZ09'))
-                                $newlang = GETPOST('lang_id', 'aZ09');
-                            if (empty($newlang))
-                                $newlang = $object->thirdparty->default_lang;
-                            if (!empty($newlang)) {
-                                $outputlangs = new Translate("", $conf);
-                                $outputlangs->setDefaultLang($newlang);
-                            }
-
-                            $desc = (!empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
-                        } else {
-                            $desc = $prod->description;
-                        }
-
-                        if (!empty($product_desc) && !empty($conf->global->MAIN_NO_CONCAT_DESCRIPTION)) $desc = $product_desc;
-                        else $desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
-
-                        $type = $prod->type;
-                    } else {
-                        $label = (GETPOST('product_label') ? GETPOST('product_label') : '');
-                        $desc = $product_desc;
-                        $type = GETPOST('type');
+                if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+                {
+                    // Define output language
+                    $outputlangs = $langs;
+                    $newlang = GETPOST('lang_id', 'alpha');
+                    if (!empty($conf->global->MAIN_MULTILANGS) && empty($newlang))
+                        $newlang = $object->thirdparty->default_lang;
+                    if (!empty($newlang))
+                    {
+                        $outputlangs = new Translate("", $conf);
+                        $outputlangs->setDefaultLang($newlang);
                     }
 
-                    $desc = dol_htmlcleanlastbr($desc);
-
-                    $info_bits = 0;
-
-                    // Insert line
-                    $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $idprod, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
-
-                    if ($result > 0) {
-
-						$recusiveAddResult = $object->recurciveAddChildLines($result,$idprod, $qty);
-
-						if($recusiveAddResult<0)
-						{
-							setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
-							if(!empty($this->errors)){
-								setEventMessages($this->errors, 'errors');
-							}
-						}
-
-						$ret = $object->fetch($object->id); // Reload to get new records
-
-                        if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
-                            // Define output language
-                            $outputlangs = $langs;
-                            $newlang = GETPOST('lang_id', 'alpha');
-                            if (!empty($conf->global->MAIN_MULTILANGS) && empty($newlang))
-                                $newlang = $object->thirdparty->default_lang;
-                            if (!empty($newlang)) {
-                                $outputlangs = new Translate("", $conf);
-                                $outputlangs->setDefaultLang($newlang);
-                            }
-
-                            $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
-                        }
-
-                        unset($_POST['prod_entry_mode']);
-
-                        unset($_POST['qty']);
-                        unset($_POST['type']);
-                        unset($_POST['product_ref']);
-                        unset($_POST['product_label']);
-                        unset($_POST['product_desc']);
-                        unset($_POST['dp_desc']);
-                        unset($_POST['idprod']);
-
-                        unset($_POST['date_starthour']);
-                        unset($_POST['date_startmin']);
-                        unset($_POST['date_startsec']);
-                        unset($_POST['date_startday']);
-                        unset($_POST['date_startmonth']);
-                        unset($_POST['date_startyear']);
-                        unset($_POST['date_endhour']);
-                        unset($_POST['date_endmin']);
-                        unset($_POST['date_endsec']);
-                        unset($_POST['date_endday']);
-                        unset($_POST['date_endmonth']);
-                        unset($_POST['date_endyear']);
-
-						$url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
-						if(!empty($prod->array_options['options_oorder_available_for_supplier_order'])){
-							// action to open dialog box
-							$url.= '&action=dialog-supplier-order&lineid='.$result;
-							$url.= '#item_'.$line->id;
-						}else{
-							$url.= "#addline";
-						}
-
-                        setEventMessage($langs->trans('OperationOrderLineAdded'));
-						header('Location: ' . $url);
-						exit;
-
-                    } else {
-                        setEventMessages($object->error, $object->errors, 'errors');
-                    }
+                    $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
                 }
 
+                unset($_POST['prod_entry_mode']);
+
+                unset($_POST['qty']);
+                unset($_POST['type']);
+                unset($_POST['product_ref']);
+                unset($_POST['product_label']);
+                unset($_POST['product_desc']);
+                unset($_POST['dp_desc']);
+                unset($_POST['idprod']);
+
+                unset($_POST['date_starthour']);
+                unset($_POST['date_startmin']);
+                unset($_POST['date_startsec']);
+                unset($_POST['date_startday']);
+                unset($_POST['date_startmonth']);
+                unset($_POST['date_startyear']);
+                unset($_POST['date_endhour']);
+                unset($_POST['date_endmin']);
+                unset($_POST['date_endsec']);
+                unset($_POST['date_endday']);
+                unset($_POST['date_endmonth']);
+                unset($_POST['date_endyear']);
+
+                $url = dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id;
+                if (!empty($prod->array_options['options_oorder_available_for_supplier_order']))
+                {
+                    // action to open dialog box
+                    $url .= '&action=dialog-supplier-order&lineid='.$result;
+                    $url .= '#item_'.$line->id;
+                }
+                else
+                {
+                    $url .= "#addline";
+                }
+
+                setEventMessage($langs->trans('OperationOrderLineAdded'));
+                header('Location: '.$url);
+                exit;
             }
-            else{
-            	setEventMessage($langs->trans('NotEnoughtRights'), 'errors');
-			}
 
             break;
         case 'confirm_deleteline':
@@ -1067,7 +997,7 @@ else
 				print $langs->trans("AddOperationOrderLine");
 				print '</div>';
 				print '<div class="add-line-form-body" >';
-				print _displayFormFields($object);
+				print displayFormFieldsByOperationOrder($object);
 				print '</div>';
 				print '</div>';
 			}
@@ -1082,7 +1012,7 @@ else
 					print '<div id="edit-item_'.$line->id.'" class="edit-line-form-wrap" title="'.$line->ref.'" >';
 					print '<div class="edit-line-form-body" >';
 					if($res>0){
-						print _displayFormFields($object, $line, 0);
+						print displayFormFieldsByOperationOrder($object, $line, 0);
 					}
 					else{
 						print $langs->trans('LineNotFound');
@@ -1250,7 +1180,7 @@ function _displayDialogSupplierOrder($lineid){
 		$supplierOrder->fields['fk_soc']['label']='Supplier';
 		$TSupplierOrderFields = array('fk_soc');
 		foreach($TSupplierOrderFields as $key){
-			$outForm.=  _getFieldCardOutput($supplierOrder, $key, '', '', 'order_');
+			$outForm.=  getFieldCardOutputByOperationOrder($supplierOrder, $key, '', '', 'order_');
 		}
 
 		$supplierOrderLine = new CommandeFournisseurLigne($object->db);
@@ -1276,7 +1206,7 @@ function _displayDialogSupplierOrder($lineid){
         );
 
 		foreach($TSupplierOrderLineFields as $key){
-			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
+			$outForm.=  getFieldCardOutputByOperationOrder($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
 		}
 
 		$outForm.= '</table>';
@@ -1293,7 +1223,7 @@ function _displayDialogSupplierOrder($lineid){
 	print '</div>';
 
 
-	// OUVERTURE DE LA BOITE DE DIALOGUE DE COMMANDE FOURN
+	// MISE A JOUR AJAX DE L'ORDRE DES LIGNES
 	print '
 	<script type="text/javascript">
 	$(function()
@@ -1559,166 +1489,6 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 	else{
 		return '';
 	}
-}
-
-
-/**
- * @param $object OperationOrder
- * @param $line OperationOrderDet
- * @param $showSubmitBtn bool
- * @return string
- */
-function _displayFormFields($object, $line= false, $showSubmitBtn = true)
-{
-	global $langs, $db, $form;
-
-	$outForm = '';
-
-	if($line && $line->id > 0){
-		$action = 'edit';
-	}
-	else{
-		$action = 'create';
-		$line=new OperationOrderDet($db);
-		$line->fk_operation_order = $object->id; // for js and hook
-		// set default values
-		$line->qty = '';
-		$line->price = '';
-	}
-
-	$actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
-
-	// Ancors
-	$actionUrl.= ($action == 'create') ? '#addline':'#item_'.$line->id;
-
-	$outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
-
-	$outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
-	$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
-	$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
-	$outForm.= '<input type="hidden" name="fk_parent_line" value="' . intval($line->fk_parent_line) . '">' . "\n";
-	$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
-
-	if($action == 'edit') {
-		$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
-		$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
-		$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
-		$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
-	}else{
-		$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
-	}
-
-	$line->fields = dol_sort_array($line->fields, 'position');
-
-
-	$outForm.= '<table class="table-full">';
-	// Display each line fields
-	foreach($line->fields as $key => $val){
-		$outForm.= _getFieldCardOutput($line, $key);
-	}
-
-	if($showSubmitBtn){
-
-		$outForm.=  '<tr>';
-		$outForm.=  '	<td colspan="2"><hr/></td>';
-		$outForm.=  '</tr>';
-
-		$outForm.=  '<tr>';
-		$outForm.=  '	<td>';
-		$outForm.=  '	</td>';
-		$outForm.=  '	<td>';
-		if($action == 'create'){
-			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
-		}else{
-			$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
-		}
-		$outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
-		$outForm.=  '	</td>';
-		$outForm.=  '</tr>';
-	}
-
-	$outForm.= '</table>';
-
-
-
-	$outForm.= '</form>';
-
-	return $outForm;
-}
-
-/**
- * Return HTML string to show a field into a page
- * Code very similar with showOutputField of extra fields
- *
- * @param  CommonObject   $object		       Array of properties of field to show
- * @param  string  $key            Key of attribute
- * @param  string  $moreparam      To add more parametes on html input tag
- * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
- * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
- * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
- * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
- * @return string
- */
-function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
-
-	global $langs, $form;
-
-	$val = $object->fields[$key];
-
-	// Discard if extrafield is a hidden field on form
-	if (abs($val['visible']) != 1 && abs($val['visible']) != 3) return;
-
-	$mode = 'edit'; // edit or view
-
-	// for some case if you need to change display mode
-	if($key == 'xxxxxx') {
-		$mode = 'view';
-	}
-
-	if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) return;	// We don't want this field
-
-	$outForm=  '<tr id="field_'.$key.'">';
-	$outForm.=  '<td';
-	$outForm.=  ' class="titlefieldcreate';
-	if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
-	if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
-	$outForm.=  '"';
-	$outForm.=  '>';
-
-	if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
-	else $outForm.=  $langs->trans($val['label']);
-	$outForm.=  '</td>';
-
-	$outForm.=  '<td>';
-
-	// Load value from object
-	$value = '';
-	if(isset($object->{$key})){
-		$value = $object->{$key};
-	}
-
-	if(GETPOSTISSET($key)){
-		if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
-		elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
-		else $value = GETPOST($key, 'alpha');
-	}
-
-	if(!empty($val['fieldCallBack']) && is_callable($val['fieldCallBack'])){
-        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton, $params);
-    }else{
-        if($mode == 'edit'){
-            $outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
-        }
-        else{
-            $outForm.=  $object->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
-        }
-    }
-
-	$outForm.=  '</td>';
-
-	$outForm.=  '</tr>';
-
-	return $outForm;
 }
 
 /**

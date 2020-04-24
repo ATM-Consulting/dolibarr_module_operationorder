@@ -428,3 +428,288 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
 	}
 	return $ret;
 }
+
+/**
+ * @param $object OperationOrder
+ * @param $line OperationOrderDet
+ * @param $showSubmitBtn bool
+ * @return string
+ */
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
+{
+    global $langs, $db, $form;
+
+    $outForm = '';
+
+    if($line && $line->id > 0){
+        $action = 'edit';
+    }
+    else{
+        $action = 'create';
+        $line=new OperationOrderDet($db);
+
+        // set default values
+        $line->qty = '';
+        $line->price = '';
+    }
+
+    if(empty($actionURL))
+    {
+        $actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
+
+        // Ancors
+        $actionUrl .= ($action == 'create') ? '#addline' : '#item_'.$line->id;
+
+    }
+
+    $outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
+
+
+    $outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
+    $outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
+    $outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+    $outForm.= '<input type="hidden" name="fk_parent_line" value="' . intval($line->fk_parent_line) . '">' . "\n";
+    $outForm.= '<input type="hidden" name="mode" value="">' . "\n";
+
+    if($action == 'edit') {
+        $outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
+        $outForm .= '<input type="hidden" name="save" value="1">' . "\n";
+        $outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
+        $outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
+    }else{
+        $outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
+    }
+
+    $line->fields = dol_sort_array($line->fields, 'position');
+
+
+    $outForm.= '<table class="table-full">';
+    // Display each line fields
+    foreach($line->fields as $key => $val){
+        $outForm.= getFieldCardOutputByOperationOrder($line, $key);
+    }
+
+    if($showSubmitBtn){
+
+        $outForm.=  '<tr>';
+        $outForm.=  '	<td colspan="2"><hr/></td>';
+        $outForm.=  '</tr>';
+
+        $outForm.=  '<tr>';
+        $outForm.=  '	<td>';
+        $outForm.=  '	</td>';
+        $outForm.=  '	<td>';
+        if($action == 'create'){
+            $outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
+        }else{
+            $outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
+        }
+        $outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
+        $outForm.=  '	</td>';
+        $outForm.=  '</tr>';
+    }
+
+    $outForm.= '</table>';
+
+
+
+    $outForm.= '</form>';
+
+    return $outForm;
+}
+
+/**
+ * Return HTML string to show a field into a page
+ * Code very similar with showOutputField of extra fields
+ *
+ * @param  CommonObject   $object		       Array of properties of field to show
+ * @param  string  $key            Key of attribute
+ * @param  string  $moreparam      To add more parametes on html input tag
+ * @param  string  $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  string  $keyprefix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
+ * @param  mixed   $morecss        Value for css to define size. May also be a numeric.
+ * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
+ * @return string
+ */
+function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
+
+    global $langs, $form;
+
+    $val = $object->fields[$key];
+
+    // Discard if extrafield is a hidden field on form
+    if (abs($val['visible']) != 1 && abs($val['visible']) != 3) return;
+
+    $mode = 'edit'; // edit or view
+
+    // for some case if you need to change display mode
+    if($key == 'xxxxxx') {
+        $mode = 'view';
+    }
+
+    if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) return;	// We don't want this field
+
+    $outForm=  '<tr id="field_'.$key.'">';
+    $outForm.=  '<td';
+    $outForm.=  ' class="titlefieldcreate';
+    if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
+    if ($val['type'] == 'text' || $val['type'] == 'html') $outForm.=  ' tdtop';
+    $outForm.=  '"';
+    $outForm.=  '>';
+
+    if (!empty($val['help'])) $outForm.=  $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
+    else $outForm.=  $langs->trans($val['label']);
+    $outForm.=  '</td>';
+
+    $outForm.=  '<td>';
+
+    // Load value from object
+    $value = '';
+    if(isset($object->{$key})){
+        $value = $object->{$key};
+    }
+
+    if(GETPOSTISSET($key)){
+        if (in_array($val['type'], array('int', 'integer'))) $value = GETPOST($key, 'int');
+        elseif ($val['type'] == 'text' || $val['type'] == 'html') $value = GETPOST($key, 'none');
+        else $value = GETPOST($key, 'alpha');
+    }
+
+    if(!empty($val['fieldCallBack']) && is_callable($val['fieldCallBack'])){
+        $outForm.=  call_user_func ($val['fieldCallBack'], $object, $val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton, $params);
+    }else{
+        if($mode == 'edit'){
+            $outForm.=  $object->showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+        else{
+            $outForm.=  $object->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+        }
+    }
+
+    $outForm.=  '</td>';
+
+    $outForm.=  '</tr>';
+
+    return $outForm;
+}
+
+/**
+ * Add line and reccursive child to an OR
+ *
+ * @param  OR   $object
+ * @param  int  $fk_product
+ * @param  int  $qty
+ * @param  int  $type
+ * @param  string  $product_desc
+ * @param  mixed   $predef
+ * @param  int	   $time_plannedhour
+ * @param  int	   $time_plannedmin
+ * @param  int	   $time_spenthour
+ * @param  int	   $time_spentmin
+ * @param  int	   $fk_warehouse
+ * @param  int	   $date_start
+ * @param  int	   $date_end
+ * @param  string  $product_label
+ * @return int > 0 if OK, < 0 if KO
+ */
+
+function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $product_label = ''){
+
+    global $langs, $db, $conf;
+
+    $error = 0;
+
+    $qty = price2num($qty);
+    $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
+    $time_spent = $time_spenthour * 60 * 60 + $time_spentmin * 60;
+
+    // Extrafields
+    $extrafields = new ExtraFields($db);
+    $extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
+    $array_options = $extrafields->getOptionalsFromPost($object->table_element_line, $predef);
+    // Unset extrafield
+    if (is_array($extralabelsline)) {
+        // Get extra fields
+        foreach ($extralabelsline as $key => $value) {
+            unset($_POST["options_".$key]);
+        }
+    }
+
+    if (empty($fk_product) && $type < 0) {
+        setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
+        $error++;
+    }
+    if ($qty == '') {
+        setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
+        $error++;
+    }
+    if (empty($fk_product)) {
+        setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Product')), null, 'errors');
+        $error++;
+    }
+
+    if (empty($error) && $qty >= 0 && $fk_product) {
+
+            $prod = new Product($db);
+            $prod->fetch($fk_product);
+
+            $label = (($product_label && $product_label != $prod->label) ? $product_label : '');
+
+            $desc = '';
+
+            // Define output language
+            if (!empty($conf->global->MAIN_MULTILANGS) && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
+                $outputlangs = $langs;
+                $newlang = '';
+                if (empty($newlang) && GETPOST('lang_id', 'aZ09'))
+                    $newlang = GETPOST('lang_id', 'aZ09');
+                if (empty($newlang))
+                    $newlang = $object->thirdparty->default_lang;
+                if (!empty($newlang)) {
+                    $outputlangs = new Translate("", $conf);
+                    $outputlangs->setDefaultLang($newlang);
+                }
+
+                $desc = (!empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
+            } else {
+                $desc = $prod->description;
+            }
+
+            if (!empty($product_desc) && !empty($conf->global->MAIN_NO_CONCAT_DESCRIPTION)) $desc = $product_desc;
+            else $desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
+
+            $type = $prod->type;
+
+        $desc = dol_htmlcleanlastbr($desc);
+
+        $info_bits = 0;
+
+        // Insert line
+        $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+
+        if ($result > 0) {
+
+            $recusiveAddResult = $object->recurciveAddChildLines($result,$fk_product, $qty);
+
+            if($recusiveAddResult<0)
+            {
+                $error++;
+                setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
+                if(!empty($this->errors)){
+                    setEventMessages($this->errors, 'errors');
+                }
+            }
+
+            $ret = $object->fetch($object->id); // Reload to get new records
+
+            if($ret > 0) return $ret;
+            else $error++;
+
+        }
+    } else {
+        $error ++;
+        setEventMessages($object->error, $object->errors, 'errors');
+    }
+
+    return (!empty($error)) ? -1 : 0;
+}
