@@ -997,7 +997,7 @@ else
 				print $langs->trans("AddOperationOrderLine");
 				print '</div>';
 				print '<div class="add-line-form-body" >';
-				print _displayFormFields($object);
+				print displayFormFieldsByOperationOrder($object);
 				print '</div>';
 				print '</div>';
 			}
@@ -1012,7 +1012,7 @@ else
 					print '<div id="edit-item_'.$line->id.'" class="edit-line-form-wrap" title="'.$line->ref.'" >';
 					print '<div class="edit-line-form-body" >';
 					if($res>0){
-						print _displayFormFields($object, $line, 0);
+						print displayFormFieldsByOperationOrder($object, $line, 0);
 					}
 					else{
 						print $langs->trans('LineNotFound');
@@ -1180,7 +1180,7 @@ function _displayDialogSupplierOrder($lineid){
 		$supplierOrder->fields['fk_soc']['label']='Supplier';
 		$TSupplierOrderFields = array('fk_soc');
 		foreach($TSupplierOrderFields as $key){
-			$outForm.=  _getFieldCardOutput($supplierOrder, $key, '', '', 'order_');
+			$outForm.=  getFieldCardOutputByOperationOrder($supplierOrder, $key, '', '', 'order_');
 		}
 
 		$supplierOrderLine = new CommandeFournisseurLigne($object->db);
@@ -1206,7 +1206,7 @@ function _displayDialogSupplierOrder($lineid){
         );
 
 		foreach($TSupplierOrderLineFields as $key){
-			$outForm.=  _getFieldCardOutput($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
+			$outForm.=  getFieldCardOutputByOperationOrder($supplierOrderLine, $key, '', '', 'orderline_', '', '', $params);
 		}
 
 		$outForm.= '</table>';

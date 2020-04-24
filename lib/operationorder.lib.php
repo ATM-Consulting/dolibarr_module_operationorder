@@ -435,7 +435,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  * @param $showSubmitBtn bool
  * @return string
  */
-function _displayFormFields($object, $line= false, $showSubmitBtn = true, $actionURL = '')
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
 {
     global $langs, $db, $form;
 
@@ -486,7 +486,7 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true, $actio
     $outForm.= '<table class="table-full">';
     // Display each line fields
     foreach($line->fields as $key => $val){
-        $outForm.= _getFieldCardOutput($line, $key);
+        $outForm.= getFieldCardOutputByOperationOrder($line, $key);
     }
 
     if($showSubmitBtn){
@@ -531,7 +531,7 @@ function _displayFormFields($object, $line= false, $showSubmitBtn = true, $actio
  * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
  * @return string
  */
-function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
+function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
 
     global $langs, $form;
 
