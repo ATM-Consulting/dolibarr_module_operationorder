@@ -8,9 +8,10 @@ if (! $res)
 
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
 require_once __DIR__ . '/../class/unitstools.class.php';
-
+require_once __DIR__ . '/../lib/operationorder.lib.php';
 
 global $db;
+$hookmanager->initHooks(array('oorderinterface'));
 
 /*
  * Action
@@ -47,6 +48,8 @@ if(GETPOST('action'))
 	elseif($action=='getProductInfos' && !empty($user->rights->produit->lire)){
 		include_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 		$productId = GETPOST('fk_product', 'int');
+
+
 		$product = new Product($db);
 		if(!empty($productId) && $product->fetch($productId) > 0)
 		{
@@ -81,6 +84,30 @@ if(GETPOST('action'))
 
 				}
 			}
+
+			// pour les hooks avec multicompany et si besoin de faire de traitement en fonction de l'object
+			$entity = 0;
+			$element = GETPOST('element', 'aZ09');
+			$element_id = GETPOST('element_id', 'int');
+			$fromObject = false;
+
+			if(!empty($element) && !empty($element_id)){
+				$fromObject = OperationOrderObjectAutoLoad($element,$db);
+				if($fromObject && !$fromObject->fetch($element_id)){
+					$fromObject=false;
+				}
+			}
+
+			// Change view from hooks
+			$data['log'][] = 'call hook';
+			$parameters=array('data' =>& $data, 'entity'=>$entity, 'fromObject' => $fromObject);
+			$reshook=$hookmanager->executeHooks('jsonInterface',$parameters,$product, $action);    // Note that $action and $object may have been modified by hook
+			if ($reshook < 0){
+				$data['result'] = $reshook;  $data['errorMsg'] = $hookmanager->error;
+			}elseif ($reshook>0){
+				$data = $hookmanager->resArray;
+			}
+
 		}
 		else{
 			$data['result'] = 0;
