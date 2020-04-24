@@ -593,9 +593,31 @@ function _getFieldCardOutput($object, $key, $moreparam = '', $keysuffix = '', $k
     return $outForm;
 }
 
-function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $label = ''){
+/**
+ * Add line and reccursive child to an OR
+ *
+ * @param  OR   $object
+ * @param  int  $fk_product
+ * @param  int  $qty
+ * @param  int  $type
+ * @param  string  $product_desc
+ * @param  mixed   $predef
+ * @param  int	   $time_plannedhour
+ * @param  int	   $time_plannedmin
+ * @param  int	   $time_spenthour
+ * @param  int	   $time_spentmin
+ * @param  int	   $fk_warehouse
+ * @param  int	   $date_start
+ * @param  int	   $date_end
+ * @param  string  $product_label
+ * @return int > 0 if OK, < 0 if KO
+ */
+
+function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $product_label = ''){
 
     global $langs, $db, $conf;
+
+    $error = 0;
 
     $qty = price2num($qty);
     $time_planned = $time_plannedhour * 60 * 60 + $time_plannedmin * 60; // store in seconds
@@ -621,18 +643,17 @@ function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc =
         setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
         $error++;
     }
-    if (empty($fk_product) && empty($product_desc)) {
-        setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
+    if (empty($fk_product)) {
+        setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Product')), null, 'errors');
         $error++;
     }
 
-    if (empty($error) && ($qty >= 0) && (!empty($product_desc) || !empty($fk_product))) {
+    if (empty($error) && $qty >= 0 && $fk_product) {
 
-        if (!empty($fk_product)) {
             $prod = new Product($db);
             $prod->fetch($fk_product);
 
-            $label = (($label && $label != $prod->label) ? $label : '');
+            $label = (($product_label && $product_label != $prod->label) ? $product_label : '');
 
             $desc = '';
 
@@ -658,9 +679,6 @@ function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc =
             else $desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
 
             $type = $prod->type;
-        } else {
-            $desc = $product_desc;
-        }
 
         $desc = dol_htmlcleanlastbr($desc);
 
@@ -675,6 +693,7 @@ function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc =
 
             if($recusiveAddResult<0)
             {
+                $error++;
                 setEventMessage($langs->trans('ErrorsOccuredDuringLineChildrenInsert').'<br>code error: '.$recusiveAddResult.'<br>'.$object->error, 'errors');
                 if(!empty($this->errors)){
                     setEventMessages($this->errors, 'errors');
@@ -682,10 +701,15 @@ function addLineToOR ($object, $fk_product, $qty, $price, $type, $product_desc =
             }
 
             $ret = $object->fetch($object->id); // Reload to get new records
+
+            if($ret > 0) return $ret;
+            else $error++;
+
         }
     } else {
+        $error ++;
         setEventMessages($object->error, $object->errors, 'errors');
     }
 
-    return (!empty($ret)) ? $ret : 0;
+    return (!empty($error)) ? -1 : 0;
 }
