@@ -1114,7 +1114,7 @@ class OperationOrder extends SeedObject
 	}
 
 	public function recurciveAddChildLines($fk_line_parent, $fk_product, $qty){
-		global $conf, $langs;
+		global $conf, $langs, $hookmanager;
 
 		if (!empty($conf->global->PRODUIT_SOUSPRODUITS) && !empty($fk_line_parent) && !empty($fk_product))
 		{
@@ -1164,40 +1164,61 @@ class OperationOrder extends SeedObject
 								$timePlanned = ($time_plannedhour * 60 * 60 + $time_plannedmin * 60) * $newLineQty;
 							}
 
-							// Ajout de la ligne
-							$newLineRes = $this->addline(
-								'',
-								$newLineQty,
-								$childLineProduct->price,
-								$childLineProduct->fk_default_warehouse,
-								0,
-								$timePlanned,
-								0,
-								$childLineProduct->id,
-								0,
-								'',
-								'',
-								$childLineProduct->type,
-								-1,
-								0,
-								$fk_line_parent,
-								'',
-								array(),
-								'',
-								0
+							// Pas le choix de passer par un hook et pas par un trigger
+							$parameters=array(
+								'parent_product' =>& $product,
+								'product_info' => $product_info,
+								'childLineProduct' =>& $childLineProduct,
+								'fk_line_parent' => $fk_line_parent,
+								'fk_product' => $fk_product,
+								'qty' => $qty,
+								'newLineQty' => $newLineQty,
+								'nb' => $nb,
+								'timePlanned' => $timePlanned,
 							);
-
-							if($newLineRes>0){
-								$recusiveRes = $this->recurciveAddChildLines($newLineRes, $childLineProduct->id, $newLineQty);
-								if($recusiveRes<0){
-									$this->errors[] = $langs->transnoentities('RecurciveLineaddFail');
-									return -2;
-								}
+							$reshook=$hookmanager->executeHooks('recurciveAddChildLines',$parameters,$this);    // Note that $action and $object may have been modified by hook
+							if ($reshook < 0){
+								return $reshook;
+							}elseif ($reshook>0){
+								return $reshook;
 							}
-							else
-							{
-								$this->errors[] = $langs->transnoentities('LineaddFail');
-								return -1;
+							else{
+								// Ajout de la ligne
+								$newLineRes = $this->addline(
+									'',
+									$newLineQty,
+									$childLineProduct->price,
+									$childLineProduct->fk_default_warehouse,
+									0,
+									$timePlanned,
+									0,
+									$childLineProduct->id,
+									0,
+									'',
+									'',
+									$childLineProduct->type,
+									-1,
+									0,
+									$fk_line_parent,
+									'',
+									array(),
+									'',
+									0
+								);
+
+
+								if($newLineRes>0){
+									$recusiveRes = $this->recurciveAddChildLines($newLineRes, $childLineProduct->id, $newLineQty);
+									if($recusiveRes<0){
+										$this->errors[] = $langs->transnoentities('RecurciveLineaddFail');
+										return -2;
+									}
+								}
+								else
+								{
+									$this->errors[] = $langs->transnoentities('LineaddFail');
+									return -1;
+								}
 							}
 						}
 					}
