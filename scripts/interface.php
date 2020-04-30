@@ -93,7 +93,7 @@ if(GETPOST('action'))
 
 			if(!empty($element) && !empty($element_id)){
 				$fromObject = OperationOrderObjectAutoLoad($element,$db);
-				if($fromObject && !$fromObject->fetch($element_id)){
+				if($fromObject && $fromObject->fetch($element_id) <= 0){
 					$fromObject=false;
 				}
 			}
