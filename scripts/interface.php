@@ -91,10 +91,16 @@ if(GETPOST('action'))
 			$element_id = GETPOST('element_id', 'int');
 			$fromObject = false;
 
+			$data['log'][] = 'test element : '.$element.' , element_id '.$element_id;
 			if(!empty($element) && !empty($element_id)){
 				$fromObject = OperationOrderObjectAutoLoad($element,$db);
 				if($fromObject && $fromObject->fetch($element_id) <= 0){
+					$data['log'][] = 'OperationOrderObjectAutoLoad fail';
 					$fromObject=false;
+				}
+				else
+				{
+					$data['log'][] = 'OperationOrderObjectAutoLoad success';
 				}
 			}
 
