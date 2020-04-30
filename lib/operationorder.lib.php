@@ -447,7 +447,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
     else{
         $action = 'create';
         $line=new OperationOrderDet($db);
-
+		$line->fk_operation_order = $object->id;
         // set default values
         $line->qty = '';
         $line->price = '';
