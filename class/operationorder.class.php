@@ -1180,7 +1180,7 @@ class OperationOrder extends SeedObject
 							if ($reshook < 0){
 								return $reshook;
 							}elseif ($reshook>0){
-								return $reshook;
+								continue;
 							}
 							else{
 								// Ajout de la ligne
