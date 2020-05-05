@@ -435,7 +435,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  * @param $showSubmitBtn bool
  * @return string
  */
-function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '', $typeOR = false)
 {
     global $langs, $db, $form;
 
@@ -451,6 +451,13 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         // set default values
         $line->qty = '';
         $line->price = '';
+
+        if($typeOR) {
+            $OR = new OperationOrder($db);
+            $line->fields['fk_c_operationorder_type'] = $OR->fields['fk_c_operationorder_type'];
+            $line->fields['fk_c_operationorder_type']['label'] = 'Type OR';
+        }
+
     }
 
     if(empty($actionURL))
@@ -484,6 +491,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 
 
     $outForm.= '<table class="table-full">';
+
     // Display each line fields
     foreach($line->fields as $key => $val){
         $outForm.= getFieldCardOutputByOperationOrder($line, $key);
