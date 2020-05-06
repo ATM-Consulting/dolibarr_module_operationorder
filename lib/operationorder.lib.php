@@ -455,7 +455,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         if($typeOR) {
             $OR = new OperationOrder($db);
             $line->fields['fk_c_operationorder_type'] = $OR->fields['fk_c_operationorder_type'];
-            $line->fields['fk_c_operationorder_type']['label'] = 'Type OR';
+            $line->fields['fk_c_operationorder_type']['label'] = $langs->trans('OperationOrderTypeLong');
         }
 
     }
