@@ -437,7 +437,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  */
 function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '', $typeOR = false)
 {
-    global $langs, $db, $form;
+    global $langs, $db, $form, $hookmanager;
 
     $outForm = '';
 
@@ -445,6 +445,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         $action = 'edit';
     }
     else{
+
         $action = 'create';
         $line=new OperationOrderDet($db);
 		$line->fk_operation_order = $object->id;
@@ -452,12 +453,11 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         $line->qty = '';
         $line->price = '';
 
-        if($typeOR) {
-            $OR = new OperationOrder($db);
-            $line->fields['fk_c_operationorder_type'] = $OR->fields['fk_c_operationorder_type'];
-            $line->fields['fk_c_operationorder_type']['label'] = $langs->trans('OperationOrderTypeLong');
-        }
+        $parameters['line'] = $line;
 
+        $reshook = $hookmanager->executeHooks('addFieldsByOperationOrder', $parameters, $object, $action);
+
+        if($reshook > 0) $line = $hookmanager->resArray['line'];
     }
 
     if(empty($actionURL))
