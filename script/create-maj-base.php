@@ -90,6 +90,7 @@ foreach ($TAgendaTriggers as $agendaTrigger){
 }
 
 dol_include_once('/operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationorderaction.class.php');
 
 $o=new OperationOrder($db);
 $o->init_db_by_vars();
@@ -107,6 +108,9 @@ $o=new OperationOrderStatusUserGroupRight($db);
 $o->init_db_by_vars();
 
 $o=new OperationOrderStatusTarget($db);
+$o->init_db_by_vars();
+
+$o=new OperationOrderAction($db);
 $o->init_db_by_vars();
 
 // Multientity patch
