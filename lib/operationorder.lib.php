@@ -604,7 +604,7 @@ function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $key
 /**
  * Add line and reccursive child to an OR
  *
- * @param  OR   $object
+ * @param  OperationOrder  $object
  * @param  int  $fk_product
  * @param  int  $qty
  * @param  int  $type

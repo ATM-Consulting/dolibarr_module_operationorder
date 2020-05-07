@@ -42,6 +42,7 @@ $time_plannedmin 	= intval(GETPOST('time_plannedmin', 'int'));
 $time_spenthour 	= intval(GETPOST('time_spenthour', 'int'));
 $time_spentmin 		= intval(GETPOST('time_spentmin', 'int'));
 
+$predef = '';
 
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');

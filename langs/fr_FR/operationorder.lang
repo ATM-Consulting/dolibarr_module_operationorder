@@ -95,6 +95,7 @@ operationorder_read=Peut voir les ordres de réparation
 operationorder_write=Peut créer et modifier les ordres de réparations
 operationorder_status_read=Peut consulter les différents status d'ordres de réparation
 operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
+operationorder_planning_read=Peut consulter le planning des ordres de réparations
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -181,3 +182,7 @@ Multicompany=Options du module multi sociétés
 PdfCustomOrderTitle=Ordre de réparation
 OperationOrderDate=Date
 PDFolafDescription=Modèle standard des ordres de réparations
+
+# Planning
+LeftMenuOperationOrderPlanning=Planification
+OperationOrderPlanning=Planification des ordres de réparation
