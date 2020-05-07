@@ -108,9 +108,10 @@ if (empty($reshook))
 	switch ($action) {
 		case 'add':
 		case 'update':
-
+            $planable = GETPOST('planable');
 			$object->edit = 0;
 			$object->setValues($_REQUEST); // Set standard attributes
+            if(empty($planable)) $object->planable = 0; // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 
 			$object->TGroupCan = $TGroupCan;
 			$object->TStatusAllowed =$TStatusAllowed;

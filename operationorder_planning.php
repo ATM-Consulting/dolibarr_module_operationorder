@@ -1,6 +1,7 @@
 <?php
 
 require 'config.php';
+dol_include_once('/operationorder/class/operationorder.class.php');
 
 if(empty($user->rights->operationorder->planning->read)) accessforbidden();
 
@@ -27,7 +28,11 @@ $TIncludeJS = array(
     '/operationorder/vendor/fullcalendar-4.4.0/packages/interaction/main.js',
     '/operationorder/vendor/fullcalendar-4.4.0/packages/timegrid/main.js'
 );
+$langs->loadLangs(array('operationorder@operationorder'));
 
+$title = $langs->trans("OperationOrderPlanning");
+//if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
+$help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 ?>
     <script>
@@ -53,7 +58,7 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 
                 businessHours: {
                     // days of week. an array of zero-based day of week integers (0=Sunday)
-                    daysOfWeek: [1, 2, 3, 4, 5 ], // Monday - Friday
+                    daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
 
                     startTime: '8:00', // a start time (10am in this example)
                     endTime: '18:00', // an end time (6pm in this example)
@@ -68,16 +73,34 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                 height: 'auto',
                 editable: true,
                 selectable: true,
-                selectMirror: true
-            });
+                selectMirror: true,
 
+                select: function (selectionInfo) {
+                    let startTimestamp = Math.floor(selectionInfo.start.getTime()/1000);
+                    let endTimestamp = Math.floor(selectionInfo.end.getTime()/1000);
+                    $.ajax({
+                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php?action=getFormDialogPlanable', 1); ?>',
+                        method: 'POST',
+                        data: {
+                            'url' : window.location.href,
+                            'startTime' : startTimestamp,
+                            'endTime' : endTimestamp,
+                            'allDay' : selectionInfo.allDay
+                        },
+                        dataType: 'json',
+                        // La fonction à apeller si la requête aboutie
+                        success: function (data) {
+                            $('#dialog-add-event').append(data.result);
+                        }
+                    });
+                }
+            });
             calendar.render();
         });
-
     </script>
 <?php
 print '<div id="calendar"></div>';
+print '<div id="dialog-add-event"></div>';
 
 llxFooter();
-
 

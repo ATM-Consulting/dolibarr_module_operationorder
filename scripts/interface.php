@@ -9,7 +9,8 @@ if (! $res)
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
 require_once __DIR__ . '/../class/unitstools.class.php';
 require_once __DIR__ . '/../lib/operationorder.lib.php';
-
+require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
+dol_include_once('/operationorder/class/operationorder.class.php');
 global $db;
 $hookmanager->initHooks(array('oorderinterface'));
 
@@ -119,10 +120,31 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
+	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
+
 }
 
 echo json_encode($data);
 
+
+
+function _getFormDialogPlanable($startTime, $endTime, $allDay, $url) {
+    global $db;
+    $TPlanableOO = OperationOrder::getAllOOPlanableLabel();
+    $outForm = '<form name="create-supplier-order-form" action="' . $url .'" method="POST">' . "\n";
+    $outForm.= '<input type="hidden" name="token" value="' . newToken() . '">' . "\n";
+    $outForm.= '<input type="hidden" name="startTime" value="' . $startTime . '">' . "\n";
+    $outForm.= '<input type="hidden" name="endTime" value="' . $endTime . '">' . "\n";
+    $outForm.= '<input type="hidden" name="allDay" value="' . $allDay . '">' . "\n";
+    $outForm.= '<input type="hidden" name="action" value="create-event">' . "\n";
+    $form = new Form($db);
+    $outForm.= $form->selectarray('operationorder', $TPlanableOO, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1);
+
+    $outForm .='</form>';
+
+
+    return $outForm;
+}
 
 /**
  * @param $operationOrderId
