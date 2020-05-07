@@ -27,9 +27,8 @@ class OperationOrderAction extends SeedObject
     public $picto = 'operationorder@operationorder';
 
     public $fields=array(
-        'date_operationorder' => array('type'=>'date', 'label'=>'Date', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1,),
-        'heured' => array('type'=>'datetime', 'label'=>'DateD', 'enabled'=>1, 'position'=>20, 'notnull'=>1, 'visible'=>1,),
-        'heurf' => array('type'=>'datetime', 'label'=>'DateF', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1,),
+        'dated' => array('type'=>'date', 'label'=>'DateD', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1,),
+        'datef' => array('type'=>'date', 'label'=>'DateF', 'enabled'=>1, 'position'=>20, 'notnull'=>1, 'visible'=>1,),
         'note_private' => array('type'=>'text', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
         'fk_operationorder' => array('type'=>'integer:OperationOrder:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrder', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'operationorder.rowid',),
         'fk_user_author' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'foreignkey'=>'user.rowid',),
@@ -38,11 +37,9 @@ class OperationOrderAction extends SeedObject
 
     public $fk_operationorder;
 
-    public $date_operationorder;
+    public $dated;
 
-    public $heured;
-
-    public $heuref;
+    public $datef;
 
     public $note_private;
 
