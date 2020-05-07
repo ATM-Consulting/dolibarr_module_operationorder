@@ -435,7 +435,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  * @param $showSubmitBtn bool
  * @return string
  */
-function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '', $typeOR = false)
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
 {
     global $langs, $db, $form, $hookmanager;
 
