@@ -203,7 +203,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 			operationorderneweventmodal.dialog({
                 autoOpen: false,
                 buttons: {
-                    "Create": function() {
+                    "<?php echo $langs->transnoentitiesnoconv('Create')?>": function() {
                         $('#dialog-add-event').find("form").submit();
                     }
                 },
@@ -245,7 +245,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
     </script>
 <?php
 print '<div id="calendar"></div>';
-print '<div id="dialog-add-event"></div>';
+print '<div id="dialog-add-event" title="'.$langs->trans('CreateNewORAction').'"></div>';
 
 llxFooter();
 
