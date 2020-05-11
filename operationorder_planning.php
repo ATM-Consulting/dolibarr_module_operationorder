@@ -2,6 +2,8 @@
 
 require 'config.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationorderaction.class.php');
+
 
 if(empty($user->rights->operationorder->planning->read)) accessforbidden();
 
@@ -29,6 +31,19 @@ $TIncludeJS = array(
     '/operationorder/vendor/fullcalendar-4.4.0/packages/timegrid/main.js'
 );
 $langs->loadLangs(array('operationorder@operationorder'));
+
+$action = GETPOST('action');
+$id_operationorder = GETPOST('operationorder');
+
+if($action == 'create-event'){
+    if(!empty($id_operationorder)){
+
+        $action_or = new OperationOrderAction($db);
+
+        var_dump($_POST); exit;
+
+    }
+}
 
 $title = $langs->trans("OperationOrderPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
@@ -95,14 +110,14 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 
 				eventRender: function(info) {
 
-					$(info.el).popover('destroy');
+					// $(info.el).popover('destroy');
 
-					$(info.el).popover({
-						title: info.event.title ,
-						content: info.event.extendedProps.msg,
-						html: true,
-						trigger: "hover"
-					});
+					// $(info.el).popover({
+					// 	title: info.event.title ,
+					// 	content: info.event.extendedProps.msg,
+					// 	html: true,
+					// 	trigger: "hover"
+					// });
 
 				},
 				eventSources: [
@@ -162,10 +177,21 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                         // La fonction à apeller si la requête aboutie
                         success: function (data) {
                             $('#dialog-add-event').append(data.result);
+
+                            $('#dialog-add-event').dialog({
+                                buttons: {
+                                    "Create": function() {
+                                        $('#dialog-add-event').find("form").submit();
+                                    }
+                                },
+                                close: function( event, ui ) {
+                                    // calendar.refetchEvents();
+                                }
+                            });
                         }
                     });
 
-					newEventModal(info.startStr, info.endStr);
+					// newEventModal(info.startStr, info.endStr);
                 },
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
