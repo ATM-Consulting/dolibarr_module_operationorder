@@ -243,7 +243,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                     dataType: 'json',
                     // La fonction à apeller si la requête aboutie
                     success: function (data) {
-                        operationorderneweventmodal.close();
+                        operationorderneweventmodal.dialog('close');
                         calendar.refetchEvents();
                     }
                 });
