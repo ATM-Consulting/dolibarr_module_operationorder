@@ -80,23 +80,33 @@ $title = $langs->trans("OperationOrderPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
 $help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
+
+// test user event création right
+$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+$statusAllowed = new OperationOrderStatus($db);
+$res = $statusAllowed->fetch($fk_status);
+$userCanCreateEvent = 0;
+if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+	$userCanCreateEvent = 1;
+}
+
 ?>
     <script>
 
 		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
-		fullcalendarscheduler_initialLangCode = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs); ?>";
-		fullcalendarscheduler_snapDuration = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'); ?>";
-		fullcalendarscheduler_aspectRatio = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'); ?>";
-		fullcalendarscheduler_minTime = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'); ?>";
-		fullcalendarscheduler_maxTime = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '23:00'); ?>";
+		fullcalendarscheduler_initialLangCode = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs; ?>";
+		fullcalendarscheduler_snapDuration = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'; ?>";
+		fullcalendarscheduler_aspectRatio = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'; ?>";
+		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
+		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '23:00'; ?>";
 
+		fullcalendar_scheduler_businessHours_week_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
+		fullcalendar_scheduler_businessHours_week_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
 
-		fullcalendar_scheduler_businessHours_week_start = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
-		fullcalendar_scheduler_businessHours_week_end = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
+		fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
+		fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
 
-		fullcalendar_scheduler_businessHours_weekend_start = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
-		fullcalendar_scheduler_businessHours_weekend_end = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
-
+		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
 
 		document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
@@ -116,9 +126,9 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 					right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
 				},
 				editable: false, // next step add rights and allow edition
-				selectable: true,
-				minTime: '05:00:00',
-				maxTime: '21:00:00',
+				selectable: userCanCreateEvent,
+				minTime: fullcalendarscheduler_minTime,
+				maxTime: fullcalendarscheduler_maxTime,
 				scrollTime: '10:00:00',
 				height: 'auto',
 				selectMirror: true,
@@ -129,8 +139,8 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                     // days of week. an array of zero-based day of week integers (0=Sunday)
                     daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
 
-                    startTime: '8:00', // a start time (10am in this example)
-                    endTime: '18:00', // an end time (6pm in this example)
+                    startTime: fullcalendar_scheduler_businessHours_week_start, // a start time (10am in this example)
+                    endTime: fullcalendar_scheduler_businessHours_week_end, // an end time (6pm in this example)
                 },
 
 				eventRender: function(info) {
