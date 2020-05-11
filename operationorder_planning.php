@@ -183,21 +183,10 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                         // La fonction à apeller si la requête aboutie
                         success: function (data) {
                             $('#dialog-add-event').html(data.result);
+                            operationorderneweventmodal.dialog("open");
 
-                            $('#dialog-add-event').dialog({
-                                buttons: {
-                                    "Create": function() {
-                                        $('#dialog-add-event').find("form").submit();
-                                    }
-                                },
-                                close: function( event, ui ) {
-                                    calendar.refetchEvents();
-                                }
-                            });
                         }
                     });
-
-					// newEventModal(info.startStr, info.endStr);
                 },
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
@@ -211,15 +200,28 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
 			calendar.render();
 
+			// function newEventModal(start, end = 0){
+			// 	// console.log(start);
+			// 	// $("#dialog-add-event").html("title");
+			// 	// $("#dialog-add-event").modal();
+			// }
 
+            //Définition de la boite de dialog "Créer un nouvel événement OR"
+            var operationorderneweventmodal = $('#dialog-add-event');
 
-			function newEventModal(start, end = 0){
-				// console.log(start);
-				// $("#dialog-add-event").html("title");
-				// $("#dialog-add-event").modal();
-			}
+			operationorderneweventmodal.dialog({
+                autoOpen: false,
+                buttons: {
+                    "Create": function() {
+                        $('#dialog-add-event').find("form").submit();
+                    }
+                },
+                close: function( event, ui ) {
+                    calendar.refetchEvents();
+                }
+            });
 
-
+			//Action ajax d'ajout d'un événement lors de la soumission du formulaire
             $(document).on("submit", "#create-operation-order-action", function(e) {
 
                 e.preventDefault();
@@ -241,6 +243,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                     dataType: 'json',
                     // La fonction à apeller si la requête aboutie
                     success: function (data) {
+                        operationorderneweventmodal.close();
                         calendar.refetchEvents();
                     }
                 });
