@@ -124,6 +124,9 @@ _printFormPart($confkey, $inputHtml);
 $confkey = 'OPODER_STATUS_';
 _printFormPart($confkey, $inputHtml);*/
 
+$confkey = 'OPODER_STATUS_ON_PLANNED';
+$inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
+_printFormPart($confkey, $inputHtml);
 
 
 
