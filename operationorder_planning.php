@@ -164,14 +164,12 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                             $('#dialog-add-event').append(data.result);
                         }
                     });
+
+					newEventModal(info.startStr, info.endStr);
                 },
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
 				},
-
-				select: function(info) {
-					newEventModal(info.startStr, info.endStr);
-				}
             });
 
 			// refresh event on modal close
