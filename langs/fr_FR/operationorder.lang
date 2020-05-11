@@ -72,7 +72,8 @@ OperationOrderStatusShortDisabled=Désactivé
 ErrorLoadingStatus=Erreur : aucun statut actif détecté, cela signifie généralement que la configuration des statuts n'est pas terminée
 DisplayOnPlanningHelp=Afficher les ordres de réparation sur ce statut dans le panning
 DisplayOnPlanning=Afficher les ordres de réparation sur ce statut dans le panning
-
+CleanEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, supprimer la plannification existante de l'OR
+CleanEventOnThisStatusHelp=Utile pour déplanifier un ordre de réparation
 
 NewStatus=Nouveau statut
 NoOperationOrderStatus=Pas de statut

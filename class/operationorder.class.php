@@ -597,12 +597,13 @@ class OperationOrder extends SeedObject
 
 		$error = 0;
 
+		$this->loadStatusObj();
 
-		$status = new OperationOrderStatus($this->db);
-		$res = $status->fetch($this->status);
-		if($res>0)
+		$newStatus = new OperationOrderStatus($this->db);
+		$resNewStatus = $newStatus->fetch($fk_status);
+		if($resNewStatus>0)
 		{
-			if($status->checkStatusTransition($user, $fk_status))
+			if($this->objStatus->checkStatusTransition($user, $fk_status))
 			{
 				$this->status = intval($fk_status);
 				$this->withChild = false;
@@ -622,6 +623,13 @@ class OperationOrder extends SeedObject
 
 				if ($this->db->query($sql))
 				{
+					if(!empty($newStatus->clean_event)){
+						if(!$this->db->query("DELETE FROM ".MAIN_DB_PREFIX.'operationorderaction WHERE fk_operationorder = '.$this->id)){
+							$this->error = 'Error cleaning operation order events';
+							$error++;
+						}
+					}
+
 					if (!$error)
 					{
 						$this->oldcopy = clone $this;
@@ -634,7 +642,6 @@ class OperationOrder extends SeedObject
 					}
 
 					if (!$error) {
-						$this->status = $status;
 						$this->db->commit();
 						$ret = 1;
 					} else {
@@ -648,7 +655,6 @@ class OperationOrder extends SeedObject
 					$this->db->rollback();
 					$ret = -1;
 				}
-
 
 				if($ret  > 0 )
 				{
