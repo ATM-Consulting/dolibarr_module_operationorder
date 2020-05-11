@@ -60,12 +60,16 @@ if($action == 'create-event'){
 
         if($res)
         {
-            if ($user->rights->operationorder->status->write)
-            {
-                $res = $operationorder->setStatus($user, $conf->global->OPODER_STATUS_ON_PLANNED);
+			$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
 
-                if ($res < 0) $error++;
-            }
+			$statusAllowed = new OperationOrderStatus($db);
+			$res = $statusAllowed->fetch($fk_status);
+			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+				$res = $operationorder->setStatus($user, $fk_status);
+				if ($res < 0) $error++;
+			}else{
+				//setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
+			}
         } else {
             $error ++;
         }
