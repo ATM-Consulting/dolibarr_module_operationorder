@@ -339,8 +339,8 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	$sOperationOrderAction = new OperationOrderAction($db); // a static usage of OperationOrderAction class
 	$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderAction class
 
-	$langs->load("operationorder@operationorder");
 
+	$langs->loadLangs(array('operationorder@operationorder', 'orders', 'companies', 'bills', 'products', 'other'));
 
 	$TRes = array();
 
@@ -392,14 +392,19 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 			$T = array();
 
+			$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc');
+
 			foreach ($operationOrder->fields as $fieldKey => $field){
-				$T[$fieldKey] = $operationOrder->showOutputFieldQuick($fieldKey);
+				if(!in_array($fieldKey, $TFieldForTooltip)) continue;
+
+				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$operationOrder->showOutputFieldQuick($fieldKey);
 			}
 
 			$event->msg.= implode('<br/>',$T);
 
 			$parameters= array(
 				'sqlObj' => $obj,
+				'operationOrder' => $operationOrder,
 				'T' => $T
 			);
 

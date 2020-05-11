@@ -75,7 +75,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
 
-				plugins: [ 'interaction', 'dayGrid', 'timeGrid', 'list', 'rrule' ],
+				plugins: [ 'interaction', 'dayGrid', 'timeGrid'], // , 'list', 'rrule'
 				defaultDate: '<?php print date('Y-m-d'); ?>',
 				defaultView: 'timeGridWeek',
 				snapDuration: fullcalendarscheduler_snapDuration,
@@ -107,15 +107,24 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
 				eventRender: function(info) {
 
-					// $(info.el).popover('destroy');
+					$(info.el).attr('title', info.event.extendedProps.msg);
 
-					// $(info.el).popover({
-					// 	title: info.event.title ,
-					// 	content: info.event.extendedProps.msg,
-					// 	html: true,
-					// 	trigger: "hover"
-					// });
-
+					$(info.el).tooltip({
+						//track: true,
+						show: {
+							collision: "flipfit",
+							effect:'toggle',
+							delay:50
+						},
+						hide: {
+							delay: 250
+						},
+						container: "body",
+						tooltipClass: "mytooltip",
+						content: function () {
+							return this.getAttribute("title");
+						}
+					});
 				},
 				eventSources: [
 					{
