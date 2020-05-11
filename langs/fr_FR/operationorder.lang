@@ -191,3 +191,4 @@ LeftMenuOperationOrderPlanning=Planification
 OperationOrderPlanning=Planification des ordres de réparation
 Planable=Planifiable
 PlanableHelp=Les ordres de réparations ayant ce statut seront sélectionnables lors de la création dans la vue planification
+CreateNewORAction=Créer un nouvel événement OR
