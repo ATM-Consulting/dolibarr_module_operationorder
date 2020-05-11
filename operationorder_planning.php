@@ -38,44 +38,6 @@ $startTime = GETPOST('startTime');
 $endTime = GETPOST('endTime');
 $allDay = GETPOST('allDay');
 
-if($action == 'create-event'){
-
-    global $user;
-
-    $error = 0;
-
-    if(!empty($id_operationorder)){
-
-        $action_or = new OperationOrderAction($db);
-
-        $action_or->dated = $startTime;
-        $action_or->datef = $endTime;
-        $action_or->fk_operationorder = $id_operationorder;
-        $action_or->fk_user_author = $user->id;
-
-        $res = $action_or->save($user);
-
-        $operationorder = new OperationOrder($db);
-        $res = $operationorder->fetch($id_operationorder);
-
-        if($res)
-        {
-			$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
-
-			$statusAllowed = new OperationOrderStatus($db);
-			$res = $statusAllowed->fetch($fk_status);
-			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
-				$res = $operationorder->setStatus($user, $fk_status);
-				if ($res < 0) $error++;
-			}else{
-				//setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
-			}
-        } else {
-            $error ++;
-        }
-    }
-}
-
 $title = $langs->trans("OperationOrderPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
 $help_url = '';
@@ -220,7 +182,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                                     }
                                 },
                                 close: function( event, ui ) {
-                                    // calendar.refetchEvents();
+                                    calendar.refetchEvents();
                                 }
                             });
                         }
@@ -247,6 +209,35 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				// $("#dialog-add-event").html("title");
 				// $("#dialog-add-event").modal();
 			}
+
+
+            $(document).on("submit", "#create-operation-order-action", function(e) {
+
+                e.preventDefault();
+
+                var formData = {
+                    'startTime' : $('input[name=startTime]').val(),
+                    'endTime'   : $('input[name=endTime]').val(),
+                    'allDay'    : $('input[name=allDay]').val(),
+                    'operationorder' : $('select[name=operationorder]').val()
+                };
+
+                $.ajax({
+                    url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=createOperationOrderAction',
+                    method: 'POST',
+                    data: {
+                        'url' : window.location.href,
+                        'data' : formData
+                    },
+                    dataType: 'json',
+                    // La fonction à apeller si la requête aboutie
+                    success: function (data) {
+                        calendar.refetchEvents();
+                    }
+                });
+
+            });
+
         });
     </script>
 <?php

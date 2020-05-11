@@ -135,17 +135,18 @@ if(GETPOST('action'))
 		}
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
-
+	elseif ($action='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
 }
 
 echo json_encode($data);
 
 
 
-function _getFormDialogPlanable($startTime, $endTime, $allDay, $url) {
-    global $db;
+function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action') {
+    global $db, $langs;
+
     $TPlanableOO = OperationOrder::getAllOOPlanableLabel();
-    $outForm = '<form name="create-supplier-order-form" action="' . $url .'" method="POST">' . "\n";
+    $outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
     $outForm.= '<input type="hidden" name="token" value="' . newToken() . '">' . "\n";
     $outForm.= '<input type="hidden" name="startTime" value="' . $startTime . '">' . "\n";
     $outForm.= '<input type="hidden" name="endTime" value="' . $endTime . '">' . "\n";
@@ -153,11 +154,62 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url) {
     $outForm.= '<input type="hidden" name="action" value="create-event">' . "\n";
     $form = new Form($db);
     $outForm.= $form->selectarray('operationorder', $TPlanableOO, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1);
+//    $outForm.= '<button type="submit" class="butAction">'.$langs->trans('Create').'</button>';
 
     $outForm .='</form>';
 
 
     return $outForm;
+}
+
+function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
+
+    global $langs, $db, $user, $conf;
+
+    dol_include_once('/operationorder/class/operationorder.class.php');
+    dol_include_once('/operationorder/class/operationorderaction.class.php');
+
+    $error = 0;
+
+    if(!empty($id_operationorder))
+    {
+        $action_or = new OperationOrderAction($db);
+
+        $action_or->dated = $startTime;
+        $action_or->datef = $endTime;
+        $action_or->fk_operationorder = $id_operationorder;
+        $action_or->fk_user_author = $user->id;
+
+        $res = $action_or->save($user);
+
+        $operationorder = new OperationOrder($db);
+        $res = $operationorder->fetch($id_operationorder);
+
+        if ($res)
+        {
+            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+
+            $statusAllowed = new OperationOrderStatus($db);
+            $res = $statusAllowed->fetch($fk_status);
+            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
+            {
+                $res = $operationorder->setStatus($user, $fk_status);
+
+                return true;
+            }
+            else
+            {
+                //setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
+            }
+        }
+        else
+        {
+            $error++;
+        }
+    } else {
+        $error++;
+    }
+
 }
 
 /**
