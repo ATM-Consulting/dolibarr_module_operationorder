@@ -42,6 +42,8 @@ if($action == 'create-event'){
 
     global $user;
 
+    $error = 0;
+
     if(!empty($id_operationorder)){
 
         $action_or = new OperationOrderAction($db);
@@ -52,6 +54,21 @@ if($action == 'create-event'){
         $action_or->fk_user_author = $user->id;
 
         $res = $action_or->save($user);
+
+        $operationorder = new OperationOrder($db);
+        $res = $operationorder->fetch($id_operationorder);
+
+        if($res)
+        {
+            if ($user->rights->operationorder->status->write)
+            {
+                $res = $operationorder->setStatus($user, $conf->global->OPODER_STATUS_ON_PLANNED);
+
+                if ($res < 0) $error++;
+            }
+        } else {
+            $error ++;
+        }
     }
 }
 
@@ -186,7 +203,7 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                         dataType: 'json',
                         // La fonction à apeller si la requête aboutie
                         success: function (data) {
-                            $('#dialog-add-event').append(data.result);
+                            $('#dialog-add-event').html(data.result);
 
                             $('#dialog-add-event').dialog({
                                 buttons: {
