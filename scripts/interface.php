@@ -28,7 +28,7 @@ if(GETPOST('action'))
 {
 	$action = GETPOST('action');
 
-	if ($action == "getSessionAgenda") {
+	if ($action == "getPlannedOperationOrder") {
 		// Parse the start/end parameters.
 		// These are assumed to be ISO8601 strings with no time nor timeZone, like "2013-12-29".
 		// Since no timeZone will be present, they will parsed as UTC.
@@ -39,7 +39,6 @@ if(GETPOST('action'))
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
 		print _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
-
 
 		exit;
 	}
@@ -293,8 +292,8 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 	$TRes = array();
 
-	$sql = 'SELECT o.rowid id, a.dated, a.datef  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
-	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = a.fk_operationorder) ';
+	$sql = 'SELECT o.rowid id, oa.dated, oa.datef  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
+	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
 	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
 
 	$sql.= ' WHERE 1 = 1 ';
