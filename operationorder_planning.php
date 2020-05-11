@@ -113,6 +113,12 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 				},
 				editable: false, // next step add rights and allow edition
 				selectable: true,
+				locale: '<?php echo $langjs; ?>',
+				minTime: '05:00:00',
+				maxTime: '21:00:00',
+				scrollTime: '10:00:00',
+				height: 'auto',
+				selectMirror: true,
 				locale: fullcalendarscheduler_initialLangCode,
 				eventLimit: true, // allow "more" link when too many events
 
@@ -123,17 +129,6 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                     startTime: '8:00', // a start time (10am in this example)
                     endTime: '18:00', // an end time (6pm in this example)
                 },
-
-                plugins: ['timeGrid', 'interaction'],
-                defaultView: 'timeGridWeek',
-                locale: '<?php echo $langjs; ?>',
-                minTime: '05:00:00',
-                maxTime: '21:00:00',
-                scrollTime: '10:00:00',
-                height: 'auto',
-                editable: true,
-                selectable: true,
-                selectMirror: true,
 
 				eventRender: function(info) {
 
