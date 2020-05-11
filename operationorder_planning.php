@@ -113,7 +113,6 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 				},
 				editable: false, // next step add rights and allow edition
 				selectable: true,
-				locale: '<?php echo $langjs; ?>',
 				minTime: '05:00:00',
 				maxTime: '21:00:00',
 				scrollTime: '10:00:00',
