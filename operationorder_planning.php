@@ -62,7 +62,7 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 ?>
     <script>
 
-		operationOrderInterfaceUrl = "<?php print dol_buildpath('operationorder/script/interface.php'); ?>?action=getPlannedOperationOrder";
+		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
 		fullcalendarscheduler_initialLangCode = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs); ?>";
 		fullcalendarscheduler_snapDuration = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'); ?>";
 		fullcalendarscheduler_aspectRatio = "<?php (!empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'); ?>";
@@ -175,7 +175,7 @@ llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
                     let startTimestamp = Math.floor(selectionInfo.start.getTime()/1000);
                     let endTimestamp = Math.floor(selectionInfo.end.getTime()/1000);
                     $.ajax({
-                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php?action=getFormDialogPlanable', 1); ?>',
+                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
                         method: 'POST',
                         data: {
                             'url' : window.location.href,
