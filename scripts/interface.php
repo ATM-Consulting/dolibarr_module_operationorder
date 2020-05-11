@@ -275,7 +275,7 @@ function _statusRank(&$data)
  * @param string $agendaType not used yet for multiple source type
  * @return false|string
  */
-function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'default'){
+function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanned'){
 
 	global $db, $hookmanager, $langs, $user;
 
