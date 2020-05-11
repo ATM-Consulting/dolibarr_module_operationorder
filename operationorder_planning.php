@@ -34,14 +34,24 @@ $langs->loadLangs(array('operationorder@operationorder'));
 
 $action = GETPOST('action');
 $id_operationorder = GETPOST('operationorder');
+$startTime = GETPOST('startTime');
+$endTime = GETPOST('endTime');
+$allDay = GETPOST('allDay');
 
 if($action == 'create-event'){
+
+    global $user;
+
     if(!empty($id_operationorder)){
 
         $action_or = new OperationOrderAction($db);
 
-        var_dump($_POST); exit;
+        $action_or->dated = $startTime;
+        $action_or->datef = $endTime;
+        $action_or->fk_operationorder = $id_operationorder;
+        $action_or->fk_user_author = $user->id;
 
+        $res = $action_or->save($user);
     }
 }
 
