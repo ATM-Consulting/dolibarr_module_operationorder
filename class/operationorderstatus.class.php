@@ -105,15 +105,25 @@ class OperationOrderStatus extends SeedObject
 			'label'=>'Color', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1,
 			'default' => '#3c8dbc'
 		),
-        'planable' => array(
+		'planable' => array(
 			'type'=>'boolean',
-            'label'=>'Planable',
-            'enabled'=>1,
-            'position'=>35,
-            'visible'=>1,
-            'required'=>0,
-            'default'=>0,
-            'help'=>'PlanableHelp'
+			'label'=>'Planable',
+			'enabled'=>1,
+			'position'=>35,
+			'visible'=>1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'PlanableHelp'
+		),
+		'display_on_planning' => array(
+			'type'=>'boolean',
+			'label'=>'DisplayOnPlanning',
+			'enabled'=>1,
+			'position'=>345,
+			'visible'=>1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'DisplayOnPlanningHelp'
 		),
 //		'edit' => array(
 //			'type'=>'smallint',

@@ -28,7 +28,22 @@ if(GETPOST('action'))
 {
 	$action = GETPOST('action');
 
-	if($action=='setOperationOrderlevelHierarchy'){
+	if ($action == "getSessionAgenda") {
+		// Parse the start/end parameters.
+		// These are assumed to be ISO8601 strings with no time nor timeZone, like "2013-12-29".
+		// Since no timeZone will be present, they will parsed as UTC.
+
+		$timeZone = GETPOST('timeZone');
+		$agendaType = GETPOST('agendaType');
+		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
+		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
+
+		print _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+
+
+		exit;
+	}
+	elseif($action=='setOperationOrderlevelHierarchy'){
 		if (! $user->rights->operationorder->write){
 			$data['result'] = -1; // by default if no action result is false
 			$data['errorMsg'] = $langs->trans("ErrorForbidden"); // default message for errors
@@ -41,7 +56,7 @@ if(GETPOST('action'))
 			}
 		}
 	}
-	if($action=='statusRank'){
+	elseif($action=='statusRank'){
 		require_once __DIR__ . '/../class/operationorderstatus.class.php';
 		$data['msg'] = 'UpdateStatus';
 		_statusRank($data);
@@ -251,4 +266,107 @@ function _statusRank(&$data)
 	else{
 		$data['errorMsg'] = $langs->trans('StatusOrderListEmpty'); // default message for errors
 	}
+}
+
+
+/**
+ * @param int $start
+ * @param int $end
+ * @param string $agendaType not used yet for multiple source type
+ * @return false|string
+ */
+function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'default'){
+
+	global $db, $hookmanager, $langs, $user;
+
+
+	dol_include_once('/operationorder/class/operationorder.class.php');
+	dol_include_once('/operationorder/class/operationorderaction.class.php');
+	dol_include_once('/operationorder/class/operationorderstatus.class.php');
+
+	$sOperationOrder = new OperationOrder($db); // a static usage of operation order class
+	$sOperationOrderAction = new OperationOrderAction($db); // a static usage of OperationOrderAction class
+	$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderAction class
+
+	$langs->load("operationorder@operationorder");
+
+
+	$TRes = array();
+
+	$sql = 'SELECT o.rowid id, a.dated, a.datef  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
+	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = a.fk_operationorder) ';
+	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
+
+	$sql.= ' WHERE 1 = 1 ';
+
+	if(!empty($start)){
+		$sql.= ' AND oa.dated <= \''.date('Y-m-d H:i:s', $end).'\'';
+	}
+
+	if(!empty($start)){
+		$sql.= ' AND oa.datef >= \''.date('Y-m-d H:i:s', $start).'\'';
+	}
+
+	$sql.= ' AND o.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  display_on_planning > 0 ) ';
+
+	$resql = $db->query($sql);
+
+	if ($resql)
+	{
+		while ($obj = $db->fetch_object($resql))
+		{
+			$event = new stdClass();
+
+			$operationOrder = new OperationOrder($db);
+			$operationOrder->fetch($obj->id);
+
+			$event->title	= $operationOrder->ref;
+
+			$obj->dated = $db->jdate($obj->dated);
+			$obj->datef = $db->jdate($obj->datef);
+
+
+			$event->url		= dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$operationOrder->id;
+			$event->start	= date('c', $obj->dated);
+			$event->end		= date('c', $obj->datef);
+
+			$event->msg = '';
+
+			$event->color = $operationOrder->objStatus->color;
+
+
+			if($db->jdate($obj->datef) < time()){
+				$event->color = OO_colorLighten($event->color, 10);
+			}
+
+			$T = array();
+
+			foreach ($operationOrder->fields as $fieldKey => $field){
+				$T[$fieldKey] = $operationOrder->showOutputFieldQuick($fieldKey);
+			}
+
+			$event->msg.= implode('<br/>',$T);
+
+			$parameters= array(
+				'sqlObj' => $obj,
+				'T' => $T
+			);
+
+			$reshook=$hookmanager->executeHooks('operationorderplanning',$parameters,$event);    // Note that $action and $object may have been modified by hook
+
+			if ($reshook>0)
+			{
+				$event = $hookmanager->resArray;
+			}
+
+
+			$TRes[] = $event;
+		}
+	}
+	else
+	{
+		dol_print_error($db);
+	}
+
+	return json_encode($TRes);
 }
