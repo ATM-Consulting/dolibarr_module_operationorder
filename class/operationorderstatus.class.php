@@ -123,7 +123,7 @@ class OperationOrderStatus extends SeedObject
 //			'position'=>30,
 //			'visible'=>1
 //		),
-		'rank' => array(
+		'rang' => array(
 			'type'=>'int',
 			'label'=>'Rank',
 			'help' => 'RankHelp',
@@ -341,7 +341,7 @@ class OperationOrderStatus extends SeedObject
 		else{
 			$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE status = 1 ';
 			if ($force_entity>0) $sql .= " AND entity IN (0,".intval($force_entity).") ";
-			$sql.= ' ORDER BY rank ASC LIMIT 1 ;';
+			$sql.= ' ORDER BY rang ASC LIMIT 1 ;';
 			$resql = $this->db->query($sql);
 			if($resql){
 				$row = $this->db->fetch_object($resql);
@@ -815,7 +815,7 @@ class OperationOrderStatus extends SeedObject
 			}
 		}
 
-		$sql.= ' ORDER BY rank ASC';
+		$sql.= ' ORDER BY rang ASC';
 
 		if ($limit) $sql.= ' LIMIT '.$limit;
 
@@ -841,7 +841,7 @@ class OperationOrderStatus extends SeedObject
 
 		$status = new self($db);
 
-		$sql = 'UPDATE '.MAIN_DB_PREFIX.$status->table_element.' SET rank = '.intval($rank);
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.$status->table_element.' SET rang = '.intval($rank);
 		$sql.= ' WHERE rowid = '.intval($rowid);
 
 		if (! $db->query($sql))
