@@ -151,20 +151,11 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 					//document.getElementById('loading').style.display = bool ? 'block' : 'none';
 				},
 				eventClick: function(info) {
-
-					info.jsEvent.preventDefault(); // don't let the browser navigate
-					//console.log ( info.event.extendedProps.session_formateur_calendrier );
-					//console.log ( info.event );
-					//
-					// if (info.event.url.length > 0){
-					//
-					// 	$("#calendarModalLabel").html(info.event.title);
-					// 	$("#calendarModalIframe").attr("src",info.event.url + "&iframe=1");
-					//
-					// 	$("#calendarModal").modal();
-					//
-					// 	// Deactivate original link
-					// 	return false;
+					// force open link into new url
+					// info.jsEvent.preventDefault(); // don't let the browser navigate
+					// if (info.event.url) {
+					// 		window.open(info.event.url, "_blank");
+					// 		return false;
 					// }
 				},
                 select: function (selectionInfo) {
