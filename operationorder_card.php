@@ -130,6 +130,8 @@ if (empty($reshook))
                 }
 
                 $object->save($user);
+
+                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
             }
 
             break;
