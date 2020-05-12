@@ -25,6 +25,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 dol_include_once('operationorder/class/operationorder.class.php');
+dol_include_once('operationorder/class/operationorderaction.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
@@ -118,10 +119,12 @@ if (empty($reshook))
     $error = 0;
 	switch ($action) {
         case 'update_attribute':
+
+            $attribute = GETPOST('attribute');
+
             if (!empty($object->userCan($user, 'edit')))
             {
                 $values = array();
-                $attribute = GETPOST('attribute');
 
                 if ($attribute == 'date_operation_order')
                 {
@@ -854,6 +857,31 @@ else
 
             print '<div class="clearboth"></div><br />';
 
+            //JS Fields
+
+            ?>
+
+            <script>
+
+                $(document).ready(function() {
+                    <?php
+
+                    //panneau "warning" si action OR existe pour cet OR
+                    $ORA = new OperationOrderAction($db);
+                    $TORActions = $ORA->fecthByOR($object->id);
+                    if(!empty($TORActions)) {
+                    ?>
+
+                    var element =  $("td .fieldname_time_planned_f");
+                    $("td .fieldname_time_planned_f").append('<?php print img_picto($langs->trans('WarningORTimePlannedF'),'warning.png') ?>');
+                    <?php } ?>
+
+                });
+
+            </script>
+
+            <?php
+
 
 			/*
 			 * Lines
@@ -870,6 +898,7 @@ else
 
 			print '
 			<script type="text/javascript">
+			
 			$(function()
 			{
 			    // Animate modified line
