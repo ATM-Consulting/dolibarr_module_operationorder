@@ -105,6 +105,36 @@ class OperationOrderStatus extends SeedObject
 			'label'=>'Color', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1,
 			'default' => '#3c8dbc'
 		),
+		'planable' => array(
+			'type'=>'boolean',
+			'label'=>'Planable',
+			'enabled'=>1,
+			'position'=>35,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'PlanableHelp'
+		),
+		'clean_event' => array(
+			'type'=>'boolean',
+			'label'=>'CleanEventOnThisStatus',
+			'enabled'=>1,
+			'position'=>40,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'CleanEventOnThisStatusHelp'
+		),
+		'display_on_planning' => array(
+			'type'=>'boolean',
+			'label'=>'DisplayOnPlanning',
+			'enabled'=>1,
+			'position'=>45,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'DisplayOnPlanningHelp'
+		),
 //		'edit' => array(
 //			'type'=>'smallint',
 //			'label'=>'CouldEdit',
@@ -675,8 +705,19 @@ class OperationOrderStatus extends SeedObject
 	 * @return bool
 	 */
 	public function checkStatusTransition($user, $newStatusId){
-		/** TODO */
-		return true;
+
+		// TODO check status chain
+
+		if(!empty($newStatusId)){
+			// vérification des droits
+			$statusAllowed = new OperationOrderStatus($this->db);
+			$res = $statusAllowed->fetch($newStatusId);
+			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

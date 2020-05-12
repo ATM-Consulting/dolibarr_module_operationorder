@@ -597,12 +597,13 @@ class OperationOrder extends SeedObject
 
 		$error = 0;
 
+		$this->loadStatusObj();
 
-		$status = new OperationOrderStatus($this->db);
-		$res = $status->fetch($this->status);
-		if($res>0)
+		$newStatus = new OperationOrderStatus($this->db);
+		$resNewStatus = $newStatus->fetch($fk_status);
+		if($resNewStatus>0)
 		{
-			if($status->checkStatusTransition($user, $fk_status))
+			if($this->objStatus->checkStatusTransition($user, $fk_status))
 			{
 				$this->status = intval($fk_status);
 				$this->withChild = false;
@@ -622,6 +623,13 @@ class OperationOrder extends SeedObject
 
 				if ($this->db->query($sql))
 				{
+					if(!empty($newStatus->clean_event)){
+						if(!$this->db->query("DELETE FROM ".MAIN_DB_PREFIX.'operationorderaction WHERE fk_operationorder = '.$this->id)){
+							$this->error = 'Error cleaning operation order events';
+							$error++;
+						}
+					}
+
 					if (!$error)
 					{
 						$this->oldcopy = clone $this;
@@ -634,7 +642,6 @@ class OperationOrder extends SeedObject
 					}
 
 					if (!$error) {
-						$this->status = $status;
 						$this->db->commit();
 						$ret = 1;
 					} else {
@@ -648,7 +655,6 @@ class OperationOrder extends SeedObject
 					$this->db->rollback();
 					$ret = -1;
 				}
-
 
 				if($ret  > 0 )
 				{
@@ -1369,6 +1375,24 @@ class OperationOrder extends SeedObject
 
 
         return $out;
+    }
+
+    public static function getAllOOPlanableLabel() {
+        global $db;
+        $TPlanableOO = array();
+        $sql = "SELECT oo.rowid, oo.ref, s.nom as thirdparty_name
+                FROM ".MAIN_DB_PREFIX."operationorder as oo
+                LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (oo.fk_soc = s.rowid)
+                INNER JOIN ".MAIN_DB_PREFIX."operationorder_status as oos ON (oo.status = oos.rowid)
+                WHERE oos.planable = 1 AND oo.entity IN (".getEntity('operationorder').")";
+        $resql = $db->query($sql);
+        if(!empty($resql) && $resql > 0) {
+            while($obj = $db->fetch_object($resql)) {
+                $TPlanableOO[$obj->rowid] = $obj->ref." - ".$obj->thirdparty_name;
+            }
+        }
+
+        return $TPlanableOO;
     }
 }
 

@@ -713,3 +713,69 @@ function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $produc
 
     return (!empty($error)) ? -1 : 0;
 }
+
+
+/** Parses a string into a DateTime object, optionally forced into the given timezone.
+ * @param $string
+ * @param null $timezone
+ * @return DateTime
+ * @throws Exception
+ */
+function OO_parseFullCalendarDateTime($string, $timezone=null) {
+
+	$date = new DateTime($string);
+	if ($timezone) {
+		// If our timezone was ignored above, force it.
+		$date->setTimezone($timezone);
+	}
+	return $date;
+}
+
+
+/**
+ * @param string $hex color in hex
+ * @param integer $percent 0 to 100
+ * @return string
+ */
+function OO_colorDarker($hex, $percent)
+{
+	$steps = intval(255 * $percent / 100) * -1;
+	return OO_colorAdjustBrightness($hex, $steps);
+}
+
+/**
+ * @param string $hex color in hex
+ * @param integer $percent 0 to 100
+ * @return string
+ */
+function OO_colorLighten($hex, $percent)
+{
+	$steps = intval(255 * $percent / 100);
+	return OO_colorAdjustBrightness($hex, $steps);
+}
+
+
+/**
+ * @param string $hex color in hex
+ * @param integer $steps Steps should be between -255 and 255. Negative = darker, positive = lighter
+ * @return string
+ */
+function OO_colorAdjustBrightness($hex, $steps)
+{
+	// Steps should be between -255 and 255. Negative = darker, positive = lighter
+	$steps = max(-255, min(255, $steps));
+	// Normalize into a six character long hex string
+	$hex = str_replace('#', '', $hex);
+	if (strlen($hex) == 3) {
+		$hex = str_repeat(substr($hex, 0, 1), 2).str_repeat(substr($hex, 1, 1), 2).str_repeat(substr($hex, 2, 1), 2);
+	}
+	// Split into three parts: R, G and B
+	$color_parts = str_split($hex, 2);
+	$return = '#';
+	foreach ($color_parts as $color) {
+		$color   = hexdec($color); // Convert to decimal
+		$color   = max(0, min(255, $color + $steps)); // Adjust color
+		$return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
+	}
+	return $return;
+}

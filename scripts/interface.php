@@ -9,7 +9,8 @@ if (! $res)
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
 require_once __DIR__ . '/../class/unitstools.class.php';
 require_once __DIR__ . '/../lib/operationorder.lib.php';
-
+require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
+dol_include_once('/operationorder/class/operationorder.class.php');
 global $db;
 $hookmanager->initHooks(array('oorderinterface'));
 
@@ -27,7 +28,21 @@ if(GETPOST('action'))
 {
 	$action = GETPOST('action');
 
-	if($action=='setOperationOrderlevelHierarchy'){
+	if ($action == "getPlannedOperationOrder") {
+		// Parse the start/end parameters.
+		// These are assumed to be ISO8601 strings with no time nor timeZone, like "2013-12-29".
+		// Since no timeZone will be present, they will parsed as UTC.
+
+		$timeZone = GETPOST('timeZone');
+		$agendaType = GETPOST('agendaType');
+		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
+		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
+
+		print _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+
+		exit;
+	}
+	elseif($action=='setOperationOrderlevelHierarchy'){
 		if (! $user->rights->operationorder->write){
 			$data['result'] = -1; // by default if no action result is false
 			$data['errorMsg'] = $langs->trans("ErrorForbidden"); // default message for errors
@@ -40,7 +55,7 @@ if(GETPOST('action'))
 			}
 		}
 	}
-	if($action=='statusRank'){
+	elseif($action=='statusRank'){
 		require_once __DIR__ . '/../class/operationorderstatus.class.php';
 		$data['msg'] = 'UpdateStatus';
 		_statusRank($data);
@@ -119,10 +134,83 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
+	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
+	elseif ($action='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
 }
 
 echo json_encode($data);
 
+
+
+function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action') {
+    global $db, $langs;
+
+    $TPlanableOO = OperationOrder::getAllOOPlanableLabel();
+    $outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
+    $outForm.= '<input type="hidden" name="token" value="' . newToken() . '">' . "\n";
+    $outForm.= '<input type="hidden" name="startTime" value="' . $startTime . '">' . "\n";
+    $outForm.= '<input type="hidden" name="endTime" value="' . $endTime . '">' . "\n";
+    $outForm.= '<input type="hidden" name="allDay" value="' . $allDay . '">' . "\n";
+    $outForm.= '<input type="hidden" name="action" value="create-event">' . "\n";
+    $form = new Form($db);
+    $outForm.= $form->selectarray('operationorder', $TPlanableOO, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1);
+//    $outForm.= '<button type="submit" class="butAction">'.$langs->trans('Create').'</button>';
+
+    $outForm .='</form>';
+
+
+    return $outForm;
+}
+
+function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
+
+    global $langs, $db, $user, $conf;
+
+    dol_include_once('/operationorder/class/operationorder.class.php');
+    dol_include_once('/operationorder/class/operationorderaction.class.php');
+
+    $error = 0;
+
+    if(!empty($id_operationorder))
+    {
+        $action_or = new OperationOrderAction($db);
+
+        $action_or->dated = $startTime;
+        $action_or->datef = $endTime;
+        $action_or->fk_operationorder = $id_operationorder;
+        $action_or->fk_user_author = $user->id;
+
+        $res = $action_or->save($user);
+
+        $operationorder = new OperationOrder($db);
+        $res = $operationorder->fetch($id_operationorder);
+
+        if ($res)
+        {
+            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+
+            $statusAllowed = new OperationOrderStatus($db);
+            $res = $statusAllowed->fetch($fk_status);
+            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
+            {
+                $res = $operationorder->setStatus($user, $fk_status);
+
+                return true;
+            }
+            else
+            {
+                //setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
+            }
+        }
+        else
+        {
+            $error++;
+        }
+    } else {
+        $error++;
+    }
+
+}
 
 /**
  * @param $operationOrderId
@@ -229,4 +317,112 @@ function _statusRank(&$data)
 	else{
 		$data['errorMsg'] = $langs->trans('StatusOrderListEmpty'); // default message for errors
 	}
+}
+
+
+/**
+ * @param int $start
+ * @param int $end
+ * @param string $agendaType not used yet for multiple source type
+ * @return false|string
+ */
+function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanned'){
+
+	global $db, $hookmanager, $langs, $user;
+
+
+	dol_include_once('/operationorder/class/operationorder.class.php');
+	dol_include_once('/operationorder/class/operationorderaction.class.php');
+	dol_include_once('/operationorder/class/operationorderstatus.class.php');
+
+	$sOperationOrder = new OperationOrder($db); // a static usage of operation order class
+	$sOperationOrderAction = new OperationOrderAction($db); // a static usage of OperationOrderAction class
+	$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderAction class
+
+
+	$langs->loadLangs(array('operationorder@operationorder', 'orders', 'companies', 'bills', 'products', 'other'));
+
+	$TRes = array();
+
+	$sql = 'SELECT o.rowid id, oa.dated, oa.datef  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
+	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
+	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
+
+	$sql.= ' WHERE 1 = 1 ';
+
+	if(!empty($start)){
+		$sql.= ' AND oa.dated <= \''.date('Y-m-d H:i:s', $end).'\'';
+	}
+
+	if(!empty($start)){
+		$sql.= ' AND oa.datef >= \''.date('Y-m-d H:i:s', $start).'\'';
+	}
+
+	$sql.= ' AND o.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  display_on_planning > 0 ) ';
+
+	$resql = $db->query($sql);
+
+	if ($resql)
+	{
+		while ($obj = $db->fetch_object($resql))
+		{
+			$event = new stdClass();
+
+			$operationOrder = new OperationOrder($db);
+			$operationOrder->fetch($obj->id);
+			$operationOrder->loadStatusObj();
+			$event->title	= $operationOrder->ref;
+
+			$obj->dated = $db->jdate($obj->dated);
+			$obj->datef = $db->jdate($obj->datef);
+
+
+			$event->url		= dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$operationOrder->id;
+			$event->start	= date('c', $obj->dated);
+			$event->end		= date('c', $obj->datef);
+
+			$event->msg = '';
+
+			$event->color = $operationOrder->objStatus->color;
+
+
+			if($db->jdate($obj->datef) < time()){
+				$event->color = OO_colorLighten($event->color, 10);
+			}
+
+			$T = array();
+
+			$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc');
+
+			foreach ($operationOrder->fields as $fieldKey => $field){
+				if(!in_array($fieldKey, $TFieldForTooltip)) continue;
+
+				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$operationOrder->showOutputFieldQuick($fieldKey);
+			}
+
+			$event->msg.= implode('<br/>',$T);
+
+			$parameters= array(
+				'sqlObj' => $obj,
+				'operationOrder' => $operationOrder,
+				'T' => $T
+			);
+
+			$reshook=$hookmanager->executeHooks('operationorderplanning',$parameters,$event);    // Note that $action and $object may have been modified by hook
+
+			if ($reshook>0)
+			{
+				$event = $hookmanager->resArray;
+			}
+
+
+			$TRes[] = $event;
+		}
+	}
+	else
+	{
+		dol_print_error($db);
+	}
+
+	return json_encode($TRes);
 }
