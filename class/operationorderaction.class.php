@@ -26,10 +26,14 @@ class OperationOrderAction extends SeedObject
     /** @var string $picto a picture file in [@...]/img/object_[...@].png  */
     public $picto = 'operationorder@operationorder';
 
+	/** @var int $fullday flag for event display like full day event */
+	public $fullday = 1;
+
     public $fields=array(
         'dated' => array('type'=>'date', 'label'=>'DateD', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1,),
         'datef' => array('type'=>'date', 'label'=>'DateF', 'enabled'=>1, 'position'=>20, 'notnull'=>1, 'visible'=>1,),
         'note_private' => array('type'=>'text', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+        'fullday' => array('type'=>'boolean', 'label'=>'FullDay', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=> -1),
         'fk_operationorder' => array('type'=>'integer:OperationOrder:operationorder/class/operationorder.class.php:1:entity IN (0, __ENTITY__)', 'label'=>'OperationOrder', 'enabled'=>1, 'position'=>90, 'visible'=>1, 'foreignkey'=>'operationorder.rowid',),
         'fk_user_author' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'foreignkey'=>'user.rowid',),
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>60, 'notnull'=>1, 'visible'=>0,),
