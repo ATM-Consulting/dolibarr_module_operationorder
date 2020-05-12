@@ -175,7 +175,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                         success: function (data) {
                             $('#dialog-add-event').html(data.result);
                             operationorderneweventmodal.dialog("open");
-
+							operationorderneweventmodal.dialog({height:'auto', width:'auto'}); // resize to content
                         }
                     });
                 },
@@ -202,7 +202,8 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
 			operationorderneweventmodal.dialog({
                 autoOpen: false,
-                buttons: {
+				autoResize:true,
+				buttons: {
                     "<?php echo $langs->transnoentitiesnoconv('Create')?>": function() {
                         $('#dialog-add-event').find("form").submit();
                     }
