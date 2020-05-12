@@ -38,8 +38,17 @@ if(GETPOST('action'))
 		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-		print _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+		$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
 
+		$parameters=array();
+		$reshook=$hookmanager->executeHooks('jsonInterface',$parameters,$data, $action);    // Note that $action and $object may have been modified by hook
+		if ($reshook < 0){
+			// pas de gestion d'erreur pour l'instant pour cet action
+		}elseif ($reshook>0){
+			$data = $hookmanager->resArray;
+		}
+
+		print json_encode($data);
 		exit;
 	}
 	elseif($action=='setOperationOrderlevelHierarchy'){
@@ -408,7 +417,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 				'T' => $T
 			);
 
-			$reshook=$hookmanager->executeHooks('operationorderplanning',$parameters,$event);    // Note that $action and $object may have been modified by hook
+			$reshook=$hookmanager->executeHooks('operationorderplanning',$parameters,$event, $agendaType);    // Note that $action and $object may have been modified by hook
 
 			if ($reshook>0)
 			{
@@ -424,5 +433,5 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 		dol_print_error($db);
 	}
 
-	return json_encode($TRes);
+	return $TRes;
 }
