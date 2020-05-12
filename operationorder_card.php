@@ -51,10 +51,11 @@ $backtopage = GETPOST('backtopage', 'alpha');
 
 $object = new OperationOrder($db);
 
-if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
-
-$object->time_planned_t = convertSecondToTime($object->time_planned_t);
-$object->time_planned_f = convertSecondToTime($object->time_planned_f);
+if (!empty($id) || !empty($ref))  {
+    $object->fetch($id, true, $ref);
+    $object->time_planned_t = convertSecondToTime($object->time_planned_t);
+    $object->time_planned_f = convertSecondToTime($object->time_planned_f);
+}
 
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 
