@@ -122,6 +122,8 @@ supplierFieldMissing=Champs manquant
 SupplierOrderSaveError=Sauvegarde de la commande fournisseur en erreur
 ProductType=Type
 SupplierOrderCreated=Commande fournisseur créée
+TimePlannedTheoretical=Temps d'immobilisation théorique
+TimePlannedForced=Temps d'immobilisation forcé
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner

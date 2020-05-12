@@ -26,6 +26,7 @@ require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
+require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
 if(empty($user->rights->operationorder->read)) accessforbidden();
 
@@ -51,6 +52,9 @@ $backtopage = GETPOST('backtopage', 'alpha');
 $object = new OperationOrder($db);
 
 if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
+
+$object->time_planned_t = convertSecondToTime($object->time_planned_t);
+$object->time_planned_f = convertSecondToTime($object->time_planned_f);
 
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 

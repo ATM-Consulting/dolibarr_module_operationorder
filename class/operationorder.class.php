@@ -365,9 +365,6 @@ class OperationOrder extends SeedObject
 
         $this->fetch_thirdparty();
 
-        $this->time_planned_t = convertSecondToTime($this->time_planned_t);
-        $this->time_planned_f = convertSecondToTime($this->time_planned_f);
-
         return $res;
     }
 
