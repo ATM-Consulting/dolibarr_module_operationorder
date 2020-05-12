@@ -1404,18 +1404,23 @@ class OperationOrder extends SeedObject
         return $out;
     }
 
-    public static function getAllOOPlanableLabel() {
+	/**
+	 * @return self[]
+	 */
+    public static function getPlannableOperationOrder() {
         global $db;
         $TPlanableOO = array();
-        $sql = "SELECT oo.rowid, oo.ref, s.nom as thirdparty_name
+        $sql = "SELECT oo.rowid, oo.ref
                 FROM ".MAIN_DB_PREFIX."operationorder as oo
-                LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (oo.fk_soc = s.rowid)
                 INNER JOIN ".MAIN_DB_PREFIX."operationorder_status as oos ON (oo.status = oos.rowid)
                 WHERE oos.planable = 1 AND oo.entity IN (".getEntity('operationorder').")";
         $resql = $db->query($sql);
         if(!empty($resql) && $resql > 0) {
             while($obj = $db->fetch_object($resql)) {
-                $TPlanableOO[$obj->rowid] = $obj->ref." - ".$obj->thirdparty_name;
+
+            	$operationOrder = new self($db);
+				$operationOrder->fetch($obj->rowid);
+                $TPlanableOO[$obj->rowid] = $operationOrder;
             }
         }
 
