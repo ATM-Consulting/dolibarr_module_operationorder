@@ -38,9 +38,15 @@ function operationorderAdminPrepareHead()
     $head[$h][1] = $langs->trans("Parameters");
     $head[$h][2] = 'settings';
     $h++;
+
     $head[$h][0] = dol_buildpath("/operationorder/admin/operationorder_extrafields.php", 1);
     $head[$h][1] = $langs->trans("ExtraFields");
     $head[$h][2] = 'extrafields';
+	$h++;
+
+	$head[$h][0] = dol_buildpath("/operationorder/admin/operationorderjoursoff_setup.php", 1);
+	$head[$h][1] = $langs->trans("oojoursOff");
+	$head[$h][2] = 'oojoursOff';
 	$h++;
 
 	if (!empty($conf->multicompany->enabled))
