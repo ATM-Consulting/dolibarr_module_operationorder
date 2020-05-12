@@ -117,7 +117,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 							delay:50
 						},
 						hide: {
-							delay: 250
+							delay: 0
 						},
 						container: "body",
 						tooltipClass: "mytooltip",
