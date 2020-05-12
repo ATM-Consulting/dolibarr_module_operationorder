@@ -110,7 +110,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 					$(info.el).attr('title', info.event.extendedProps.msg);
 
 					$(info.el).tooltip({
-						//track: true,
+						track: true,
 						show: {
 							collision: "flipfit",
 							effect:'toggle',
