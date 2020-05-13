@@ -161,25 +161,28 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 					// }
 				},
                 select: function (selectionInfo) {
-                    let startTimestamp = Math.floor(selectionInfo.start.getTime()/1000);
-                    let endTimestamp = Math.floor(selectionInfo.end.getTime()/1000);
-                    $.ajax({
-                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
-                        method: 'POST',
-                        data: {
-                            'url' : window.location.href,
-                            'startTime' : startTimestamp,
-                            'endTime' : endTimestamp,
-                            'allDay' : selectionInfo.allDay
-                        },
-                        dataType: 'json',
-                        // La fonction à apeller si la requête aboutie
-                        success: function (data) {
-                            $('#dialog-add-event').html(data.result);
-                            operationorderneweventmodal.dialog("open");
-							operationorderneweventmodal.dialog({height:'auto', width:'auto'}); // resize to content
-                        }
-                    });
+                    if(!selectionInfo.allDay) {
+                        let startTimestamp = Math.floor(selectionInfo.start.getTime() / 1000);
+                        let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
+
+                        $.ajax({
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
+                            method: 'POST',
+                            data: {
+                                'url': window.location.href,
+                                'startTime': startTimestamp,
+                                'endTime': endTimestamp,
+                                'allDay': selectionInfo.allDay
+                            },
+                            dataType: 'json',
+                            // La fonction à apeller si la requête aboutie
+                            success: function (data) {
+                                $('#dialog-add-event').html(data.result);
+                                operationorderneweventmodal.dialog("open");
+                                operationorderneweventmodal.dialog({height: 'auto', width: 'auto'}); // resize to content
+                            }
+                        });
+                    }
                 },
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
@@ -188,30 +191,33 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				    $('.operationOrderTooltip').hide();
                 },
                 eventDrop: function(eventDropInfo) {
-                    $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
-                    let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime() + (eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
-                    let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime() + (eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
-                    let fk_action = eventDropInfo.event.extendedProps.operationOrderActionId;
+				    if(!eventDropInfo.event.allDay) {
+                        $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
+                        let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
+                        let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
+                        let fk_action = eventDropInfo.event.extendedProps.operationOrderActionId;
 
-                    $.ajax({
-                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
-                        method: 'POST',
-                        data: {
-                            'url' : window.location.href,
-                            'data' : {
-                                startTime: startTms,
-                                endTime: endTms,
-                                fk_action: fk_action,
-                                allDay: eventDropInfo.event.allDay
+                        $.ajax({
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
+                            method: 'POST',
+                            data: {
+                                'url': window.location.href,
+                                'data': {
+                                    startTime: startTms,
+                                    endTime: endTms,
+                                    fk_action: fk_action,
+                                    allDay: eventDropInfo.event.allDay
+                                }
+                            },
+                            dataType: 'json',
+                            // La fonction à apeller si la requête aboutie
+                            success: function (data) {
+                                calendar.refetchEvents();
                             }
-                        },
-                        dataType: 'json',
-                        // La fonction à apeller si la requête aboutie
-                        success: function (data) {
-                            calendar.refetchEvents();
-                        }
-                    });
-
+                        });
+                    } else {
+                        calendar.refetchEvents();
+                    }
                 }
             });
 
