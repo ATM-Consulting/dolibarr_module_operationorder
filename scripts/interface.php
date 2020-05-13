@@ -494,6 +494,15 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$event->start	= date('c', $obj->dated);
 			$event->end		= date('c', $obj->datef);
 
+			if (date('d', strtotime($event->start)) != date('d', strtotime($event->end)))
+			{
+				// obliger de réécrire les formats des dates pour afficher dans allDay
+				// Note: This value is exclusive. For example, an event with the end of 2018-09-03 will appear to span through 2018-09-02 but end before the start of 2018-09-03. See how events are are parsed from a plain object for further details.
+				$event->start = date("Y-m-d", strtotime($event->start));
+				$event->end = date("Y-m-d", strtotime('+1 day', strtotime($event->end)));
+				$event->allDay = true;
+			}
+
 			$event->operationOrderId = $obj->id;
 			$event->operationOrderActionId = $obj->actionid;
 
