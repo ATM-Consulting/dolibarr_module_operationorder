@@ -183,7 +183,7 @@ class OperationOrderJoursOff extends SeedObject
              AND  date='".$this->db->escape($date)."'";
 
 		$res = $this->db->query($sql);
-		var_dump($sql);
+
 		if ($res) $obj = $this->db->fetch_object($res);
 
 		//on teste si l'un d'eux est égal à celui que l'on veut créer

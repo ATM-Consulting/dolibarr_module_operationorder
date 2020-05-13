@@ -785,3 +785,127 @@ function OO_colorAdjustBrightness($hex, $steps)
 	}
 	return $return;
 }
+
+/**
+ * fonction retournant un tableau des operationsActions à générer
+ * en fonction de la date de départ
+ * et de la durée théorique ou forcée de l'OR
+ * @param string $dateStart date de départ
+ * @param string $TimeSpending durée théorique ou forcée de l'OR format 00:00
+ *
+ * @return array exemple avec appel getOperationOrderActionsArray("2020-05-29 15:00:00", "03:20") :
+ * array(
+ * 		'2020-05-29' => array (
+ * 			'dateStart' => "2020-05-29 15:00:00"
+ * 			'dateEnd'	=> "2020-05-29 17:00:00"
+ * 			'timeSpent'	=> 7200 (en secondes)
+ * 		)
+ * 		'2020-04-13' => array (
+ * 			'dateStart' => "2020-06-02 08:00:00"
+ * 			'dateEnd'	=> "2020-06-02 09:20:00"
+ * 			'timeSpent'	=> 4800 (en secondes)
+ * 		)
+ * 		'total' => array (
+ * 			'dateStart' => "2020-05-29 15:00:00"
+ * 			'dateEnd'	=> "2020-06-02 09:20:00"
+ * 			'timeSpent'	=> 12000 (en secondes)
+ * 			'timeSpentHours'	=> "03:20"
+ * 			'excluded' 	=> array(
+ * 				"2020-05-30" => "week end"
+ * 				"2020-05-31" => "week end"
+ * 				"2020-06-01" => "férié"
+ * 			)
+ * 		)
+ * );
+ */
+function getOperationOrderActionsArray($dateStart = '', $TimeSpending = '')
+{
+	global $db;
+
+	$results['total']['timeSpent'] = 0;
+
+	$dayStartHour = "08:00";
+	$dayEndHour = "17:00";
+
+	if (empty($dateStart) || empty($TimeSpending)) return $results;
+
+//	var_dump(array($dateStart, $TimeSpending));
+
+	dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+	dol_include_once('/core/lib/date.lib.php');
+	$jourOff = new OperationOrderJoursOff($db);
+
+	$testDate = strtotime($dateStart);
+	$timeSpendingArray = explode(':', $TimeSpending);
+	$timeSpendingSec = convertTime2Seconds($timeSpendingArray[0], $timeSpendingArray[1]);
+	$remainingTime = $timeSpendingSec;
+
+	$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
+	$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
+
+	$i=0;
+
+	while ($results['total']['timeSpent'] < $timeSpendingSec && $i < 15)
+	{
+		$DayOfWeek = date("N", $testDate);
+		$jourFerie = $jourOff->isOff(date("Y-m-d 00:00:00", $testDate));
+//		var_dump(array(date("Y-m-d", $testDate), $results['total']['timeSpent'] , $timeSpendingSec));
+		if (
+			$testDate >= $testDayEnd // départ après fermeture
+			|| $DayOfWeek > 5// we
+			|| $jourFerie// férié
+		)
+		{
+			// passer au jour suivant
+			$testDate = strtotime('+1 day', $testDayStart);
+			$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
+			$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
+			$rejectMsg = '';
+			if ($testDate > $testDayEnd) $rejectMsg = "to late";
+			else if ($DayOfWeek > 5) $rejectMsg = "week end";
+			else if ($jourFerie) $rejectMsg = "férié";
+			$results['total']['excluded'][date("Y-m-d", $testDate)] = $rejectMsg;
+
+			continue;
+		}
+		else
+		{
+			$key = date("Y-m-d", $testDate);
+
+			if ($testDate >= $testDayStart && $testDate < $testDayEnd) // on est dans les horaires
+			{
+				$timeDiff = $testDayEnd-$testDate;
+
+				$results[$key]['dateStart'] = date("Y-m-d H:i:s", $testDate);
+
+				if ($timeDiff > $remainingTime) // le temps dispo est suppérieur au temps demandé
+				{
+					$results[$key]['timeSpent'] = $remainingTime;
+				}
+				else
+				{
+					$results[$key]['timeSpent'] = $timeDiff;
+				}
+				$remainingTime-= $results[$key]['timeSpent'];
+
+				$results[$key]['dateEnd'] = date("Y-m-d H:i:s", $testDate + $results[$key]['timeSpent']);
+
+			}
+
+			if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[date("Y-m-d", $testDate)]['dateStart'];
+			$results['total']['dateEnd'] = $results[$key]['dateEnd'];
+			$results['total']['timeSpent'] += $results[$key]['timeSpent'];
+			$results['total']['timeSpentHours'] = convertSecondToTime($results['total']['timeSpent'], 'allhourmin');
+
+			// on passe au jour d'aprés
+			$testDate = strtotime('+1 day', $testDayStart);
+			$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
+			$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
+		}
+
+		$i++;
+	}
+//	var_dump(array(date("Y-m-d", $testDate), $results['total']['timeSpent'] , $timeSpendingSec));
+
+	return $results;
+}
