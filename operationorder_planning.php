@@ -184,6 +184,30 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
 				},
+                eventResize: function(info) {
+
+                    let startTimestamp = Math.floor(info.event.start.getTime()/1000);
+                    let endTimestamp = Math.floor(info.event.end.getTime()/1000);
+                    let operationOrderActionId = info.event.extendedProps.operationOrderActionId;
+                    let action = 'resize';
+
+                    $.ajax({
+                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
+                        method: 'POST',
+                        data: {
+                            'url' : window.location.href,
+                            'startTime' : startTimestamp,
+                            'endTime' : endTimestamp,
+                            'fk_action' : fk_action,
+                            'action' : action
+                        },
+                        dataType: 'json',
+                        // La fonction à apeller si la requête aboutie
+                        success: function (data) {
+                            calendar.refetchEvents();
+                        }
+                    });
+                },
                 eventResizeStop: function(info) {
 				    $('.operationOrderTooltip').hide();
                 },
@@ -192,18 +216,18 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                     let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime() + (eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
                     let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime() + (eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
                     let fk_action = eventDropInfo.event.extendedProps.operationOrderActionId;
+                    let action = 'drop';
 
                     $.ajax({
                         url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
                         method: 'POST',
                         data: {
                             'url' : window.location.href,
-                            'data' : {
-                                startTime: startTms,
-                                endTime: endTms,
-                                fk_action: fk_action,
-                                allDay: eventDropInfo.event.allDay
-                            }
+                            'startTime': startTms,
+                            'endTime': endTms,
+                            'fk_action': fk_action,
+                            'action': action
+                            'allDay': eventDropInfo.event.allDay
                         },
                         dataType: 'json',
                         // La fonction à apeller si la requête aboutie

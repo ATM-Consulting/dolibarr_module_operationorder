@@ -145,7 +145,7 @@ if(GETPOST('action'))
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
 	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
-	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['fk_action']);
+	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
 echo json_encode($data);
@@ -289,7 +289,7 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
 }
 
-function _updateOperationOrderAction($startTime, $endTime, $allDay, $fk_action){
+function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
     global $db, $user;
 
     dol_include_once('/operationorder/class/operationorder.class.php');
