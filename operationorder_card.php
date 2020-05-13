@@ -868,7 +868,7 @@ else
 
                     //panneau "warning" si action OR existe pour cet OR
                     $ORA = new OperationOrderAction($db);
-                    $TORActions = $ORA->fecthByOR($object->id);
+                    $TORActions = $ORA->fetchByOR($object->id);
                     if(!empty($TORActions)) {
                     ?>
 

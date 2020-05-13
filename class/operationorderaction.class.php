@@ -99,7 +99,7 @@ class OperationOrderAction extends SeedObject
         return parent::delete($user, $notrigger);
     }
 
-    public function fecthByOR ($fk_operationorder){
+    public function fetchByOR ($fk_operationorder){
 
         global $db;
 
