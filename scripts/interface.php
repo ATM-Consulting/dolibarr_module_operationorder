@@ -34,16 +34,16 @@ if(GETPOST('action'))
 		// Since no timeZone will be present, they will parsed as UTC.
 
 		$timeZone = GETPOST('timeZone');
-		$agendaType = GETPOST('agendaType');
+		$eventsType = GETPOST('eventsType');
 		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-		if($agendaType == 'dayOff'){
+		if($eventsType == 'dayOff'){
 			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
 		}
 		else
 		{
-			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $eventsType);
 		}
 
 
