@@ -617,6 +617,8 @@ function  _getJourOff($start = 0, $end = 0){
 	return $TRes;
 }
 
+
+// Class à but descriptive, de doc etc... elle remplace juste le new stdClass qui etait utilisé juste avant.
 class fullCalendarEvent {
 
 	public $title;
