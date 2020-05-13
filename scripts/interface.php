@@ -144,7 +144,8 @@ if(GETPOST('action'))
 		}
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
-	elseif ($action='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
+	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
+	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['fk_action']);
 }
 
 echo json_encode($data);
@@ -286,6 +287,35 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
         $error++;
     }
 
+}
+
+function _updateOperationOrderAction($startTime, $endTime, $allDay, $fk_action){
+    global $db, $user;
+
+    dol_include_once('/operationorder/class/operationorder.class.php');
+    dol_include_once('/operationorder/class/operationorderaction.class.php');
+    $db->begin();
+    $action_or = new OperationOrderAction($db);
+    $res = $action_or->fetch($fk_action);
+    if($res > 0) {
+        $action_or->dated = $startTime;
+        $action_or->datef = $endTime;
+        if(!empty($allDay)) $action_or->fullday = 1;
+        $res = $action_or->save($user);
+        if($res > 0) {
+            $or = new OperationOrder($db);
+            $res = $or->fetch($action_or->fk_operationorder);
+            if(empty($or->array_options)) $or->fetch_optionals();
+            if($res > 0) {
+                $or->array_options['options_planned_date'] = intval($action_or->dated);
+                $or->save($user);
+                $db->commit();
+                return 1;
+            }
+        }
+    }
+    $db->rollback();
+    return -1;
 }
 
 /**

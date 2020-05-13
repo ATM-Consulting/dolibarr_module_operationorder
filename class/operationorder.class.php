@@ -233,8 +233,6 @@ class OperationOrder extends SeedObject
 				return -1;
 			}
 		}
-
-
         return parent::create($user, $notrigger);
     }
 
