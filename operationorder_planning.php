@@ -108,6 +108,8 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				eventRender: function(info) {
 
 					$(info.el).attr('title', info.event.extendedProps.msg);
+					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId;
+					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId;
 
 					$(info.el).tooltip({
 						track: true,

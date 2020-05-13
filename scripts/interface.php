@@ -420,7 +420,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 	$TRes = array();
 
-	$sql = 'SELECT o.rowid id, oa.dated, oa.datef  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
+	$sql = 'SELECT o.rowid id, oa.dated, oa.datef, oa.rowid actionid  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
 	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
 	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
 
@@ -456,6 +456,9 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$event->url		= dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$operationOrder->id;
 			$event->start	= date('c', $obj->dated);
 			$event->end		= date('c', $obj->datef);
+
+			$event->operationOrderId = $obj->id;
+			$event->operationOrderActionId = $obj->actionid;
 
 			$event->msg = '';
 
