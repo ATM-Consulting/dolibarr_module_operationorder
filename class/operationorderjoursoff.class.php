@@ -63,7 +63,7 @@ class OperationOrderJoursOff extends SeedObject
 	/**
 	 * @param int  $limit       Limit element returned
 	 * @param bool $loadChild   used to load children from database
-	 * @param array $TFilter 	array off filters ('date' => '2020-11-13' OR 'date' => array('operator' => '>', 'value' => '2020-11-13'))
+	 * @param array $TFilter 	array off filters ('date' => '2020-11-13' OR 'date' => array('field' => 'date', 'operator' => '>', 'value' => '2020-11-13'))
 	 * @return array
 	 */
 	public function fetchAll($limit = 0, $loadChild = true, $TFilter = array())
@@ -78,7 +78,7 @@ class OperationOrderJoursOff extends SeedObject
 				if (!is_array($value)) $sql.= ' AND '.$field.' = '.$this->quote($value, $this->fields[$field]);
 				else
 				{
-					if (!empty($value['operator']) && !empty($value['value'])) $sql.=  ' AND '.$field. ' ' . $value['operator'] . ' ' . $this->quote($value, $this->fields[$field]);
+					if (!empty($value['field']) && !empty($value['operator']) && !empty($value['value'])) $sql.=  ' AND '.$value['field']. ' ' . $value['operator'] . ' ' . $this->quote($value, $this->fields[$field]);
 				}
 			}
 		}
