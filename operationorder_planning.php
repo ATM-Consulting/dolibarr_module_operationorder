@@ -96,7 +96,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				selectMirror: true,
 				locale: fullcalendarscheduler_initialLangCode,
 				eventLimit: true, // allow "more" link when too many events
-
+                editable:true,
                 businessHours: {
                     // days of week. an array of zero-based day of week integers (0=Sunday)
                     daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
@@ -120,7 +120,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 							delay: 0
 						},
 						container: "body",
-						tooltipClass: "mytooltip",
+						tooltipClass: "operationOrderTooltip",
 						content: function () {
 							return this.getAttribute("title");
 						}
@@ -182,6 +182,9 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
 				},
+                eventResizeStop: function(info) {
+				    $('.operationOrderTooltip').hide();
+                },
             });
 
 			// refresh event on modal close
