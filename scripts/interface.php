@@ -270,7 +270,9 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
             $operationorder = new OperationOrder($db);
             $res = $operationorder->fetch($id_operationorder);
-
+            if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
+            $operationorder->array_options['options_planned_date'] = intval($action_or->dated);
+            $operationorder->save($user);
             $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
 
             $statusAllowed = new OperationOrderStatus($db);
