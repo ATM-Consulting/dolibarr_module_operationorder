@@ -64,7 +64,7 @@ class OperationOrderJoursOff extends SeedObject
 	 * @param int  $limit       Limit element returned
 	 * @param bool $loadChild   used to load children from database
 	 * @param array $TFilter 	array off filters ('date' => '2020-11-13' OR 'date' => array('field' => 'date', 'operator' => '>', 'value' => '2020-11-13'))
-	 * @return array
+	 * @return self[]
 	 */
 	public function fetchAll($limit = 0, $loadChild = true, $TFilter = array())
 	{
