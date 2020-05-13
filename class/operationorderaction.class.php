@@ -99,4 +99,32 @@ class OperationOrderAction extends SeedObject
         return parent::delete($user, $notrigger);
     }
 
+    public function fecthByOR ($fk_operationorder){
+
+        global $db;
+
+        $TORActions = array();
+
+        $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationorderaction WHERE fk_operationorder = '" . $fk_operationorder . "'";
+        $resql = $db->query($sql);
+
+        if($resql){
+
+            $ORA = new OperationOrderAction($db);
+
+            while($obj = $db->fetch_object($resql)){
+
+                $res = $ORA->fetch($obj->rowid);
+
+                if($res) $TORActions[] = $ORA;
+                else return -1;
+            }
+        } else
+        {
+            return -1;
+        }
+
+        return $TORActions;
+    }
+
 }

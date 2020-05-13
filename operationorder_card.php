@@ -25,7 +25,9 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/contrat/class/contrat.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 dol_include_once('operationorder/class/operationorder.class.php');
+dol_include_once('operationorder/class/operationorderaction.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
+require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
 if(empty($user->rights->operationorder->read)) accessforbidden();
 
@@ -50,7 +52,11 @@ $backtopage = GETPOST('backtopage', 'alpha');
 
 $object = new OperationOrder($db);
 
-if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
+if (!empty($id) || !empty($ref))  {
+    $object->fetch($id, true, $ref);
+    $object->time_planned_t = convertSecondToTime($object->time_planned_t);
+    $object->time_planned_f = convertSecondToTime($object->time_planned_f);
+}
 
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 
@@ -113,10 +119,12 @@ if (empty($reshook))
     $error = 0;
 	switch ($action) {
         case 'update_attribute':
+
+            $attribute = GETPOST('attribute');
+
             if (!empty($object->userCan($user, 'edit')))
             {
                 $values = array();
-                $attribute = GETPOST('attribute');
 
                 if ($attribute == 'date_operation_order')
                 {
@@ -130,6 +138,8 @@ if (empty($reshook))
                 }
 
                 $object->save($user);
+
+                header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
             }
 
             break;
@@ -847,6 +857,31 @@ else
 
             print '<div class="clearboth"></div><br />';
 
+            //JS Fields
+
+            ?>
+
+            <script>
+
+                $(document).ready(function() {
+                    <?php
+
+                    //panneau "warning" si action OR existe pour cet OR
+                    $ORA = new OperationOrderAction($db);
+                    $TORActions = $ORA->fecthByOR($object->id);
+                    if(!empty($TORActions)) {
+                    ?>
+
+                    var element =  $("td .fieldname_time_planned_f");
+                    $("td .fieldname_time_planned_f").append('<?php print img_picto($langs->trans('WarningORTimePlannedF'),'warning.png') ?>');
+                    <?php } ?>
+
+                });
+
+            </script>
+
+            <?php
+
 
 			/*
 			 * Lines
@@ -863,6 +898,7 @@ else
 
 			print '
 			<script type="text/javascript">
+			
 			$(function()
 			{
 			    // Animate modified line

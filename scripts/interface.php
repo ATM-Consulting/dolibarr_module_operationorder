@@ -242,20 +242,27 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
     if(!empty($id_operationorder))
     {
-        $action_or = new OperationOrderAction($db);
-
-        $action_or->dated = $startTime;
-        $action_or->datef = $endTime;
-        $action_or->fk_operationorder = $id_operationorder;
-        $action_or->fk_user_author = $user->id;
-
-        $res = $action_or->save($user);
 
         $operationorder = new OperationOrder($db);
         $res = $operationorder->fetch($id_operationorder);
 
         if ($res)
         {
+            $action_or = new OperationOrderAction($db);
+
+            $action_or->dated = $startTime;
+            //OR temps forcé ou temps théorique ou rien
+            if(empty($operationorder->time_planned_f) && !empty($operationorder->time_planned_t)) $action_or->datef = $startTime + $operationorder->time_planned_t;
+            elseif(empty($operationorder->time_planned_t) && !empty($operationorder->time_planned_f)) $action_or->datef = $startTime + $operationorder->time_planned_f;
+            else $action_or->datef = $endTime;
+            $action_or->fk_operationorder = $id_operationorder;
+            $action_or->fk_user_author = $user->id;
+
+            $res = $action_or->save($user);
+
+            $operationorder = new OperationOrder($db);
+            $res = $operationorder->fetch($id_operationorder);
+
             $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
 
             $statusAllowed = new OperationOrderStatus($db);
