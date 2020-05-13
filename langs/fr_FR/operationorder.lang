@@ -70,8 +70,8 @@ OperationOrderStatusShortClosed=Traité
 OperationOrderStatusShortToPlan=A planifier
 OperationOrderStatusShortDisabled=Désactivé
 ErrorLoadingStatus=Erreur : aucun statut actif détecté, cela signifie généralement que la configuration des statuts n'est pas terminée
-DisplayOnPlanningHelp=Afficher les ordres de réparation sur ce statut dans le panning
-DisplayOnPlanning=Afficher les ordres de réparation sur ce statut dans le panning
+DisplayOnPlanningHelp=Afficher les ordres de réparation sur ce statut dans le planning
+DisplayOnPlanning=Afficher les ordres de réparation sur ce statut dans le planning
 CleanEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, supprimer la plannification existante de l'OR
 CleanEventOnThisStatusHelp=Utile pour déplanifier un ordre de réparation
 
@@ -193,3 +193,6 @@ OperationOrderPlanning=Planification des ordres de réparation
 Planable=Planifiable
 PlanableHelp=Les ordres de réparations ayant ce statut seront sélectionnables lors de la création dans la vue planification
 CreateNewORAction=Créer un nouvel événement OR
+PublicHolidayNonWorkedDaysList=Liste des jours non travaillés
+oojoursOff=Jours non travaillés
+OnlineSync=Synchronisation en ligne
