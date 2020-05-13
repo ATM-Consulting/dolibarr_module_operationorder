@@ -152,7 +152,7 @@ if(GETPOST('action'))
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
 	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
-	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['fk_action']);
+	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
 echo json_encode($data);
@@ -263,6 +263,14 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
             if(empty($operationorder->time_planned_f) && !empty($operationorder->time_planned_t)) $action_or->datef = $startTime + $operationorder->time_planned_t;
             elseif(empty($operationorder->time_planned_t) && !empty($operationorder->time_planned_f)) $action_or->datef = $startTime + $operationorder->time_planned_f;
             else $action_or->datef = $endTime;
+
+            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
+			{
+				if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
+				else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
+				$action_or->datef = $TRes['total']['dateEnd'];
+			}
+
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
 
@@ -298,33 +306,91 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
 }
 
-function _updateOperationOrderAction($startTime, $endTime, $allDay, $fk_action){
+function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
     global $db, $user;
 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');
-    $db->begin();
-    $action_or = new OperationOrderAction($db);
-    $res = $action_or->fetch($fk_action);
-    if($res > 0) {
-        $action_or->dated = $startTime;
-        $action_or->datef = $endTime;
-        if(!empty($allDay)) $action_or->fullday = 1;
-        $res = $action_or->save($user);
-        if($res > 0) {
-            $or = new OperationOrder($db);
-            $res = $or->fetch($action_or->fk_operationorder);
-            if(empty($or->array_options)) $or->fetch_optionals();
-            if($res > 0) {
-                $or->array_options['options_planned_date'] = intval($action_or->dated);
-                $or->save($user);
+
+    if($action == 'drop')
+    {
+        $db->begin();
+        $action_or = new OperationOrderAction($db);
+        $res = $action_or->fetch($fk_action);
+        if ($res > 0)
+        {
+            $action_or->dated = $startTime;
+            $action_or->datef = $endTime;
+            if (!empty($allDay)) $action_or->fullday = 1;
+            $res = $action_or->save($user);
+            if ($res > 0)
+            {
+                $or = new OperationOrder($db);
+                $res = $or->fetch($action_or->fk_operationorder);
+                if (empty($or->array_options)) $or->fetch_optionals();
+                if ($res > 0)
+                {
+                    $or->array_options['options_planned_date'] = intval($action_or->dated);
+                    $or->save($user);
+                    $db->commit();
+                    return 1;
+                }
+            }
+        }
+        $db->rollback();
+        return -1;
+    } else {
+
+        $error = 0;
+
+        if(!empty($fk_action))
+        {
+
+            $db->begin();
+
+            $action_or = new OperationOrderAction($db);
+            $res = $action_or->fetch($fk_action);
+
+            if($res) {
+
+                $operationorder = new OperationOrder($db);
+                $res = $operationorder->fetch($action_or->fk_operationorder);
+
+                if($res){
+
+                    $time_planned = $endTime - $startTime;
+
+                    if ($endTime != $action_or->datef){
+
+                        $action_or->datef = $endTime;
+                        $res = $action_or->save($user);
+                        if($res < 0) $error++;
+
+                        $operationorder->time_planned_f = $time_planned;
+                        $res = $operationorder->save($user);
+                        if($res < 0) $error++;
+                    }
+
+                } else {
+                    $error++;
+                }
+
+            } else {
+                $error++;
+            }
+
+            if(!$error) {
                 $db->commit();
                 return 1;
             }
+            else {
+                $db->rollback();
+                return -1;
+            }
         }
+
+        return 0;
     }
-    $db->rollback();
-    return -1;
 }
 
 /**
