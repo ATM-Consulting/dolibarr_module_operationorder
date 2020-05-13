@@ -113,7 +113,7 @@ dol_fiche_head($head, 'oojoursOff', $langs->trans("OperationOrderJoursOff"), -1,
 /*
  *  Settings
  */
-print_barre_liste($langs->trans('PublicHolidayNonWorkedDaysList'));
+print_barre_liste($langs->trans('PublicHolidayNonWorkedDaysList'), 0, $_SERVER['PHP_SELF']);
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
 
