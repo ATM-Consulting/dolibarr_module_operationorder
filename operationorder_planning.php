@@ -137,17 +137,16 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 						failure: function() {
 							//document.getElementById('script-warning').style.display = 'block'
 						}
+					},
+					{
+						url: operationOrderInterfaceUrl,
+						extraParams: {
+							eventsType: 'dayOff'
+						},
+						failure: function() {
+							//document.getElementById('script-warning').style.display = 'block'
+						}
 					}
-					// another source
-					// ,{
-					// 	url: operationOrderInterfaceUrl,
-					// 	extraParams: {
-					// 		eventsType: 'notAvailableRange'
-					// 	},
-					// 	failure: function() {
-					// 		//document.getElementById('script-warning').style.display = 'block'
-					// 	}
-					// }
 				],
 				loading: function(bool) {
 					//document.getElementById('loading').style.display = bool ? 'block' : 'none';

@@ -78,7 +78,7 @@ class OperationOrderJoursOff extends SeedObject
 				if (!is_array($value)) $sql.= ' AND '.$field.' = '.$this->quote($value, $this->fields[$field]);
 				else
 				{
-					if (!empty($value['field']) && !empty($value['operator']) && !empty($value['value'])) $sql.=  ' AND '.$value['field']. ' ' . $value['operator'] . ' ' . $this->quote($value, $this->fields[$field]);
+					if (!empty($value['field']) && !empty($value['operator']) && !empty($value['value'])) $sql.=  ' AND '.$value['field']. ' ' . $value['operator'] . ' ' . $this->quote($value['value'], $this->fields[$field]);
 				}
 			}
 		}
