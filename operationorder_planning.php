@@ -91,7 +91,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				minTime: fullcalendarscheduler_minTime,
 				maxTime: fullcalendarscheduler_maxTime,
 				scrollTime: '10:00:00',
-				height: 'auto',
+				height: getFullCalendarHeight(), //
 				selectMirror: true,
 				locale: fullcalendarscheduler_initialLangCode,
 				eventLimit: true, // allow "more" link when too many events
@@ -246,6 +246,10 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
 			calendar.render();
 
+			$(window).on('resize', function(){
+				calendar.setOption('height', getFullCalendarHeight());
+			});
+
 			// function newEventModal(start, end = 0){
 			// 	// console.log(start);
 			// 	// $("#dialog-add-event").html("title");
@@ -296,6 +300,10 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                 });
 
             });
+
+            function getFullCalendarHeight(){
+				return  $( window ).height() - $("#id-right").offset().top - 30;
+			}
 
         });
     </script>
