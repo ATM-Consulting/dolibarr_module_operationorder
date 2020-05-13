@@ -136,25 +136,25 @@ $metas = array('placeholder' => "fr", 'pattern' => "[a-z]{2}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_LOCALE_LANG', false, '', $metas );
 
 $metas = array('placeholder' => "08:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
-setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START', false, '', $metas );
+setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START', false, '', $metas, 'input','FULLCALENDAR_ThisInputIsForInfoOnly' );
 
 $metas = array('placeholder' => "18:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
-setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END', false, '', $metas );
+setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END', false, '', $metas, 'input','FULLCALENDAR_ThisInputIsForInfoOnly' );
 
 $metas = array('placeholder' => "10:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
-setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START', false, '', $metas );
+setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START', false, '', $metas, 'input','FULLCALENDAR_ThisInputIsForInfoOnly' );
 
 $metas = array('placeholder' => "16:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
-setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END', false, '', $metas );
+setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END', false, '', $metas, 'input','FULLCALENDAR_ThisInputIsForInfoOnly' );
 
-$metas = array('placeholder' => "00:30:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
+$metas = array('placeholder' => "00:15:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_SNAP_DURATION', false, '', $metas );
 
 $metas = array('placeholder' => "00:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_MIN_TIME', false, '', $metas );
 
-$metas = array('placeholder' => "23:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
-setup_print_input_form_part('FULLCALENDARSCHEDULER_MAX_TIME', false, '', $metas );
+$metas = array('placeholder' => "24:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
+setup_print_input_form_part('FULLCALENDARSCHEDULER_MAX_TIME', false, '', $metas, 'input','FULLCALENDARSCHEDULER_MAX_TIME_help' );
 
 
 
