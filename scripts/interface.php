@@ -34,11 +34,18 @@ if(GETPOST('action'))
 		// Since no timeZone will be present, they will parsed as UTC.
 
 		$timeZone = GETPOST('timeZone');
-		$agendaType = GETPOST('agendaType');
+		$eventsType = GETPOST('eventsType');
 		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-		$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+		if($eventsType == 'dayOff'){
+			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
+		}
+		else
+		{
+			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $eventsType);
+		}
+
 
 		$parameters=array();
 		$reshook=$hookmanager->executeHooks('jsonInterface',$parameters,$data, $action);    // Note that $action and $object may have been modified by hook
@@ -472,7 +479,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	{
 		while ($obj = $db->fetch_object($resql))
 		{
-			$event = new stdClass();
+			$event = new fullCalendarEvent();
 
 			$operationOrder = new OperationOrder($db);
 			$operationOrder->fetch($obj->id);
@@ -534,4 +541,156 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	}
 
 	return $TRes;
+}
+
+
+/**
+ * @param int $start
+ * @param int $end
+ * @param string $agendaType not used yet for multiple source type
+ * @return false|string
+ */
+function  _getJourOff($start = 0, $end = 0){
+
+	global $db;
+
+	dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+
+	$dayOff = new OperationOrderJoursOff($db);
+
+	$TFilter = array(
+		array(
+			'operator' => '>=',
+			'value' => date('Y-m-d H:i:s', $start),
+			'field' => 'date',
+		),
+		array(
+			'operator' => '<=',
+			'value' => date('Y-m-d H:i:s', $end),
+			'field' => 'date',
+		)
+	);
+
+	$TDayOff = $dayOff->fetchAll(0, false, $TFilter);
+
+
+	$TRes = array();
+
+	if (!empty($TDayOff))
+	{
+		foreach ($TDayOff as $dayOff)
+		{
+			$event = new fullCalendarEvent();
+
+			$event->title	= $dayOff->label;
+
+			$event->url		= '';
+			$event->start	= date('c', $dayOff->date);
+			// $event->end	= date('c', $dayOff->date);
+			$event->allDay  = true; // will make the time show
+			$event->msg = '';
+			$event->color = '#a3a3a3';
+
+			if($db->jdate($dayOff->date) < time()){
+				$event->color = OO_colorLighten($event->color, 10);
+			}
+
+			$TRes[] = $event;
+
+			$eventbg = clone $event;
+			$eventbg->rendering = 'background';
+			$TRes[] = $eventbg;
+		}
+	}
+
+	return $TRes;
+}
+
+class fullCalendarEvent {
+
+	public $title;
+	public $url;
+
+	/**
+	 * @var string $start date c format
+	 */
+	public $start;
+
+	/**
+	 * @var string $start date c format
+	 */
+	public $end;
+	public $msg = '';
+	public $color;
+
+	/**
+	 * @var bool Determines if the event is shown in the “all-day” section of relevant views. In addition, if true the time text is not displayed with the event.
+	 */
+ 	public $allDay  = false; // will make the time show
+
+	/**
+	 * @var string The rendering type of this event. Can be empty (normal rendering), "background", or "inverse-background"
+	 */
+	public $rendering = '';
+
+//
+//	id
+//	String. A unique identifier of an event. Useful for getEventById.
+//
+//	groupId
+//	String. Events that share a groupId will be dragged and resized together automatically.
+//
+//
+//	start
+//	Date object that obeys the current timeZone. When an event begins.
+//
+//	end
+//	Date object that obeys the current timeZone. When an event ends. It could be null if an end wasn’t specified.
+//
+//	Note: This value is exclusive. For example, an event with the end of 2018-09-03 will appear to span through 2018-09-02 but end before the start of 2018-09-03. See how events are are parsed from a plain object for further details.
+//
+//	title
+//	String. The text that will appear on an event.
+//
+//	url
+//	String. A URL that will be visited when this event is clicked by the user. For more information on controlling this behavior, see the eventClick callback.
+//
+//	classNames
+//	An array of strings like [ 'myclass1', myclass2' ]. Determines which HTML classNames will be attached to the rendered event.
+//
+//	editable
+//	Boolean (true or false) or null. The value overriding the editable setting for this specific event.
+//
+//	startEditable
+//	Boolean (true or false) or null. The value overriding the eventStartEditable setting for this specific event.
+//
+//	durationEditable
+//	Boolean (true or false) or null. The value overriding the eventDurationEditable setting for this specific event.
+//
+//	resourceEditable
+//	Boolean (true or false) or null. The value overriding the eventResourceEditable setting for this specific event.
+//
+//	rendering
+//	The rendering type of this event. Can be empty (normal rendering), "background", or "inverse-background"
+//
+//	overlap
+//	The value overriding the eventOverlap setting for this specific event. If false, prevents this event from being dragged/resized over other events. Also prevents other events from being dragged/resized over this event. Does not accept a function.
+//
+//	constraint
+//	The eventConstraint override for this specific event.
+//
+//	backgroundColor
+//	The eventBackgroundColor override for this specific event.
+//
+//	borderColor
+//	The eventBorderColor override for this specific event.
+//
+//	textColor
+//	The eventTextColor override for this specific event.
+//
+//	extendedProps
+//	A plain object holding miscellaneous other properties specified during parsing. Receives properties in the explicitly given extendedProps hash as well as other non-standard properties.
+//
+//	source
+//	A reference to the Event Source this event came from. If the event was added dynamically via addEvent, and the source parameter was not specified, this value will be null.
 }
