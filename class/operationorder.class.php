@@ -471,6 +471,9 @@ class OperationOrder extends SeedObject
     {
         $this->deleteObjectLinked();
 
+        $res = $this->deleteORAction();
+        if($res < 0) return -1;
+
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
         return parent::delete($user, $notrigger);
     }
@@ -651,7 +654,7 @@ class OperationOrder extends SeedObject
 				if ($this->db->query($sql))
 				{
 					if(!empty($newStatus->clean_event)){
-						if(!$this->db->query("DELETE FROM ".MAIN_DB_PREFIX.'operationorderaction WHERE fk_operationorder = '.$this->id)){
+						if($this->deleteORAction() < 0){
 							$this->error = 'Error cleaning operation order events';
 							$error++;
 						}
@@ -1464,6 +1467,14 @@ class OperationOrder extends SeedObject
         }
 
         return $total_time;
+    }
+
+    public function deleteORAction(){
+
+        $resql = $this->db->query("DELETE FROM ".MAIN_DB_PREFIX."operationorderaction WHERE fk_operationorder = '".$this->id."'");
+
+        if($resql) return 1;
+        else return -1;
     }
 }
 
