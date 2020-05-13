@@ -38,7 +38,7 @@ if(GETPOST('action'))
 		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-		if($agendaType = 'dayOff'){
+		if($agendaType == 'dayOff'){
 			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
 		}
 		else
