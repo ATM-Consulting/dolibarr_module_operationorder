@@ -263,6 +263,14 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
             if(empty($operationorder->time_planned_f) && !empty($operationorder->time_planned_t)) $action_or->datef = $startTime + $operationorder->time_planned_t;
             elseif(empty($operationorder->time_planned_t) && !empty($operationorder->time_planned_f)) $action_or->datef = $startTime + $operationorder->time_planned_f;
             else $action_or->datef = $endTime;
+
+            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
+			{
+				if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
+				else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
+				$action_or->datef = $TRes['total']['dateEnd'];
+			}
+
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
 
