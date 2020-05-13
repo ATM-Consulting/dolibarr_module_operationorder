@@ -58,7 +58,6 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
 		fullcalendarscheduler_initialLangCode = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs; ?>";
 		fullcalendarscheduler_snapDuration = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'; ?>";
-		fullcalendarscheduler_aspectRatio = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'; ?>";
 		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
 		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '23:00'; ?>";
 
