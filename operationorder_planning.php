@@ -214,10 +214,11 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                 eventDrop: function(eventDropInfo) {
 				    let startDay = eventDropInfo.event._instance.range.start.getDay();
 				    let endDay = eventDropInfo.event._instance.range.start.getDay();
-				    console.log(startDay, fullcalendar_scheduler_businessHours_days);
 				    let startHour = eventDropInfo.event._instance.range.start.getHours()+(eventDropInfo.event._instance.range.start.getTimezoneOffset()/60);
+                    if(startHour < 0) startHour += 24;
 				    let startMin = eventDropInfo.event._instance.range.start.getMinutes();
 				    let endHour = eventDropInfo.event._instance.range.end.getHours()+(eventDropInfo.event._instance.range.end.getTimezoneOffset()/60);
+				    if(endHour < 0) endHour += 24;
 				    let endMin = eventDropInfo.event._instance.range.end.getMinutes();
                     let ThourminStart = fullcalendar_scheduler_businessHours_week_start.split(':');
                     let Thourminend = fullcalendar_scheduler_businessHours_week_end.split(':');
