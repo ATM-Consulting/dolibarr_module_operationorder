@@ -588,7 +588,6 @@ function  _getJourOff($start = 0, $end = 0){
 			$event->start	= date('c', $dayOff->date);
 			// $event->end	= date('c', $dayOff->date);
 			$event->allDay  = true; // will make the time show
-			$event->rendering = 'background';
 			$event->msg = '';
 			$event->color = '#a3a3a3';
 
@@ -598,6 +597,9 @@ function  _getJourOff($start = 0, $end = 0){
 
 			$TRes[] = $event;
 
+			$eventbg = clone $event;
+			$eventbg->rendering = 'background';
+			$TRes[] = $eventbg;
 		}
 	}
 
