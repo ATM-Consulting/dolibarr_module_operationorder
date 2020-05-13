@@ -820,16 +820,15 @@ function OO_colorAdjustBrightness($hex, $steps)
  */
 function getOperationOrderActionsArray($dateStart = '', $TimeSpending = '')
 {
-	global $db;
+	global $db, $conf;
 
 	$results['total']['timeSpent'] = 0;
+	$results['total']['timeSpentHours'] = 0;
 
-	$dayStartHour = "08:00";
-	$dayEndHour = "17:00";
+	$THoraire = getTHoraire();
+//	echo '<pre>'; print_r($THoraire);
 
 	if (empty($dateStart) || empty($TimeSpending)) return $results;
-
-//	var_dump(array($dateStart, $TimeSpending));
 
 	dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
 	dol_include_once('/core/lib/date.lib.php');
@@ -840,72 +839,166 @@ function getOperationOrderActionsArray($dateStart = '', $TimeSpending = '')
 	$timeSpendingSec = convertTime2Seconds($timeSpendingArray[0], $timeSpendingArray[1]);
 	$remainingTime = $timeSpendingSec;
 
-	$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
-	$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
-
 	$i=0;
 
 	while ($results['total']['timeSpent'] < $timeSpendingSec && $i < 15)
 	{
 		$DayOfWeek = date("N", $testDate);
-		$jourFerie = $jourOff->isOff(date("Y-m-d 00:00:00", $testDate));
-//		var_dump(array(date("Y-m-d", $testDate), $results['total']['timeSpent'] , $timeSpendingSec));
-		if (
-			$testDate >= $testDayEnd // départ après fermeture
-			|| $DayOfWeek > 5// we
-			|| $jourFerie// férié
-		)
-		{
-			// passer au jour suivant
-			$testDate = strtotime('+1 day', $testDayStart);
-			$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
-			$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
-			$rejectMsg = '';
-			if ($testDate > $testDayEnd) $rejectMsg = "to late";
-			else if ($DayOfWeek > 5) $rejectMsg = "week end";
-			else if ($jourFerie) $rejectMsg = "férié";
-			$results['total']['excluded'][date("Y-m-d", $testDate)] = $rejectMsg;
+		$key = date("Y-m-d", $testDate);
 
-			continue;
-		}
-		else
+		$dayKey = 'defaultHours';
+		if (!empty($THoraire[$DayOfWeek]['boundings'])) $dayKey = $DayOfWeek;
+
+		foreach ($THoraire[$dayKey]['boundings'] as $boundings)
 		{
-			$key = date("Y-m-d", $testDate);
+			$jourFerie = $jourOff->isOff(date("Y-m-d 00:00:00", $testDate));
+
+			$testDayStart = strtotime(date("Y-m-d ".$boundings['startHour'].":00", $testDate));
+			$testDayEnd = strtotime(date("Y-m-d ".$boundings['endHour'].":00", $testDate));
+
+			if ($testDate < $testDayStart) $testDate = $testDayStart;
+
+			if (
+				$testDate >= $testDayEnd // départ après fermeture
+				|| $DayOfWeek > 5// we
+				|| $jourFerie// férié
+			)
+			{
+				// passer au jour suivant
+
+				if (!array_key_exists($key, $results['total']['excluded']))
+				{
+					$rejectMsg = '';
+					if ($testDate >= $testDayEnd) $rejectMsg = "to late";
+					else if ($DayOfWeek > 5) $rejectMsg = "week end";
+					else if ($jourFerie) $rejectMsg = "férié";
+					$results['total']['excluded'][$key] = $rejectMsg;
+				}
+
+				continue;
+			}
 
 			if ($testDate >= $testDayStart && $testDate < $testDayEnd) // on est dans les horaires
 			{
+				if (array_key_exists($key, $results['total']['excluded'])) unset($results['total']['excluded'][$key]);
+				if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[$key]['dateStart'];
 				$timeDiff = $testDayEnd-$testDate;
 
 				$results[$key]['dateStart'] = date("Y-m-d H:i:s", $testDate);
 
-				if ($timeDiff > $remainingTime) // le temps dispo est suppérieur au temps demandé
+				if ($timeDiff >= $remainingTime) // le temps dispo est suppérieur au temps demandé
 				{
-					$results[$key]['timeSpent'] = $remainingTime;
+					$results[$key]['timeSpent']+= $remainingTime;
 				}
 				else
 				{
-					$results[$key]['timeSpent'] = $timeDiff;
+					$results[$key]['timeSpent']+= $timeDiff;
 				}
 				$remainingTime-= $results[$key]['timeSpent'];
+				$results[$key]['timeSpentHours'] = convertSecondToTime($results[$key]['timeSpent'], 'allhourmin');
 
-				$results[$key]['dateEnd'] = date("Y-m-d H:i:s", $testDate + $results[$key]['timeSpent']);
+				$results['total']['dateEnd'] = $results[$key]['dateEnd'] = date("Y-m-d H:i:s", $testDate + $results[$key]['timeSpent']);
+				$results['total']['timeSpent'] += $results[$key]['timeSpent'];
+				if (empty($remainingTime)) break 2;
+
 
 			}
+			else continue;
 
-			if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[date("Y-m-d", $testDate)]['dateStart'];
-			$results['total']['dateEnd'] = $results[$key]['dateEnd'];
-			$results['total']['timeSpent'] += $results[$key]['timeSpent'];
-			$results['total']['timeSpentHours'] = convertSecondToTime($results['total']['timeSpent'], 'allhourmin');
+			if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[$key]['dateStart'];
 
-			// on passe au jour d'aprés
-			$testDate = strtotime('+1 day', $testDayStart);
-			$testDayStart = strtotime(date("Y-m-d ".$dayStartHour.":00", $testDate));
-			$testDayEnd = strtotime(date("Y-m-d ".$dayEndHour.":00", $testDate));
 		}
+
+		$testDate = strtotime('+1 day', $testDate);
+		$DayOfWeek = date("N", $testDate);
+		$dayKey = 'defaultHours';
+		if (!empty($THoraire[$DayOfWeek]['boundings'])) $dayKey = $DayOfWeek;
+
+		$testDate = strtotime(date("Y-m-d ".$THoraire[$dayKey]['boundings'][0]['startHour'].":s", $testDate));
+
 
 		$i++;
 	}
+	$results['total']['timeSpentHours'] = convertSecondToTime($results['total']['timeSpent'], 'allhourmin');
 //	var_dump(array(date("Y-m-d", $testDate), $results['total']['timeSpent'] , $timeSpendingSec));
 
 	return $results;
+}
+
+function getTHoraire()
+{
+	global $conf;
+
+	$THoraire = array(
+		'defaultHours' => array(
+			'boundings' => array(
+				array(
+					'startHour' => "08:00",
+					'endHour'	=> "17:00"
+				)
+			)
+
+		)
+	);
+
+	$TConfDayOfWeek = array(
+		'MAIN_INFO_OPENINGHOURS_MONDAY',
+		'MAIN_INFO_OPENINGHOURS_TUESDAY',
+		'MAIN_INFO_OPENINGHOURS_WEDNESDAY',
+		'MAIN_INFO_OPENINGHOURS_THURSDAY',
+		'MAIN_INFO_OPENINGHOURS_FRIDAY',
+		'MAIN_INFO_OPENINGHOURS_SATURDAY',
+		'MAIN_INFO_OPENINGHOURS_SUNDAY'
+	);
+
+	for ($i = 1; $i < 8; $i++)
+	{
+		if (!empty($conf->global->{$TConfDayOfWeek[$i-1]}))
+		{
+			$confTest = trim($conf->global->{$TConfDayOfWeek[$i-1]});
+			$plages = explode(' ', $confTest);
+			if (is_array($plages) && !empty($plages))
+			{
+
+				if (count($plages) > 1)
+				{
+					foreach ($plages as $str)
+					{
+						$boundings = explode ('-', $str);
+						if (count($boundings) != 2) continue;
+
+						if (strpos($boundings[0], 'h')) $boundings[0] = preg_replace('/h/', ':', $boundings[0]);
+						if (!strpos($boundings[0], ':')) $boundings[0] = $boundings[0].':00';
+
+						if (strpos($boundings[1], 'h')) $boundings[1] = preg_replace('/h/', ':', $boundings[1]);
+						if (!strpos($boundings[1], ':')) $boundings[1] = $boundings[1].':00';
+
+						$THoraire[$i]['boundings'][] = array(
+							'startHour' => $boundings[0],
+							'endHour'	=> $boundings[1]
+						);
+					}
+				}
+				else
+				{
+					$boundings = explode ('-', $plages[0]);
+					if (count($boundings) != 2) continue;
+
+					if (strpos($boundings[0], 'h')) $boundings[0] = preg_replace('/h/', ':', $boundings[0]);
+					if (!strpos($boundings[0], ':')) $boundings[0] = $boundings[0].':00';
+
+					if (strpos($boundings[1], 'h')) $boundings[1] = preg_replace('/h/', ':', $boundings[1]);
+					if (!strpos($boundings[1], ':')) $boundings[1] = $boundings[1].':00';
+
+					$THoraire[$i]['boundings'][] = array(
+						'startHour' => $boundings[0],
+						'endHour'	=> $boundings[1]
+					);
+				}
+			}
+
+		}
+	}
+
+	return $THoraire;
 }
