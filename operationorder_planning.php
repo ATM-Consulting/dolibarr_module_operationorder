@@ -105,6 +105,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                     endTime: fullcalendar_scheduler_businessHours_week_end, // an end time (6pm in this example)
                 },
                 eventConstraint:'businessHours',
+                selectConstraint:'businessHours',
 
 				eventRender: function(info) {
 
