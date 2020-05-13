@@ -187,7 +187,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
                     let startTimestamp = Math.floor(info.event.start.getTime()/1000);
                     let endTimestamp = Math.floor(info.event.end.getTime()/1000);
-                    let operationOrderActionId = info.event.extendedProps.operationOrderActionId;
+                    let fk_action = info.event.extendedProps.operationOrderActionId;
                     let action = 'resize';
 
                     $.ajax({
@@ -225,8 +225,8 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                             'startTime': startTms,
                             'endTime': endTms,
                             'fk_action': fk_action,
-                            'action': action
-                            'allDay': eventDropInfo.event.allDay
+                            'action': action,
+                            'allDay': eventDropInfo.event.allDay,
                         },
                         dataType: 'json',
                         // La fonction à apeller si la requête aboutie
