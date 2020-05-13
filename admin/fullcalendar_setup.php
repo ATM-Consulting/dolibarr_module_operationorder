@@ -132,28 +132,28 @@ setup_print_title("Parameters");
 // Example with textarea
 //setup_print_input_form_part('CONSTNAME',$langs->trans('ParamLabel'),'ParamDesc',array(),'textarea');
 
-$metas = array('placeholder' => "fr");
+$metas = array('placeholder' => "fr", 'pattern' => "[a-z]{2}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_LOCALE_LANG', false, '', $metas );
 
-$metas = array('placeholder' => "08:00");
+$metas = array('placeholder' => "08:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START', false, '', $metas );
 
-$metas = array('placeholder' => "18:00");
+$metas = array('placeholder' => "18:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END', false, '', $metas );
 
-$metas = array('placeholder' => "10:00");
+$metas = array('placeholder' => "10:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START', false, '', $metas );
 
-$metas = array('placeholder' => "16:00");
+$metas = array('placeholder' => "16:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END', false, '', $metas );
 
-$metas = array('placeholder' => "00:30:00");
+$metas = array('placeholder' => "00:30:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_SNAP_DURATION', false, '', $metas );
 
-$metas = array('placeholder' => "00:00");
+$metas = array('placeholder' => "00:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_MIN_TIME', false, '', $metas );
 
-$metas = array('placeholder' => "23:00");
+$metas = array('placeholder' => "23:00", 'pattern' => "[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}");
 setup_print_input_form_part('FULLCALENDARSCHEDULER_MAX_TIME', false, '', $metas );
 
 
