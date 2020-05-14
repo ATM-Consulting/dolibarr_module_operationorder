@@ -359,9 +359,13 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                     $time_planned = $endTime - $startTime;
 
-                    if ($endTime != $action_or->datef){
+					$TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($time_planned));
+					$endTime = strtotime($TRes['total']['dateEnd']);
+
+					if ($endTime != $action_or->datef){
 
                         $action_or->datef = $endTime;
+
                         $res = $action_or->save($user);
                         if($res < 0) $error++;
 
@@ -508,7 +512,7 @@ function _statusRank(&$data)
  */
 function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanned'){
 
-	global $db, $hookmanager, $langs, $user;
+	global $db, $hookmanager, $langs, $user, $conf;
 
 
 	dol_include_once('/operationorder/class/operationorder.class.php');
@@ -561,12 +565,18 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$event->start	= date('c', $obj->dated);
 			$event->end		= date('c', $obj->datef);
 
-			if (date('d', strtotime($event->start)) != date('d', strtotime($event->end)))
+			$fullcalendar_scheduler_businessHours_week_end = !empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00';
+			$testDayEndDate = date("Y-m-d ".$fullcalendar_scheduler_businessHours_week_end.":00", strtotime($event->end));
+//var_dump(strtotime($event->end) > strtotime($testDayEndDate)); exit;
+			if (date('d', strtotime($event->start)) != date('d', strtotime($event->end)) || strtotime($event->end) > strtotime($testDayEndDate))
 			{
 				// obliger de réécrire les formats des dates pour afficher dans allDay
 				// Note: This value is exclusive. For example, an event with the end of 2018-09-03 will appear to span through 2018-09-02 but end before the start of 2018-09-03. See how events are are parsed from a plain object for further details.
 				$event->start = date("Y-m-d", strtotime($event->start));
-				$event->end = date("Y-m-d", strtotime('+1 day', strtotime($event->end)));
+
+				$addDay = 1;
+				if (strtotime($event->end) > strtotime($testDayEndDate)) $addDay++;
+				$event->end = date("Y-m-d", strtotime('+'.$addDay.' day', strtotime($event->end)));
 				$event->allDay = true;
 			}
 
