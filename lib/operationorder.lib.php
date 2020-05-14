@@ -829,6 +829,7 @@ function getOperationOrderActionsArray($dateStart = '', $TimeSpending = '')
 
 	$results['total']['timeSpent'] = 0;
 	$results['total']['timeSpentHours'] = 0;
+	$results['total']['excluded'] = array();
 
 	$THoraire = getTHoraire();
 //	echo '<pre>'; print_r($THoraire);
