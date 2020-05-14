@@ -125,6 +125,8 @@ SupplierOrderCreated=Commande fournisseur créée
 TimePlannedTheoretical=Temps d'immobilisation théorique
 TimePlannedForced=Temps d'immobilisation forcé
 WarningORTimePlannedF=OR existant et associé non modifié
+planned_date_help=Date de plannification de la réparation/entretiens
+PlannedDate=Date de planification
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
