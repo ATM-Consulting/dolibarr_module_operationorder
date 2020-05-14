@@ -108,7 +108,6 @@ if (empty($reshook))
 	switch ($action) {
 		case 'add':
 		case 'update':
-            $planable = GETPOST('planable');
 			$object->edit = 0;
 			$object->setValues($_REQUEST); // Set standard attributes
 			$object->display_on_planning = GETPOST('display_on_planning', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
