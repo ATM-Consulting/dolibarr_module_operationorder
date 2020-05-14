@@ -34,11 +34,18 @@ if(GETPOST('action'))
 		// Since no timeZone will be present, they will parsed as UTC.
 
 		$timeZone = GETPOST('timeZone');
-		$agendaType = GETPOST('agendaType');
+		$eventsType = GETPOST('eventsType');
 		$range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
 		$range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-		$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $agendaType);
+		if($eventsType == 'dayOff'){
+			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
+		}
+		else
+		{
+			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $eventsType);
+		}
+
 
 		$parameters=array();
 		$reshook=$hookmanager->executeHooks('jsonInterface',$parameters,$data, $action);    // Note that $action and $object may have been modified by hook
@@ -145,7 +152,7 @@ if(GETPOST('action'))
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
 	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
-	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['fk_action']);
+	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
 echo json_encode($data);
@@ -256,6 +263,14 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
             if(empty($operationorder->time_planned_f) && !empty($operationorder->time_planned_t)) $action_or->datef = $startTime + $operationorder->time_planned_t;
             elseif(empty($operationorder->time_planned_t) && !empty($operationorder->time_planned_f)) $action_or->datef = $startTime + $operationorder->time_planned_f;
             else $action_or->datef = $endTime;
+
+            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
+			{
+				if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
+				else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
+				$action_or->datef = $TRes['total']['dateEnd'];
+			}
+
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
 
@@ -263,7 +278,9 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
             $operationorder = new OperationOrder($db);
             $res = $operationorder->fetch($id_operationorder);
-
+            if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
+            $operationorder->planned_date = intval($action_or->dated);
+            $operationorder->save($user);
             $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
 
             $statusAllowed = new OperationOrderStatus($db);
@@ -289,33 +306,91 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
 }
 
-function _updateOperationOrderAction($startTime, $endTime, $allDay, $fk_action){
+function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
     global $db, $user;
 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');
-    $db->begin();
-    $action_or = new OperationOrderAction($db);
-    $res = $action_or->fetch($fk_action);
-    if($res > 0) {
-        $action_or->dated = $startTime;
-        $action_or->datef = $endTime;
-        if(!empty($allDay)) $action_or->fullday = 1;
-        $res = $action_or->save($user);
-        if($res > 0) {
-            $or = new OperationOrder($db);
-            $res = $or->fetch($action_or->fk_operationorder);
-            if(empty($or->array_options)) $or->fetch_optionals();
-            if($res > 0) {
-                $or->array_options['options_planned_date'] = intval($action_or->dated);
-                $or->save($user);
+
+    if($action == 'drop')
+    {
+        $db->begin();
+        $action_or = new OperationOrderAction($db);
+        $res = $action_or->fetch($fk_action);
+        if ($res > 0)
+        {
+            $action_or->dated = $startTime;
+            $action_or->datef = $endTime;
+            if (!empty($allDay)) $action_or->fullday = 1;
+            $res = $action_or->save($user);
+            if ($res > 0)
+            {
+                $or = new OperationOrder($db);
+                $res = $or->fetch($action_or->fk_operationorder);
+                if (empty($or->array_options)) $or->fetch_optionals();
+                if ($res > 0)
+                {
+                    $or->planned_date = intval($action_or->dated);
+                    $or->save($user);
+                    $db->commit();
+                    return 1;
+                }
+            }
+        }
+        $db->rollback();
+        return -1;
+    } else {
+
+        $error = 0;
+
+        if(!empty($fk_action))
+        {
+
+            $db->begin();
+
+            $action_or = new OperationOrderAction($db);
+            $res = $action_or->fetch($fk_action);
+
+            if($res) {
+
+                $operationorder = new OperationOrder($db);
+                $res = $operationorder->fetch($action_or->fk_operationorder);
+
+                if($res){
+
+                    $time_planned = $endTime - $startTime;
+
+                    if ($endTime != $action_or->datef){
+
+                        $action_or->datef = $endTime;
+                        $res = $action_or->save($user);
+                        if($res < 0) $error++;
+
+                        $operationorder->time_planned_f = $time_planned;
+                        $res = $operationorder->save($user);
+                        if($res < 0) $error++;
+                    }
+
+                } else {
+                    $error++;
+                }
+
+            } else {
+                $error++;
+            }
+
+            if(!$error) {
                 $db->commit();
                 return 1;
             }
+            else {
+                $db->rollback();
+                return -1;
+            }
         }
+
+        return 0;
     }
-    $db->rollback();
-    return -1;
 }
 
 /**
@@ -472,7 +547,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	{
 		while ($obj = $db->fetch_object($resql))
 		{
-			$event = new stdClass();
+			$event = new fullCalendarEvent();
 
 			$operationOrder = new OperationOrder($db);
 			$operationOrder->fetch($obj->id);
@@ -486,6 +561,15 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$event->url		= dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$operationOrder->id;
 			$event->start	= date('c', $obj->dated);
 			$event->end		= date('c', $obj->datef);
+
+			if (date('d', strtotime($event->start)) != date('d', strtotime($event->end)))
+			{
+				// obliger de réécrire les formats des dates pour afficher dans allDay
+				// Note: This value is exclusive. For example, an event with the end of 2018-09-03 will appear to span through 2018-09-02 but end before the start of 2018-09-03. See how events are are parsed from a plain object for further details.
+				$event->start = date("Y-m-d", strtotime($event->start));
+				$event->end = date("Y-m-d", strtotime('+1 day', strtotime($event->end)));
+				$event->allDay = true;
+			}
 
 			$event->operationOrderId = $obj->id;
 			$event->operationOrderActionId = $obj->actionid;
@@ -534,4 +618,158 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	}
 
 	return $TRes;
+}
+
+
+/**
+ * @param int $start
+ * @param int $end
+ * @param string $agendaType not used yet for multiple source type
+ * @return false|string
+ */
+function  _getJourOff($start = 0, $end = 0){
+
+	global $db;
+
+	dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+
+	$dayOff = new OperationOrderJoursOff($db);
+
+	$TFilter = array(
+		array(
+			'operator' => '>=',
+			'value' => date('Y-m-d H:i:s', $start),
+			'field' => 'date',
+		),
+		array(
+			'operator' => '<=',
+			'value' => date('Y-m-d H:i:s', $end),
+			'field' => 'date',
+		)
+	);
+
+	$TDayOff = $dayOff->fetchAll(0, false, $TFilter);
+
+
+	$TRes = array();
+
+	if (!empty($TDayOff))
+	{
+		foreach ($TDayOff as $dayOff)
+		{
+			$event = new fullCalendarEvent();
+
+			$event->title	= $dayOff->label;
+
+			$event->url		= '';
+			$event->start	= date('c', $dayOff->date);
+			// $event->end	= date('c', $dayOff->date);
+			$event->allDay  = true; // will make the time show
+			$event->msg = '';
+			$event->color = '#a3a3a3';
+
+			if($db->jdate($dayOff->date) < time()){
+				$event->color = OO_colorLighten($event->color, 10);
+			}
+
+			$TRes[] = $event;
+
+			$eventbg = clone $event;
+			$eventbg->rendering = 'background';
+			$TRes[] = $eventbg;
+		}
+	}
+
+	return $TRes;
+}
+
+
+// Class à but descriptive, de doc etc... elle remplace juste le new stdClass qui etait utilisé juste avant.
+class fullCalendarEvent {
+
+	public $title;
+	public $url;
+
+	/**
+	 * @var string $start date c format
+	 */
+	public $start;
+
+	/**
+	 * @var string $start date c format
+	 */
+	public $end;
+	public $msg = '';
+	public $color;
+
+	/**
+	 * @var bool Determines if the event is shown in the “all-day” section of relevant views. In addition, if true the time text is not displayed with the event.
+	 */
+ 	public $allDay  = false; // will make the time show
+
+	/**
+	 * @var string The rendering type of this event. Can be empty (normal rendering), "background", or "inverse-background"
+	 */
+	public $rendering = '';
+
+//
+//	id
+//	String. A unique identifier of an event. Useful for getEventById.
+//
+//	groupId
+//	String. Events that share a groupId will be dragged and resized together automatically.
+//
+//
+//	start
+//	Date object that obeys the current timeZone. When an event begins.
+//
+//	end
+//	Date object that obeys the current timeZone. When an event ends. It could be null if an end wasn’t specified.
+//
+//	Note: This value is exclusive. For example, an event with the end of 2018-09-03 will appear to span through 2018-09-02 but end before the start of 2018-09-03. See how events are are parsed from a plain object for further details.
+//
+//	title
+//	String. The text that will appear on an event.
+//
+//	url
+//	String. A URL that will be visited when this event is clicked by the user. For more information on controlling this behavior, see the eventClick callback.
+//
+//	classNames
+//	An array of strings like [ 'myclass1', myclass2' ]. Determines which HTML classNames will be attached to the rendered event.
+//
+//	editable
+//	Boolean (true or false) or null. The value overriding the editable setting for this specific event.
+//
+//	startEditable
+//	Boolean (true or false) or null. The value overriding the eventStartEditable setting for this specific event.
+//
+//	durationEditable
+//	Boolean (true or false) or null. The value overriding the eventDurationEditable setting for this specific event.
+//
+//	resourceEditable
+//	Boolean (true or false) or null. The value overriding the eventResourceEditable setting for this specific event.
+//
+//	rendering
+//	The rendering type of this event. Can be empty (normal rendering), "background", or "inverse-background"
+//
+//	overlap
+//	The value overriding the eventOverlap setting for this specific event. If false, prevents this event from being dragged/resized over other events. Also prevents other events from being dragged/resized over this event. Does not accept a function.
+//
+//	constraint
+//	The eventConstraint override for this specific event.
+//
+//	backgroundColor
+//	The eventBackgroundColor override for this specific event.
+//
+//	borderColor
+//	The eventBorderColor override for this specific event.
+//
+//	textColor
+//	The eventTextColor override for this specific event.
+//
+//	extendedProps
+//	A plain object holding miscellaneous other properties specified during parsing. Receives properties in the explicitly given extendedProps hash as well as other non-standard properties.
+//
+//	source
+//	A reference to the Event Source this event came from. If the event was added dynamically via addEvent, and the source parameter was not specified, this value will be null.
 }
