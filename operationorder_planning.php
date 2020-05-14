@@ -226,9 +226,10 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 				    let endMin = eventDropInfo.event._instance.range.end.getMinutes();
                     let ThourminStart = fullcalendar_scheduler_businessHours_week_start.split(':');
                     let Thourminend = fullcalendar_scheduler_businessHours_week_end.split(':');
-				    if(!eventDropInfo.event.allDay && startHour >= ThourminStart[0] &&
-                        ((endHour < Thourminend[0]) || (endHour == Thourminend[0] && endMin == 0)) &&
-                        (fullcalendar_scheduler_businessHours_days.indexOf(startDay) > 0 && fullcalendar_scheduler_businessHours_days.indexOf(endDay) > 0)) { //Si on est pas sur un jour entier et qu'on est sur des heures de travail
+				    if(!eventDropInfo.event.allDay && startHour >= ThourminStart[0]
+						&& ((endHour < Thourminend[0]) || (endHour == Thourminend[0] && endMin == 0))
+						&& (fullcalendar_scheduler_businessHours_days.indexOf(startDay) >= 0 && fullcalendar_scheduler_businessHours_days.indexOf(endDay) >= 0))
+				    { //Si on est pas sur un jour entier et qu'on est sur des heures de travail
                         $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
                         let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
                         let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
