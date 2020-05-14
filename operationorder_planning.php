@@ -58,6 +58,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
 		fullcalendarscheduler_initialLangCode = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs; ?>";
 		fullcalendarscheduler_snapDuration = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'; ?>";
+		fullcalendarscheduler_aspectRatio = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'; ?>";
 		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
 		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '24:00'; ?>";
 
@@ -146,7 +147,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 						},
 						failure: function() {
 							//document.getElementById('script-warning').style.display = 'block'
-						}
+					}
 					}
 				],
 				loading: function(bool) {
@@ -161,25 +162,28 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 					// }
 				},
                 select: function (selectionInfo) {
-                    let startTimestamp = Math.floor(selectionInfo.start.getTime()/1000);
-                    let endTimestamp = Math.floor(selectionInfo.end.getTime()/1000);
-                    $.ajax({
-                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
-                        method: 'POST',
-                        data: {
-                            'url' : window.location.href,
-                            'startTime' : startTimestamp,
-                            'endTime' : endTimestamp,
-                            'allDay' : selectionInfo.allDay
-                        },
-                        dataType: 'json',
-                        // La fonction à apeller si la requête aboutie
-                        success: function (data) {
-                            $('#dialog-add-event').html(data.result);
-                            operationorderneweventmodal.dialog("open");
-							operationorderneweventmodal.dialog({height:'auto', width:'auto'}); // resize to content
-                        }
-                    });
+                    if(!selectionInfo.allDay) {
+                        let startTimestamp = Math.floor(selectionInfo.start.getTime() / 1000);
+                        let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
+
+                        $.ajax({
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
+                            method: 'POST',
+                            data: {
+                                'url': window.location.href,
+                                'startTime': startTimestamp,
+                                'endTime': endTimestamp,
+                                'allDay': selectionInfo.allDay
+                            },
+                            dataType: 'json',
+                            // La fonction à apeller si la requête aboutie
+                            success: function (data) {
+                                $('#dialog-add-event').html(data.result);
+                                operationorderneweventmodal.dialog("open");
+                                operationorderneweventmodal.dialog({height: 'auto', width: 'auto'}); // resize to content
+                            }
+                        });
+                    }
                 },
 				dateClick: function(info) {
 					//newEventModal(info.startStr);
