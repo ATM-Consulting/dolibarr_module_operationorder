@@ -446,7 +446,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  * @param $showSubmitBtn bool
  * @return string
  */
-function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = false)
 {
     global $langs, $db, $form, $hookmanager;
 
@@ -465,13 +465,15 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         $line->price = '';
     }
 
-    if(empty($actionURL))
+    if($actionURL)
     {
-		$actionURL = $_SERVER["PHP_SELF"].'?id='.$object->id;
+        $actionURL = $_SERVER["PHP_SELF"].'?id='.$object->id;
 
         // Ancors
-		$actionURL .= ($action == 'create') ? '#addline' : '#item_'.$line->id;
-
+        $actionURL .= ($action == 'create') ? '#addline' : '#item_'.$line->id;
+    }
+    else {
+        $actionURL = '';
     }
 
 	$parameters = array(
@@ -479,7 +481,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 		'line' =>& $line
 	);
 
-	$reshook = $hookmanager->executeHooks('addFieldsByOperationOrder', $parameters, $object, $action);
+	$reshook = $hookmanager->executeHooks('displayFormFieldsByOperationOrder', $parameters, $object, $action);
 
 	if($reshook > 0){
 		$outForm = $hookmanager->resPrint;
