@@ -659,6 +659,11 @@ class OperationOrder extends SeedObject
 					$sql .= " , ref = '".$this->db->escape($this->ref)."' ";
 				}
 
+				if(!empty($newStatus->clean_event)){
+					$this->planned_date = '';
+					$sql .= " , planned_date = NULL ";
+				}
+
 				$sql .= " WHERE rowid = ".$this->id;
 
 				if ($this->db->query($sql))
