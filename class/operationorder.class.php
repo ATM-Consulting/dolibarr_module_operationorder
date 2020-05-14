@@ -706,7 +706,7 @@ class OperationOrder extends SeedObject
 						if($newStatus->fetch($fk_status) > 0)
 						{
 							$langs->load('operationorder@operationorder');
-							$eventLabel = $langs->transnoentities('OperationOrderSetStatus', '"'.$status->label . '" => "' . $newStatus->label.'"' , $this->ref );
+							$eventLabel = $langs->transnoentities('OperationOrderSetStatus', '"'.$this->objStatus->label . '" => "' . $newStatus->label.'"' , $this->ref );
 							$this->addActionComEvent($eventLabel);
 						}
 					}
