@@ -27,6 +27,7 @@ if (!class_exists('SeedObject'))
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once __DIR__ . '/unitstools.class.php';
 require_once __DIR__ . '/operationorderstatus.class.php';
+require_once __DIR__ . '/operationorderaction.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
 

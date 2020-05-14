@@ -214,7 +214,7 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 
 	if ($reshook>0)
 	{
-		$outForm = $hookmanager->resArray;
+		$outForm = $hookmanager->resPrint;
 	}
 	else
 	{

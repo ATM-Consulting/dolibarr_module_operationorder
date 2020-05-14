@@ -446,9 +446,9 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  * @param $showSubmitBtn bool
  * @return string
  */
-function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = '')
+function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = false)
 {
-    global $langs, $db, $form;
+    global $langs, $db, $form, $hookmanager;
 
     $outForm = '';
 
@@ -456,6 +456,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         $action = 'edit';
     }
     else{
+
         $action = 'create';
         $line=new OperationOrderDet($db);
 		$line->fk_operation_order = $object->id;
@@ -464,69 +465,82 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
         $line->price = '';
     }
 
-    if(empty($actionURL))
+    if($actionURL)
     {
-        $actionUrl = $_SERVER["PHP_SELF"].'?id='.$object->id;
+        $actionURL = $_SERVER["PHP_SELF"].'?id='.$object->id;
 
         // Ancors
-        $actionUrl .= ($action == 'create') ? '#addline' : '#item_'.$line->id;
-
+        $actionURL .= ($action == 'create') ? '#addline' : '#item_'.$line->id;
+    }
+    else {
+        $actionURL = '';
     }
 
-    $outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
+	$parameters = array(
+		'actionUrl' =>& $actionURL,
+		'line' =>& $line
+	);
+
+	$reshook = $hookmanager->executeHooks('displayFormFieldsByOperationOrder', $parameters, $object, $action);
+
+	if($reshook > 0){
+		$outForm = $hookmanager->resPrint;
+	}
+    else{
+		$outForm.=  ($action == 'create') ? '<a name="addline" ></a>':'';
 
 
-    $outForm.= '<form name="addproduct" action="' . $actionUrl .'" method="POST">' . "\n";
-    $outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
-    $outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
-    $outForm.= '<input type="hidden" name="fk_parent_line" value="' . intval($line->fk_parent_line) . '">' . "\n";
-    $outForm.= '<input type="hidden" name="mode" value="">' . "\n";
+		$outForm.= '<form name="addproduct" action="' . $actionURL .'" method="POST">' . "\n";
+		$outForm.= '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">' . "\n";
+		$outForm.= '<input type="hidden" name="id" value="' . $object->id . '">' . "\n";
+		$outForm.= '<input type="hidden" name="fk_parent_line" value="' . intval($line->fk_parent_line) . '">' . "\n";
+		$outForm.= '<input type="hidden" name="mode" value="">' . "\n";
 
-    if($action == 'edit') {
-        $outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
-        $outForm .= '<input type="hidden" name="save" value="1">' . "\n";
-        $outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
-        $outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
-    }else{
-        $outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
-    }
+		if($action == 'edit') {
+			$outForm .= '<input type="hidden" name="action" value="updateline">' . "\n";
+			$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
+			$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
+			$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
+		}else{
+			$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
+		}
 
-    $line->fields = dol_sort_array($line->fields, 'position');
-
-
-    $outForm.= '<table class="table-full">';
-    // Display each line fields
-    foreach($line->fields as $key => $val){
-        $outForm.= getFieldCardOutputByOperationOrder($line, $key);
-    }
-
-    if($showSubmitBtn){
-
-        $outForm.=  '<tr>';
-        $outForm.=  '	<td colspan="2"><hr/></td>';
-        $outForm.=  '</tr>';
-
-        $outForm.=  '<tr>';
-        $outForm.=  '	<td>';
-        $outForm.=  '	</td>';
-        $outForm.=  '	<td>';
-        if($action == 'create'){
-            $outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
-        }else{
-            $outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
-        }
-        $outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
-        $outForm.=  '	</td>';
-        $outForm.=  '</tr>';
-    }
-
-    $outForm.= '</table>';
+		$line->fields = dol_sort_array($line->fields, 'position');
 
 
+		$outForm.= '<table class="table-full">';
 
-    $outForm.= '</form>';
+		// Display each line fields
+		foreach($line->fields as $key => $val){
+			$outForm.= getFieldCardOutputByOperationOrder($line, $key);
+		}
 
-    return $outForm;
+		if($showSubmitBtn){
+
+			$outForm.=  '<tr>';
+			$outForm.=  '	<td colspan="2"><hr/></td>';
+			$outForm.=  '</tr>';
+
+			$outForm.=  '<tr>';
+			$outForm.=  '	<td>';
+			$outForm.=  '	</td>';
+			$outForm.=  '	<td>';
+			if($action == 'create'){
+				$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Add').'</button>';
+			}else{
+				$outForm.=  '<button type="submit" class="button" >'.$langs->trans('Save').'</button>';
+			}
+			$outForm.=  '	<button type="reset" class="button" >'.$langs->trans('Reset').'</button>';
+			$outForm.=  '	</td>';
+			$outForm.=  '</tr>';
+		}
+
+		$outForm.= '</table>';
+
+		$outForm.= '</form>';
+	}
+
+	return $outForm;
 }
 
 /**

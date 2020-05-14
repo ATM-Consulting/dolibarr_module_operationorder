@@ -157,6 +157,7 @@ NotEnoughStockAvailable=Stock insufisant
 VirtualStockAvailable=En stock virtuel
 StockAvailable=En stock
 OperationOrderType=Type
+OperationOrderTypeLong=Type OR
 
 ConfirmValidateOperationOrderTitle=Valider ordre de réparation
 ConfirmValidateOperationOrderBody=Êtes-vous sûr de vouloir valider cet ordre de réparation sous la référence <b>%s</b> ?
