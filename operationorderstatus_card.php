@@ -111,7 +111,10 @@ if (empty($reshook))
             $planable = GETPOST('planable');
 			$object->edit = 0;
 			$object->setValues($_REQUEST); // Set standard attributes
-            if(empty($planable)) $object->planable = 0; // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+			$object->display_on_planning = GETPOST('display_on_planning', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+			$object->clean_event = GETPOST('clean_event', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+			$object->planable = GETPOST('planable', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+
 
 			$object->TGroupCan = $TGroupCan;
 			$object->TStatusAllowed =$TStatusAllowed;
