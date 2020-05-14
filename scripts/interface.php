@@ -260,9 +260,8 @@ function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operatio
 
             $action_or->dated = $startTime;
             //OR temps forcé ou temps théorique ou rien
-            if(empty($operationorder->time_planned_f) && !empty($operationorder->time_planned_t)) $action_or->datef = $startTime + $operationorder->time_planned_t;
-            elseif(empty($operationorder->time_planned_t) && !empty($operationorder->time_planned_f)) $action_or->datef = $startTime + $operationorder->time_planned_f;
-            else $action_or->datef = $endTime;
+            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
+            else $action_or->datef = $startTime + $operationorder->time_planned_t;
 
             if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
 			{
