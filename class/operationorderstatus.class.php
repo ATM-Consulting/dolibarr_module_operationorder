@@ -105,6 +105,36 @@ class OperationOrderStatus extends SeedObject
 			'label'=>'Color', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1,
 			'default' => '#3c8dbc'
 		),
+		'planable' => array(
+			'type'=>'boolean',
+			'label'=>'Planable',
+			'enabled'=>1,
+			'position'=>35,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'PlanableHelp'
+		),
+		'clean_event' => array(
+			'type'=>'boolean',
+			'label'=>'CleanEventOnThisStatus',
+			'enabled'=>1,
+			'position'=>40,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'CleanEventOnThisStatusHelp'
+		),
+		'display_on_planning' => array(
+			'type'=>'boolean',
+			'label'=>'DisplayOnPlanning',
+			'enabled'=>1,
+			'position'=>45,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>'DisplayOnPlanningHelp'
+		),
 //		'edit' => array(
 //			'type'=>'smallint',
 //			'label'=>'CouldEdit',
@@ -113,7 +143,7 @@ class OperationOrderStatus extends SeedObject
 //			'position'=>30,
 //			'visible'=>1
 //		),
-		'rank' => array(
+		'rang' => array(
 			'type'=>'int',
 			'label'=>'Rank',
 			'help' => 'RankHelp',
@@ -331,7 +361,7 @@ class OperationOrderStatus extends SeedObject
 		else{
 			$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE status = 1 ';
 			if ($force_entity>0) $sql .= " AND entity IN (0,".intval($force_entity).") ";
-			$sql.= ' ORDER BY rank ASC LIMIT 1 ;';
+			$sql.= ' ORDER BY rang ASC LIMIT 1 ;';
 			$resql = $this->db->query($sql);
 			if($resql){
 				$row = $this->db->fetch_object($resql);
@@ -675,8 +705,19 @@ class OperationOrderStatus extends SeedObject
 	 * @return bool
 	 */
 	public function checkStatusTransition($user, $newStatusId){
-		/** TODO */
-		return true;
+
+		// TODO check status chain
+
+		if(!empty($newStatusId)){
+			// vérification des droits
+			$statusAllowed = new OperationOrderStatus($this->db);
+			$res = $statusAllowed->fetch($newStatusId);
+			if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -805,7 +846,7 @@ class OperationOrderStatus extends SeedObject
 			}
 		}
 
-		$sql.= ' ORDER BY rank ASC';
+		$sql.= ' ORDER BY rang ASC';
 
 		if ($limit) $sql.= ' LIMIT '.$limit;
 
@@ -831,7 +872,7 @@ class OperationOrderStatus extends SeedObject
 
 		$status = new self($db);
 
-		$sql = 'UPDATE '.MAIN_DB_PREFIX.$status->table_element.' SET rank = '.intval($rank);
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.$status->table_element.' SET rang = '.intval($rank);
 		$sql.= ' WHERE rowid = '.intval($rowid);
 
 		if (! $db->query($sql))

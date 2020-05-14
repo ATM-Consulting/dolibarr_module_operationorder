@@ -1,6 +1,9 @@
 <?php
 
 require 'config.php';
+dol_include_once('/operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationorderaction.class.php');
+
 
 if(empty($user->rights->operationorder->planning->read)) accessforbidden();
 
@@ -27,57 +30,303 @@ $TIncludeJS = array(
     '/operationorder/vendor/fullcalendar-4.4.0/packages/interaction/main.js',
     '/operationorder/vendor/fullcalendar-4.4.0/packages/timegrid/main.js'
 );
+$langs->loadLangs(array('operationorder@operationorder'));
 
+$action = GETPOST('action');
+$id_operationorder = GETPOST('operationorder');
+$startTime = GETPOST('startTime');
+$endTime = GETPOST('endTime');
+$allDay = GETPOST('allDay');
+
+$title = $langs->trans("OperationOrderPlanning");
+//if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
+$help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
+
+// test user event création right
+$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+$statusAllowed = new OperationOrderStatus($db);
+$res = $statusAllowed->fetch($fk_status);
+$userCanCreateEvent = 0;
+if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+	$userCanCreateEvent = 1;
+}
+
 ?>
     <script>
 
-        document.addEventListener('DOMContentLoaded', function () {
+		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
+		fullcalendarscheduler_initialLangCode = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG) ? $conf->global->FULLCALENDARSCHEDULER_LOCALE_LANG : $langjs; ?>";
+		fullcalendarscheduler_snapDuration = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION) ? $conf->global->FULLCALENDARSCHEDULER_SNAP_DURATION : '00:15:00'; ?>";
+		fullcalendarscheduler_aspectRatio = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'; ?>";
+		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
+		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '24:00'; ?>";
+
+		fullcalendar_scheduler_businessHours_week_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
+		fullcalendar_scheduler_businessHours_week_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
+
+		fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
+		fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
+        fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
+		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
+
+		document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
 
-                events: [
-                    {
-                        title: 'My Event',
-                        start: '2020-05-07T08:30:00',
-                        allDay: true
-                    },
-                    {
-                        title: 'My Event 2',
-                        start: '2020-05-08T15:30:00',
-                        end: '2020-05-08T16:30:00',
-                        allDay: false
-                    }
-                ],
-
+				plugins: [ 'interaction', 'dayGrid', 'timeGrid'], // , 'list', 'rrule'
+				defaultDate: '<?php print date('Y-m-d'); ?>',
+				defaultView: 'timeGridWeek',
+				snapDuration: fullcalendarscheduler_snapDuration,
+				weekNumbers: true,
+				weekNumbersWithinDays: true,
+				weekNumberCalculation: 'ISO',
+				header: {
+					left: 'prev,next today',
+					center: 'title',
+					right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+				},
+				editable: false, // next step add rights and allow edition
+				selectable: userCanCreateEvent,
+				minTime: fullcalendarscheduler_minTime,
+				maxTime: fullcalendarscheduler_maxTime,
+				scrollTime: '10:00:00',
+				height: getFullCalendarHeight(), //
+				selectMirror: true,
+				locale: fullcalendarscheduler_initialLangCode,
+				eventLimit: true, // allow "more" link when too many events
+                editable:true,
                 businessHours: {
                     // days of week. an array of zero-based day of week integers (0=Sunday)
-                    daysOfWeek: [1, 2, 3, 4, 5 ], // Monday - Friday
+                    daysOfWeek: fullcalendar_scheduler_businessHours_days, // Monday - Friday
 
-                    startTime: '8:00', // a start time (10am in this example)
-                    endTime: '18:00', // an end time (6pm in this example)
+                    startTime: fullcalendar_scheduler_businessHours_week_start, // a start time (10am in this example)
+                    endTime: fullcalendar_scheduler_businessHours_week_end, // an end time (6pm in this example)
                 },
+                // eventConstraint:'businessHours',
+                selectConstraint:'businessHours',
 
-                plugins: ['timeGrid', 'interaction'],
-                defaultView: 'timeGridWeek',
-                locale: '<?php echo $langjs; ?>',
-                minTime: '05:00:00',
-                maxTime: '21:00:00',
-                scrollTime: '10:00:00',
-                height: 'auto',
-                editable: true,
-                selectable: true,
-                selectMirror: true
+				eventRender: function(info) {
+
+					$(info.el).attr('title', info.event.extendedProps.msg);
+					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
+					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
+
+					$(info.el).tooltip({
+						track: true,
+						show: {
+							collision: "flipfit",
+							effect:'toggle',
+							delay:50
+						},
+						hide: {
+							delay: 0
+						},
+						container: "body",
+						tooltipClass: "operationOrderTooltip",
+						content: function () {
+							return this.getAttribute("title");
+						}
+					});
+				},
+				eventSources: [
+					{
+						url: operationOrderInterfaceUrl,
+						extraParams: {
+							eventsType: 'orPlanned'
+						},
+						failure: function() {
+							//document.getElementById('script-warning').style.display = 'block'
+						}
+					},
+					{
+						url: operationOrderInterfaceUrl,
+						extraParams: {
+							eventsType: 'dayOff'
+						},
+						failure: function() {
+							//document.getElementById('script-warning').style.display = 'block'
+					}
+					}
+				],
+				loading: function(bool) {
+					//document.getElementById('loading').style.display = bool ? 'block' : 'none';
+				},
+				eventClick: function(info) {
+					// force open link into new url
+					// info.jsEvent.preventDefault(); // don't let the browser navigate
+					// if (info.event.url) {
+					// 		window.open(info.event.url, "_blank");
+					// 		return false;
+					// }
+				},
+                select: function (selectionInfo) {
+                    if(!selectionInfo.allDay) {
+                        let startTimestamp = Math.floor(selectionInfo.start.getTime() / 1000);
+                        let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
+
+                        $.ajax({
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
+                            method: 'POST',
+                            data: {
+                                'url': window.location.href,
+                                'startTime': startTimestamp,
+                                'endTime': endTimestamp,
+                                'allDay': selectionInfo.allDay
+                            },
+                            dataType: 'json',
+                            // La fonction à apeller si la requête aboutie
+                            success: function (data) {
+                                $('#dialog-add-event').html(data.result);
+                                operationorderneweventmodal.dialog("open");
+                                operationorderneweventmodal.dialog({height: 'auto', width: 'auto'}); // resize to content
+                            }
+                        });
+                    }
+                },
+				dateClick: function(info) {
+					//newEventModal(info.startStr);
+				},
+                eventResize: function(info) {
+
+                    let startTimestamp = Math.floor(info.event.start.getTime()/1000);
+                    let endTimestamp = Math.floor(info.event.end.getTime()/1000);
+                    let fk_action = info.event.extendedProps.operationOrderActionId;
+                    let action = 'resize';
+
+                    $.ajax({
+                        url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
+                        method: 'POST',
+                        data: {
+                            'url' : window.location.href,
+                            'startTime' : startTimestamp,
+                            'endTime' : endTimestamp,
+                            'fk_action' : fk_action,
+                            'action' : action
+                        },
+                        dataType: 'json',
+                        // La fonction à apeller si la requête aboutie
+                        success: function (data) {
+                            calendar.refetchEvents();
+                        }
+                    });
+                },
+                eventResizeStop: function(info) {
+				    $('.operationOrderTooltip').hide();
+                },
+                eventDrop: function(eventDropInfo) {
+				    let startDay = eventDropInfo.event._instance.range.start.getDay();
+				    let endDay = eventDropInfo.event._instance.range.start.getDay();
+				    let startHour = eventDropInfo.event._instance.range.start.getHours()+(eventDropInfo.event._instance.range.start.getTimezoneOffset()/60);
+                    if(startHour < 0) startHour += 24;
+				    let startMin = eventDropInfo.event._instance.range.start.getMinutes();
+				    let endHour = eventDropInfo.event._instance.range.end.getHours()+(eventDropInfo.event._instance.range.end.getTimezoneOffset()/60);
+				    if(endHour < 0) endHour += 24;
+				    let endMin = eventDropInfo.event._instance.range.end.getMinutes();
+                    let ThourminStart = fullcalendar_scheduler_businessHours_week_start.split(':');
+                    let Thourminend = fullcalendar_scheduler_businessHours_week_end.split(':');
+				    if(!eventDropInfo.event.allDay && startHour >= ThourminStart[0] &&
+                        ((endHour < Thourminend[0]) || (endHour == Thourminend[0] && endMin == 0)) &&
+                        (fullcalendar_scheduler_businessHours_days.indexOf(startDay) > 0 && fullcalendar_scheduler_businessHours_days.indexOf(endDay) > 0)) { //Si on est pas sur un jour entier et qu'on est sur des heures de travail
+                        $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
+                        let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
+                        let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
+                        let fk_action = eventDropInfo.event.extendedProps.operationOrderActionId;
+                        let action = 'drop';
+                        $.ajax({
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=updateOperationOrderAction',
+                            method: 'POST',
+                            data: {
+                                'url': window.location.href,
+                                'startTime': startTms,
+                                'endTime': endTms,
+                                'fk_action': fk_action,
+                                'action': action,
+                                'allDay': eventDropInfo.event.allDay,
+                            },
+                            dataType: 'json',
+                            // La fonction à apeller si la requête aboutie
+                            success: function (data) {
+                                calendar.refetchEvents();
+                            }
+                        });
+                    } else calendar.refetchEvents();
+
+                }
             });
 
-            calendar.render();
-        });
+			// refresh event on modal close
+			$("#dialog-add-event").on("hide.bs.modal", function (e) {
+				calendar.refetchEvents();
+			});
 
+			calendar.render();
+
+			$(window).on('resize', function(){
+				calendar.setOption('height', getFullCalendarHeight());
+			});
+
+			// function newEventModal(start, end = 0){
+			// 	// console.log(start);
+			// 	// $("#dialog-add-event").html("title");
+			// 	// $("#dialog-add-event").modal();
+			// }
+
+            //Définition de la boite de dialog "Créer un nouvel événement OR"
+            var operationorderneweventmodal = $('#dialog-add-event');
+
+			operationorderneweventmodal.dialog({
+                autoOpen: false,
+				autoResize:true,
+				buttons: {
+                    "<?php echo $langs->transnoentitiesnoconv('Create')?>": function() {
+                        $('#dialog-add-event').find("form").submit();
+                    }
+                },
+                close: function( event, ui ) {
+                    calendar.refetchEvents();
+                }
+            });
+
+			//Action ajax d'ajout d'un événement lors de la soumission du formulaire
+            $(document).on("submit", "#create-operation-order-action", function(e) {
+
+                e.preventDefault();
+
+                var formData = {
+                    'startTime' : $('input[name=startTime]').val(),
+                    'endTime'   : $('input[name=endTime]').val(),
+                    'allDay'    : $('input[name=allDay]').val(),
+                    'operationorder' : $('select[name=operationorder]').val()
+                };
+
+                $.ajax({
+                    url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=createOperationOrderAction',
+                    method: 'POST',
+                    data: {
+                        'url' : window.location.href,
+                        'data' : formData
+                    },
+                    dataType: 'json',
+                    // La fonction à apeller si la requête aboutie
+                    success: function (data) {
+                        operationorderneweventmodal.dialog('close');
+                        calendar.refetchEvents();
+                    }
+                });
+
+            });
+
+            function getFullCalendarHeight(){
+				return  $( window ).height() - $("#id-right").offset().top - 30;
+			}
+
+        });
     </script>
 <?php
 print '<div id="calendar"></div>';
+print '<div id="dialog-add-event" title="'.$langs->trans('CreateNewORAction').'"></div>';
 
 llxFooter();
-
 

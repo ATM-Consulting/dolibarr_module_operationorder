@@ -35,7 +35,7 @@ if (! $res) {
 
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once '../lib/operationorder.lib.php';
-dol_include_once('operationorder/class/operationorderstatus.class.php');
+dol_include_once('operationorder/class/operationorderjoursoff.class.php');
 
 // Load translation files required by the page
 $langs->loadLangs(array('admin', 'errors', 'other', 'bills'));
@@ -43,21 +43,55 @@ $langs->loadLangs(array('admin', 'errors', 'other', 'bills'));
 if (! $user->admin) accessforbidden();
 
 $action = GETPOST('action', 'alpha');
+$id=GETPOST('id', 'int');
 $value = GETPOST('value', 'alpha');
 $label = GETPOST('label', 'alpha');
 $type='invoice';
 $inputCount = empty($inputCount)?1:($inputCount+1);
 
-$staticStatus = new OperationOrderStatus($db);
+$staticJoursOff = new OperationOrderJoursOff($db);
 
 /*
  * Actions
  */
+if (!empty($action))
+{
+	switch ($action)
+	{
+		case 'sync':
 
-include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
+			if(!empty($conf->global->MAIN_INFO_SOCIETE_COUNTRY)) {
+				list($id_country, $code_country) = explode(':', $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 
+				if($code_country=='FR') {
+					$url='https://calendar.google.com/calendar/ical/fr.french%23holiday%40group.v.calendar.google.com/public/basic.ics';
+				}
+				else{
+					$url = '';
+				}
 
+			}
 
+			if(empty($url)) {
+				setEventMessage($langs->trans('ErrCalendarURLNotFound'), 'errors');
+			}
+			else{
+				$staticJoursOff->synchronizeFromURL($url);
+			}
+			break;
+
+		case 'delete':
+			$ret = $staticJoursOff->fetch($id);
+			if ($ret > 0)
+			{
+				$res = $staticJoursOff->delete($user);
+			}
+			break;
+
+		default:
+			break;
+	}
+}
 /*
  * View
  */
@@ -73,16 +107,13 @@ $form=new Form($db);
 $linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
 print load_fiche_titre($langs->trans("OperationOrderStatusAdmin"), $linkback, 'title_setup');
 
-$head = operationorderStatusAdminPrepareHead();
-dol_fiche_head($head, 'settings', $langs->trans("OperationOrderStatus"), -1, 'operationorder@operationorder');
-
-
-
+$head = operationorderAdminPrepareHead();
+dol_fiche_head($head, 'oojoursOff', $langs->trans("OperationOrderJoursOff"), -1, 'operationorder@operationorder');
 
 /*
  *  Settings
  */
-
+print_barre_liste($langs->trans('PublicHolidayNonWorkedDaysList'), 0, $_SERVER['PHP_SELF']);
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
 
@@ -91,51 +122,61 @@ print '<div class="div-table-responsive-no-min">'; // You can use div-table-resp
 print '<table class="noborder centpercent">';
 
 print '<tr class="liste_titre">';
-print '<td>'.$langs->trans("Parameter").'</td>';
-print '<td align="center" width="60">'.$langs->trans("Value").'</td>';
-print '<td width="80">&nbsp;</td>';
-print "</tr>\n";
+$excludedFields = array('date_creation', 'tms', 'entity');
 
-// _printOnOff('CONF', $langs->trans('ConfTradKey'));
+$staticJoursOff->fields['rowid']['label'] = '';
+$staticJoursOff->fields['rowid']['visible'] = 1;
+$staticJoursOff->fields['rowid']['position'] = 9000;
 
-/*$metas = array(
-	'type' => 'number',
-	'step' => '0.01',
-	'min' => 0,
-	'max' => 100
-);
-_printInputFormPart('CONF', $langs->trans('ConfTradKey'), '', $metas);*/
+$staticJoursOff->fields = dol_sort_array($staticJoursOff->fields, 'position');
 
-
-$staticStatus = new OperationOrderStatus($db);
-$Tstatus = $staticStatus->fetchAll(0, false, array('status' => 1, 'entity' => $conf->entity));
-$TstatusAvailable = array();
-if(!empty($Tstatus)){
-	foreach ($Tstatus as $status){
-		$TstatusAvailable[$status->id] = $status->label;
+$nbFields = 0;
+foreach ($staticJoursOff->fields as $key => $field)
+{
+	if (!in_array($key, $excludedFields) && $field['visible'])
+	{
+		print '<td>'.$langs->trans($field['label']).'</td>';
+		$nbFields++;
 	}
 }
 
-$confkey = 'OPODER_STATUS_ON_CLONE';
-$inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
-_printFormPart($confkey, $inputHtml);
+print "</tr>\n";
 
-/*$inputHtml = $form->multiselectarray('TStatusAllowed', $TAvailableStatus, $TStatusAllowed, $key_in_label = 0, $value_as_key = 0, '', 0, '100%', '', '', '', 1);
-$confkey = 'OPODER_STATUS_';
-_printFormPart($confkey, $inputHtml);*/
+$TJOff = $staticJoursOff->fetchAll();
+//var_dump($TJOff);
 
-$confkey = 'OPODER_STATUS_ON_PLANNED';
-$inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
-_printFormPart($confkey, $inputHtml);
-
-
+if (empty($TJOff)) print '<tr><td colspan="' . $nbFields . '" align="center">'.$langs->trans('NoOperationOrder').'</td></tr>';
+else
+{
+	/** @var OperationOrderJoursOff $jourOff
+	 */
+	foreach ($TJOff as $jourOff)
+	{
+		print '<tr>';
+		foreach ($staticJoursOff->fields as $key => $field)
+		{
+//			var_dump($jourOff);
+			if (!in_array($key, $excludedFields) && $field['visible'])
+			{
+				if ($key != 'rowid') print '<td>'.$jourOff->showOutputField($field,$key,$jourOff->{$key}).'</td>';
+				else
+				{
+					print '<td><a href="'.$_SERVER['PHP_SELF'].'?action=delete&id='.$jourOff->id.'">'.img_delete().'</a></td>';
+				}
+				$nbFields++;
+			}
+		}
+		print '</tr>';
+	}
+}
 
 print '</table>';
 print '</div>';
 
 print '<br>';
 
-_updateBtn();
+//_updateBtn();
+_syncJOff();
 
 print '</form>';
 
@@ -155,6 +196,15 @@ function _updateBtn()
 	global $langs;
 	print '<div class="center">';
 	print '<input type="submit" class="button" value="'.$langs->trans("Save").'">';
+	print '</div>';
+}
+
+function _syncJOff()
+{
+	global $langs;
+
+	print '<div class="tabsAction">';
+	print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?action=sync">'.$langs->trans("OnlineSync").'</a>';
 	print '</div>';
 }
 

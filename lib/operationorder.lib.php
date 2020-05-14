@@ -38,9 +38,20 @@ function operationorderAdminPrepareHead()
     $head[$h][1] = $langs->trans("Parameters");
     $head[$h][2] = 'settings';
     $h++;
+
     $head[$h][0] = dol_buildpath("/operationorder/admin/operationorder_extrafields.php", 1);
     $head[$h][1] = $langs->trans("ExtraFields");
     $head[$h][2] = 'extrafields';
+	$h++;
+
+	$head[$h][0] = dol_buildpath("/operationorder/admin/operationorderjoursoff_setup.php", 1);
+	$head[$h][1] = $langs->trans("oojoursOff");
+	$head[$h][2] = 'oojoursOff';
+	$h++;
+
+	$head[$h][0] = dol_buildpath("/operationorder/admin/fullcalendar_setup.php", 1);
+	$head[$h][1] = $langs->trans("Planning");
+	$head[$h][2] = 'fullcalendar';
 	$h++;
 
 	if (!empty($conf->multicompany->enabled))
@@ -720,4 +731,288 @@ function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $produc
     }
 
     return (!empty($error)) ? -1 : 0;
+}
+
+
+/** Parses a string into a DateTime object, optionally forced into the given timezone.
+ * @param $string
+ * @param null $timezone
+ * @return DateTime
+ * @throws Exception
+ */
+function OO_parseFullCalendarDateTime($string, $timezone=null) {
+
+	$date = new DateTime($string);
+	if ($timezone) {
+		// If our timezone was ignored above, force it.
+		$date->setTimezone($timezone);
+	}
+	return $date;
+}
+
+
+/**
+ * @param string $hex color in hex
+ * @param integer $percent 0 to 100
+ * @return string
+ */
+function OO_colorDarker($hex, $percent)
+{
+	$steps = intval(255 * $percent / 100) * -1;
+	return OO_colorAdjustBrightness($hex, $steps);
+}
+
+/**
+ * @param string $hex color in hex
+ * @param integer $percent 0 to 100
+ * @return string
+ */
+function OO_colorLighten($hex, $percent)
+{
+	$steps = intval(255 * $percent / 100);
+	return OO_colorAdjustBrightness($hex, $steps);
+}
+
+
+/**
+ * @param string $hex color in hex
+ * @param integer $steps Steps should be between -255 and 255. Negative = darker, positive = lighter
+ * @return string
+ */
+function OO_colorAdjustBrightness($hex, $steps)
+{
+	// Steps should be between -255 and 255. Negative = darker, positive = lighter
+	$steps = max(-255, min(255, $steps));
+	// Normalize into a six character long hex string
+	$hex = str_replace('#', '', $hex);
+	if (strlen($hex) == 3) {
+		$hex = str_repeat(substr($hex, 0, 1), 2).str_repeat(substr($hex, 1, 1), 2).str_repeat(substr($hex, 2, 1), 2);
+	}
+	// Split into three parts: R, G and B
+	$color_parts = str_split($hex, 2);
+	$return = '#';
+	foreach ($color_parts as $color) {
+		$color   = hexdec($color); // Convert to decimal
+		$color   = max(0, min(255, $color + $steps)); // Adjust color
+		$return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
+	}
+	return $return;
+}
+
+/**
+ * fonction retournant un tableau des operationsActions à générer
+ * en fonction de la date de départ
+ * et de la durée théorique ou forcée de l'OR
+ * @param string $dateStart date de départ
+ * @param string $TimeSpending durée théorique ou forcée de l'OR format 00:00
+ *
+ * @return array exemple avec appel getOperationOrderActionsArray("2020-05-29 15:00:00", "03:20") :
+ * array(
+ * 		'2020-05-29' => array (
+ * 			'dateStart' => "2020-05-29 15:00:00"
+ * 			'dateEnd'	=> "2020-05-29 17:00:00"
+ * 			'timeSpent'	=> 7200 (en secondes)
+ * 		)
+ * 		'2020-04-13' => array (
+ * 			'dateStart' => "2020-06-02 08:00:00"
+ * 			'dateEnd'	=> "2020-06-02 09:20:00"
+ * 			'timeSpent'	=> 4800 (en secondes)
+ * 		)
+ * 		'total' => array (
+ * 			'dateStart' => "2020-05-29 15:00:00"
+ * 			'dateEnd'	=> "2020-06-02 09:20:00"
+ * 			'timeSpent'	=> 12000 (en secondes)
+ * 			'timeSpentHours'	=> "03:20"
+ * 			'excluded' 	=> array(
+ * 				"2020-05-30" => "week end"
+ * 				"2020-05-31" => "week end"
+ * 				"2020-06-01" => "férié"
+ * 			)
+ * 		)
+ * );
+ */
+function getOperationOrderActionsArray($dateStart = '', $TimeSpending = '')
+{
+	global $db, $conf;
+
+	$results['total']['timeSpent'] = 0;
+	$results['total']['timeSpentHours'] = 0;
+	$results['total']['excluded'] = array();
+
+	$THoraire = getTHoraire();
+//	echo '<pre>'; print_r($THoraire);
+
+	if (empty($dateStart) || empty($TimeSpending)) return $results;
+
+	dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+	dol_include_once('/core/lib/date.lib.php');
+	$jourOff = new OperationOrderJoursOff($db);
+
+	$testDate = strtotime($dateStart);
+	$timeSpendingArray = explode(':', $TimeSpending);
+	$timeSpendingSec = convertTime2Seconds($timeSpendingArray[0], $timeSpendingArray[1]);
+	$remainingTime = $timeSpendingSec;
+
+	$i=0;
+
+	while ($results['total']['timeSpent'] < $timeSpendingSec && $i < 15)
+	{
+		$DayOfWeek = date("N", $testDate);
+		$key = date("Y-m-d", $testDate);
+
+		$dayKey = 'defaultHours';
+		if (!empty($THoraire[$DayOfWeek]['boundings'])) $dayKey = $DayOfWeek;
+
+		foreach ($THoraire[$dayKey]['boundings'] as $boundings)
+		{
+			$jourFerie = $jourOff->isOff(date("Y-m-d 00:00:00", $testDate));
+
+			$testDayStart = strtotime(date("Y-m-d ".$boundings['startHour'].":00", $testDate));
+			$testDayEnd = strtotime(date("Y-m-d ".$boundings['endHour'].":00", $testDate));
+
+			if ($testDate < $testDayStart) $testDate = $testDayStart;
+
+			if (
+				$testDate >= $testDayEnd // départ après fermeture
+				|| $DayOfWeek > 5// we
+				|| $jourFerie// férié
+			)
+			{
+				// passer au jour suivant
+
+				if (!array_key_exists($key, $results['total']['excluded']))
+				{
+					$rejectMsg = '';
+					if ($testDate >= $testDayEnd) $rejectMsg = "to late";
+					else if ($DayOfWeek > 5) $rejectMsg = "week end";
+					else if ($jourFerie) $rejectMsg = "férié";
+					$results['total']['excluded'][$key] = $rejectMsg;
+				}
+
+				continue;
+			}
+
+			if ($testDate >= $testDayStart && $testDate < $testDayEnd) // on est dans les horaires
+			{
+				if (array_key_exists($key, $results['total']['excluded'])) unset($results['total']['excluded'][$key]);
+				if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[$key]['dateStart'];
+				$timeDiff = $testDayEnd-$testDate;
+
+				$results[$key]['dateStart'] = date("Y-m-d H:i:s", $testDate);
+
+				if ($timeDiff >= $remainingTime) // le temps dispo est suppérieur au temps demandé
+				{
+					$results[$key]['timeSpent']+= $remainingTime;
+				}
+				else
+				{
+					$results[$key]['timeSpent']+= $timeDiff;
+				}
+				$remainingTime-= $results[$key]['timeSpent'];
+				$results[$key]['timeSpentHours'] = convertSecondToTime($results[$key]['timeSpent'], 'allhourmin');
+
+				$results['total']['dateEnd'] = $results[$key]['dateEnd'] = date("Y-m-d H:i:s", $testDate + $results[$key]['timeSpent']);
+				$results['total']['timeSpent'] += $results[$key]['timeSpent'];
+				if (empty($remainingTime)) break 2;
+
+
+			}
+			else continue;
+
+			if (empty($results['total']['dateStart'])) $results['total']['dateStart'] = $results[$key]['dateStart'];
+
+		}
+
+		$testDate = strtotime('+1 day', $testDate);
+		$DayOfWeek = date("N", $testDate);
+		$dayKey = 'defaultHours';
+		if (!empty($THoraire[$DayOfWeek]['boundings'])) $dayKey = $DayOfWeek;
+
+		$testDate = strtotime(date("Y-m-d ".$THoraire[$dayKey]['boundings'][0]['startHour'].":s", $testDate));
+
+
+		$i++;
+	}
+	$results['total']['timeSpentHours'] = convertSecondToTime($results['total']['timeSpent'], 'allhourmin');
+//	var_dump(array(date("Y-m-d", $testDate), $results['total']['timeSpent'] , $timeSpendingSec));
+
+	return $results;
+}
+
+function getTHoraire()
+{
+	global $conf;
+
+	$THoraire = array(
+		'defaultHours' => array(
+			'boundings' => array(
+				array(
+					'startHour' => "08:00",
+					'endHour'	=> "17:00"
+				)
+			)
+
+		)
+	);
+
+	$TConfDayOfWeek = array(
+		'MAIN_INFO_OPENINGHOURS_MONDAY',
+		'MAIN_INFO_OPENINGHOURS_TUESDAY',
+		'MAIN_INFO_OPENINGHOURS_WEDNESDAY',
+		'MAIN_INFO_OPENINGHOURS_THURSDAY',
+		'MAIN_INFO_OPENINGHOURS_FRIDAY',
+		'MAIN_INFO_OPENINGHOURS_SATURDAY',
+		'MAIN_INFO_OPENINGHOURS_SUNDAY'
+	);
+
+	for ($i = 1; $i < 8; $i++)
+	{
+		if (!empty($conf->global->{$TConfDayOfWeek[$i-1]}))
+		{
+			$confTest = trim($conf->global->{$TConfDayOfWeek[$i-1]});
+			$plages = explode(' ', $confTest);
+			if (is_array($plages) && !empty($plages))
+			{
+
+				if (count($plages) > 1)
+				{
+					foreach ($plages as $str)
+					{
+						$boundings = explode ('-', $str);
+						if (count($boundings) != 2) continue;
+
+						if (strpos($boundings[0], 'h')) $boundings[0] = preg_replace('/h/', ':', $boundings[0]);
+						if (!strpos($boundings[0], ':')) $boundings[0] = $boundings[0].':00';
+
+						if (strpos($boundings[1], 'h')) $boundings[1] = preg_replace('/h/', ':', $boundings[1]);
+						if (!strpos($boundings[1], ':')) $boundings[1] = $boundings[1].':00';
+
+						$THoraire[$i]['boundings'][] = array(
+							'startHour' => $boundings[0],
+							'endHour'	=> $boundings[1]
+						);
+					}
+				}
+				else
+				{
+					$boundings = explode ('-', $plages[0]);
+					if (count($boundings) != 2) continue;
+
+					if (strpos($boundings[0], 'h')) $boundings[0] = preg_replace('/h/', ':', $boundings[0]);
+					if (!strpos($boundings[0], ':')) $boundings[0] = $boundings[0].':00';
+
+					if (strpos($boundings[1], 'h')) $boundings[1] = preg_replace('/h/', ':', $boundings[1]);
+					if (!strpos($boundings[1], ':')) $boundings[1] = $boundings[1].':00';
+
+					$THoraire[$i]['boundings'][] = array(
+						'startHour' => $boundings[0],
+						'endHour'	=> $boundings[1]
+					);
+				}
+			}
+
+		}
+	}
+
+	return $THoraire;
 }
