@@ -949,6 +949,7 @@ class OperationOrder extends SeedObject
                 if ($result > 0)
                 {
                     $this->db->commit();
+                    $this->setTimePlannedT();
                     return $this->line->id;
                 }
                 else
@@ -1450,21 +1451,18 @@ class OperationOrder extends SeedObject
 
         $total_time = 0;
 
-        $res = $this->fetchLines();
+        $this->fetchLines();
 
-        if($res)
+        foreach ($this->lines as $line)
         {
-            foreach ($this->lines as $line)
-            {
-                $total_time = +$line->time_planned;
-            }
-            $this->time_planned_t = $total_time;
-
-            $res = $this->update($user);
-
-            return $res;
+            $total_time = +$line->time_planned;
         }
-        return 0;
+
+        $this->time_planned_t = $total_time;
+
+        $res = $this->update($user);
+
+        return $res;
     }
 
     public function getTimePlannedT(){
