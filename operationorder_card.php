@@ -129,6 +129,9 @@ if (empty($reshook))
                 if ($attribute == 'date_operation_order')
                 {
                     $object->date_operation_order = dol_mktime(GETPOST('date_operation_orderhour'), GETPOST('date_operation_ordermin'), 0, GETPOST('date_operation_ordermonth'), GETPOST('date_operation_orderday'), GETPOST('date_operation_orderyear'));
+                } elseif ($attribute == 'planned_date')
+                {
+                    $object->planned_date = dol_mktime(GETPOST('planned_datehour'), GETPOST('planned_datemin'), 0, GETPOST('planned_datemonth'), GETPOST('planned_dateday'), GETPOST('planned_dateyear'));
                 }
                 else
                 {

@@ -98,7 +98,7 @@ class OperationOrder extends SeedObject
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>1200, 'notnull'=>1, 'visible'=>0,),
         'time_planned_t' => array ('type' => 'integer', 'label' => 'TimePlannedTheoretical', 'enabled' => 0, 'position' => 1300, 'notnull' => 1, 'visible' => 1, 'default' => 0, 'noteditable' => 1),
         'time_planned_f' => array ('type' => 'integer', 'label' => 'TimePlannedForced', 'enabled' => 1, 'position' => 1400, 'notnull' => 0, 'visible' => 1,),
-        'planned_date' => array ('type' => 'date', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1,),
+        'planned_date' => array ('type' => 'datetime', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1,),
     );
 
     public $ref;
