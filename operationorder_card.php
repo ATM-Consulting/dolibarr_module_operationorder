@@ -58,6 +58,11 @@ if (!empty($id) || !empty($ref))  {
     $object->time_planned_f = convertSecondToTime($object->time_planned_f);
 }
 
+//fk_projet non disponible si le module n'est pas activé
+if(empty($conf->projet->enabled)){
+    $object->fields['fk_project']['visible'] = 0;
+}
+
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 
 
