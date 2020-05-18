@@ -236,6 +236,7 @@ class OperationOrder extends SeedObject
 				return -1;
 			}
 		}
+
         return parent::create($user, $notrigger);
     }
 
@@ -1501,20 +1502,8 @@ class OperationOrder extends SeedObject
 
             $operationorderaction = $TORActions[0];
 
-            //convert planned_date
-            $format = 'd/m/Y H:i:s';
-            $planned_date = date('d/m/Y', $this->planned_date);
-            $planned_date_explode = explode("/",$planned_date);
-
-            //convert dated
-            $dated = date($format, $operationorderaction->dated);
-            $dated = DateTime::createFromFormat($format, $dated);
-
-            //change dated (only date, no time)
-            $dated = $dated->setDate($planned_date_explode[2], $planned_date_explode[1], $planned_date_explode[0]);
-
             //update operationorderaction
-            $operationorderaction->dated = $dated->getTimestamp();
+            $operationorderaction->dated = $this->planned_date;
             if(!empty($this->time_planned_f)) $operationorderaction->datef = $operationorderaction->dated + $this->time_planned_f;
             else $operationorderaction->datef = $operationorderaction->dated + $this->time_planned_t;
 
