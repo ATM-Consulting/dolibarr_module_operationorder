@@ -106,19 +106,22 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                 },
                 // eventConstraint:'businessHours',
                 selectConstraint:'businessHours',
-
+				eventDestroy: function(info) {
+					$(info.el).tooltip({disabled: true});
+				},
 				eventRender: function(info) {
 
 					$(info.el).attr('title', info.event.extendedProps.msg);
 					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
 					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
 
+
 					$(info.el).tooltip({
 						track: true,
 						show: {
 							collision: "flipfit",
-							effect:'toggle',
-							delay:50
+							effect: 'toggle',
+							delay: 50
 						},
 						hide: {
 							delay: 0
@@ -147,7 +150,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 						},
 						failure: function() {
 							//document.getElementById('script-warning').style.display = 'block'
-					}
+						}
 					}
 				],
 				loading: function(bool) {
