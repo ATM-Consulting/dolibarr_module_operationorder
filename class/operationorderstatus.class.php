@@ -846,6 +846,8 @@ class OperationOrderStatus extends SeedObject
 			}
 		}
 
+		$sql .= ' AND entity IN ('.getEntity('operationorder'). ')';
+
 		$sql.= ' ORDER BY rang ASC';
 
 		if ($limit) $sql.= ' LIMIT '.$limit;
