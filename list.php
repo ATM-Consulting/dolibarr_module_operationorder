@@ -175,7 +175,7 @@ if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user
 // TODO : add this to a OperationOrderStatus method
 // prepare status cache
 $statusStatic = new OperationOrderStatus($db);
-$TStatusList = $statusStatic->fetchAll(0, false, array('status' => 1));
+$TStatusList = $statusStatic->fetchAll(0, false, array('status' => 1, 'entity' => getEntity('operationorder')));
 $TStatusSearchList = array(); // for search form
 if(!empty($TStatusList)){
 	foreach ($TStatusList as $status ){
