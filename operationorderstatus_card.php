@@ -291,6 +291,7 @@ if ($action == 'create')
 	print '</div>';
 
 	print '</form>';
+
 }
 else
 {
@@ -478,6 +479,21 @@ else
 		}
 	}
 }
+
+?>
+
+    <script>
+
+        $(document).ready(function() {
+            <?php if($conf->multicompany->enabled) { ?>
+            $("#field_code :first-child").append('<?php print img_picto($langs->trans('WarningORStatusCode'),'warning.png') ?>');
+            <?php } ?>
+
+        });
+
+    </script>
+
+<?php
 
 
 llxFooter();
