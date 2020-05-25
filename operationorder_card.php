@@ -54,8 +54,13 @@ $object = new OperationOrder($db);
 
 if (!empty($id) || !empty($ref))  {
     $object->fetch($id, true, $ref);
-    $object->time_planned_t = convertSecondToTime($object->time_planned_t);
-    $object->time_planned_f = convertSecondToTime($object->time_planned_f);
+    $object->time_planned_t = convertSecondToTime($object->time_planned_t, 'allhourmin');
+    $object->time_planned_f = convertSecondToTime($object->time_planned_f, 'allhourmin');
+}
+
+//fk_projet non disponible si le module n'est pas activé
+if(empty($conf->projet->enabled)){
+    $object->fields['fk_project']['visible'] = 0;
 }
 
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
