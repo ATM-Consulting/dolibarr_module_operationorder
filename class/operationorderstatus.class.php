@@ -841,9 +841,16 @@ class OperationOrderStatus extends SeedObject
 		if (!empty($TFilter))
 		{
 			foreach ($TFilter as $field => $value)
-			{
-				$sql.= ' AND '.$field.' = '.$this->quote($value, $this->fields[$field]);
-			}
+            {
+                if ($field == 'entity')
+                {
+                    $sql .= ' AND '.$field.' IN ('.$this->quote($value, $this->fields[$field]).')';
+                }
+                else
+                {
+                    $sql .= ' AND '.$field.' = '.$this->quote($value, $this->fields[$field]);
+                }
+            }
 		}
 
 		$sql.= ' ORDER BY rang ASC';
