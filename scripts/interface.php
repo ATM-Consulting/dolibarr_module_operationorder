@@ -170,7 +170,7 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 		}
 	}
 
-    $out= '<table id="operationorder_table" class="table table-striped w-100" >';
+    $out= '<table id="operationorder_table" class="table" style="width:800px;" >';
 
     $out.= '<thead>';
 
@@ -206,13 +206,16 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
     $out.= '<script type="text/javascript" >
 					$(document).ready(function(){
 					   
-					    $("#operationorder_table").DataTable();
+					    $("#operationorder_table").DataTable({
+						"pageLength" : 10,
+						"language": {
+							"url": "'.DOL_URL_ROOT.'/custom/operationorder/vendor/data-tables/french.json"
+						},
+						responsive: true
+					});
 					   
 					});
 			   </script>';
-
-
-
 
 //	$form = new Form($db);
 //    $TOutputForm = array(
