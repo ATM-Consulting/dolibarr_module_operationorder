@@ -170,73 +170,116 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 		}
 	}
 
+    $out= '<table id="operationorder_table" class="table table-striped w-100" >';
 
-	$form = new Form($db);
-    $TOutputForm = array(
-    	'token' => array(
-    		'html'  => '<input type="hidden" name="token" value="' . newToken() . '">',
-			'value' => newToken()
-		),
-    	'startTime' => array(
-    		'html'  => '<input type="hidden" name="startTime" value="' . $startTime . '">',
-			'value' => $startTime
-		),
-    	'endTime' => array(
-    		'html'  => '<input type="hidden" name="endTime" value="' . $endTime . '">',
-			'value' => $endTime
-		),
-    	'allDay' => array(
-    		'html'  => '<input type="hidden" name="allDay" value="' . $allDay. '">',
-			'value' => $allDay
-		),
-		'action' => array(
-			'html'  => '<input type="hidden" name="action" value="' . $action. '">',
-			'value' => $action
-		),
-    	'operationorder' => array(
-    		'html'  => $form->selectarray('operationorder', $TPlanableOOOptions, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1),
-			'value' => ''
-		)
-	);
+    $out.= '<thead>';
 
-	$parameters= array(
-		'startTime' =>& $startTime,
-		'endTime' =>& $endTime,
-		'allDay' =>& $allDay,
-		'id' =>& $id,
-		'url' =>& $url,
-		'TPlanableOOOptions' =>& $TPlanableOOOptions,
-		'TPlanableOO' =>& $TPlanableOO,
-		'TOutputForm' =>& $TOutputForm
-	);
+    $out.= '<tr>';
+    $out.= ' <th class="" >'.$langs->trans('Ref').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('AgfFormIntitule').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('DateStart').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('DateEnd').'</th>';
 
-	$reshook=$hookmanager->executeHooks('operationorderplannableform',$parameters,$form, $action);    // Note that $action and $object may have been modified by hook
+    $out.= '</tr>';
 
-	if ($reshook>0)
-	{
-		$outForm = $hookmanager->resPrint;
-	}
-	else
-	{
-		$outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
+    $out.= '</thead>';
 
-		// Note pour la suite : si création d'une vue manuel (remplacement de ce foreach), penser à ajouter aussi les inputs issues des hooks
-		$TUsedFields = array(); // mettre ici les champs utilisés dans la vue personnalisée
+    $out.= '<tbody>';
 
-		// exemple de création d'une vue personnalisé
-		// $outForm .= $TOutputForm['operationorder']['html]; // la sortie html a modifier comme on souhaite l'afficher.
-		// $TUsedFields[] = 'operationorder'; // j'indique que le champ est utilisé
+    foreach ($TPlanableOO as $operationOrder)
+    {
 
-		// Ajout aussi les inputs issues des hooks
-		foreach ($TOutputForm as $inputName => $params){
-			if(in_array($inputName, $TUsedFields)) continue;
-			$outForm .= $params['html'] . "\n";
-		}
+        $out.= '<tr>';
+        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="">'.$operationOrder->ref.'</a></td>';
+        $out.= ' <td data-order="'.$operationOrder->ref_client.'" data-search="'.$operationOrder->ref_client.'"  >'.$operationOrder->ref_client.'</td>';
+        $out.= ' <td data-order="'.$operationOrder->time_planned_t.'" data-search="'.$operationOrder->time_planned_t.'" >'.$operationOrder->time_planned_t.'</td>';
+        $out.= ' <td data-order="'.$operationOrder->time_planned_f.'" data-search="'.$operationOrder->time_planned_f.'" >'.$operationOrder->time_planned_t.'</td>';
+        $out.= '</tr>';
+    }
+    $out.= '</tbody>';
 
-		$outForm .='</form>';
-	}
+    $out.= '</table>';
 
-    return $outForm;
+    $out.= '<script src="'. DOL_URL_ROOT .'/custom/operationorder/vendor/data-tables/datatables.min.js"></script>';
+    $out.='<script src="'.DOL_URL_ROOT.'/custom/operationorder/vendor/data-tables/jquery.dataTables.min.js"></script>';
+
+    $out.= '<script type="text/javascript" >
+					$(document).ready(function(){
+					   
+					    $("#operationorder_table").DataTable();
+					   
+					});
+			   </script>';
+
+
+
+
+//	$form = new Form($db);
+//    $TOutputForm = array(
+//    	'token' => array(
+//    		'html'  => '<input type="hidden" name="token" value="' . newToken() . '">',
+//			'value' => newToken()
+//		),
+//    	'startTime' => array(
+//    		'html'  => '<input type="hidden" name="startTime" value="' . $startTime . '">',
+//			'value' => $startTime
+//		),
+//    	'endTime' => array(
+//    		'html'  => '<input type="hidden" name="endTime" value="' . $endTime . '">',
+//			'value' => $endTime
+//		),
+//    	'allDay' => array(
+//    		'html'  => '<input type="hidden" name="allDay" value="' . $allDay. '">',
+//			'value' => $allDay
+//		),
+//		'action' => array(
+//			'html'  => '<input type="hidden" name="action" value="' . $action. '">',
+//			'value' => $action
+//		),
+//    	'operationorder' => array(
+//    		'html'  => $form->selectarray('operationorder', $TPlanableOOOptions, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1),
+//			'value' => ''
+//		)
+//	);
+//
+//	$parameters= array(
+//		'startTime' =>& $startTime,
+//		'endTime' =>& $endTime,
+//		'allDay' =>& $allDay,
+//		'id' =>& $id,
+//		'url' =>& $url,
+//		'TPlanableOOOptions' =>& $TPlanableOOOptions,
+//		'TPlanableOO' =>& $TPlanableOO,
+//		'TOutputForm' =>& $TOutputForm
+//	);
+//
+//	$reshook=$hookmanager->executeHooks('operationorderplannableform',$parameters,$form, $action);    // Note that $action and $object may have been modified by hook
+//
+//	if ($reshook>0)
+//	{
+//		$outForm = $hookmanager->resPrint;
+//	}
+//	else
+//	{
+//		$outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
+//
+//		// Note pour la suite : si création d'une vue manuel (remplacement de ce foreach), penser à ajouter aussi les inputs issues des hooks
+//		$TUsedFields = array(); // mettre ici les champs utilisés dans la vue personnalisée
+//
+//		// exemple de création d'une vue personnalisé
+//		// $outForm .= $TOutputForm['operationorder']['html]; // la sortie html a modifier comme on souhaite l'afficher.
+//		// $TUsedFields[] = 'operationorder'; // j'indique que le champ est utilisé
+//
+//		// Ajout aussi les inputs issues des hooks
+//		foreach ($TOutputForm as $inputName => $params){
+//			if(in_array($inputName, $TUsedFields)) continue;
+//			$outForm .= $params['html'] . "\n";
+//		}
+//
+//		$outForm .='</form>';
+//	}
+
+    return $out;
 }
 
 function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
