@@ -176,9 +176,17 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 
     $out.= '<tr>';
     $out.= ' <th class="" >'.$langs->trans('Ref').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('AgfFormIntitule').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('RefClient').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('NameClient').'</th>';
     $out.= ' <th class="" >'.$langs->trans('DateStart').'</th>';
     $out.= ' <th class="" >'.$langs->trans('DateEnd').'</th>';
+
+    $parameters = array(
+        'out' =>& $out
+    );
+    $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableTitle',$parameters,$this, $action);
+    if($reshook < 0) return -1;
+
 
     $out.= '</tr>';
 
@@ -190,10 +198,31 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
     {
 
         $out.= '<tr>';
+
+        //ref OR
         $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="">'.$operationOrder->ref.'</a></td>';
+
+        //ref client
+        //TODO : ajout lien vers planning page avec action pour ajouter l'événement
         $out.= ' <td data-order="'.$operationOrder->ref_client.'" data-search="'.$operationOrder->ref_client.'"  >'.$operationOrder->ref_client.'</td>';
-        $out.= ' <td data-order="'.$operationOrder->time_planned_t.'" data-search="'.$operationOrder->time_planned_t.'" >'.$operationOrder->time_planned_t.'</td>';
-        $out.= ' <td data-order="'.$operationOrder->time_planned_f.'" data-search="'.$operationOrder->time_planned_f.'" >'.$operationOrder->time_planned_t.'</td>';
+
+        //Nom Client
+        $soc = new Societe($db);
+        $res = $soc->fetch($operationOrder->fk_soc);
+        if ($res < 0) return -1;
+        $out.= ' <td data-order="'.$soc->name.'" data-search="'.$soc->name.'"  >'.$soc->name.'</td>';
+
+        //durée théorique et forcée
+        $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_t).'</td>';
+        $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_f).'</td>';
+
+        $parameters = array(
+            'out' =>& $out,
+            'operationOrder' => $operationOrder
+        );
+        $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableField',$parameters,$this, $action);
+        if($reshook < 0) return -1;
+
         $out.= '</tr>';
     }
     $out.= '</tbody>';
