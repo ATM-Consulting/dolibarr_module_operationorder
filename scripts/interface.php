@@ -151,7 +151,6 @@ if(GETPOST('action'))
 		}
 	}
 	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
-//	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 

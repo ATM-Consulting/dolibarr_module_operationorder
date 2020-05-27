@@ -304,35 +304,6 @@ if($action == "createOperationOrderAction"){
                 }
             });
 
-			//Action ajax d'ajout d'un événement lors de la soumission du formulaire
-            //$(document).on("submit", "#create-operation-order-action", function(e) {
-            //
-            //    e.preventDefault();
-            //
-            //    var formData = {
-            //        'startTime' : $('input[name=startTime]').val(),
-            //        'endTime'   : $('input[name=endTime]').val(),
-            //        'allDay'    : $('input[name=allDay]').val(),
-            //        'operationorder' : $('select[name=operationorder]').val()
-            //    };
-            //
-            //    $.ajax({
-            //        url: '<?php //echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>//?action=createOperationOrderAction',
-            //        method: 'POST',
-            //        data: {
-            //            'url' : window.location.href,
-            //            'data' : formData
-            //        },
-            //        dataType: 'json',
-            //        // La fonction à apeller si la requête aboutie
-            //        success: function (data) {
-            //            operationorderneweventmodal.dialog('close');
-            //            calendar.refetchEvents();
-            //        }
-            //    });
-            //
-            //});
-
             function getFullCalendarHeight(){
 				return  $( window ).height() - $("#id-right").offset().top - 30;
 			}
