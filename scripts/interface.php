@@ -151,7 +151,7 @@ if(GETPOST('action'))
 		}
 	}
 	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
-	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
+//	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
@@ -170,7 +170,7 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 		}
 	}
 
-    $out= '<table id="operationorder_table" class="table" style="width:800px;" >';
+    $out= '<table id="'.$id.'" class="table" style="width:800px;" >';
 
     $out.= '<thead>';
 
@@ -180,11 +180,12 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
     $out.= ' <th class="" >'.$langs->trans('NameClient').'</th>';
     $out.= ' <th class="" >'.$langs->trans('DateStart').'</th>';
     $out.= ' <th class="" >'.$langs->trans('DateEnd').'</th>';
+    $out.= ' <th class="" >'.$langs->trans('Status').'</th>';
 
     $parameters = array(
         'out' =>& $out
     );
-    $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableTitle',$parameters,$this, $action);
+    $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableTitle',$parameters,$object, $action);
     if($reshook < 0) return -1;
 
 
@@ -200,7 +201,8 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
         $out.= '<tr>';
 
         //ref OR
-        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="">'.$operationOrder->ref.'</a></td>';
+        $url = DOL_URL_ROOT . "/custom/operationorder/operationorder_planning.php";
+        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="'.$url.'?action=createOperationOrderAction&operationorder='.$operationOrder->id.'&startTime='.$startTime.'&endTime='.$endTime.'">'.$operationOrder->ref.'</a></td>';
 
         //ref client
         //TODO : ajout lien vers planning page avec action pour ajouter l'événement
@@ -216,11 +218,17 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
         $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_t).'</td>';
         $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_f).'</td>';
 
+        $orstatus = new OperationOrderStatusTarget($db);
+        $res = $orstatus->fetch($operationOrder->status);
+        if ($res < 0) return -1;
+
+        $out.= ' <td>'.$orstatus->name.'</td>';
+
         $parameters = array(
             'out' =>& $out,
             'operationOrder' => $operationOrder
         );
-        $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableField',$parameters,$this, $action);
+        $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableField',$parameters,$object, $action);
         if($reshook < 0) return -1;
 
         $out.= '</tr>';
@@ -312,72 +320,6 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 //	}
 
     return $out;
-}
-
-function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
-
-    global $langs, $db, $user, $conf;
-
-    dol_include_once('/operationorder/class/operationorder.class.php');
-    dol_include_once('/operationorder/class/operationorderaction.class.php');
-
-    $error = 0;
-
-    if(!empty($id_operationorder))
-    {
-
-        $operationorder = new OperationOrder($db);
-        $res = $operationorder->fetch($id_operationorder);
-
-        if ($res)
-        {
-            $action_or = new OperationOrderAction($db);
-
-            $action_or->dated = $startTime;
-            //OR temps forcé ou temps théorique ou rien
-            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
-            else $action_or->datef = $startTime + $operationorder->time_planned_t;
-
-            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
-			{
-				if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
-				else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
-				$action_or->datef = $TRes['total']['dateEnd'];
-			}
-
-            $action_or->fk_operationorder = $id_operationorder;
-            $action_or->fk_user_author = $user->id;
-
-            $res = $action_or->save($user);
-
-            $operationorder = new OperationOrder($db);
-            $res = $operationorder->fetch($id_operationorder);
-            if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
-            $operationorder->planned_date = intval($action_or->dated);
-            $operationorder->save($user);
-            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
-
-            $statusAllowed = new OperationOrderStatus($db);
-            $res = $statusAllowed->fetch($fk_status);
-            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
-            {
-                $res = $operationorder->setStatus($user, $fk_status);
-
-                return true;
-            }
-            else
-            {
-                //setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
-            }
-        }
-        else
-        {
-            $error++;
-        }
-    } else {
-        $error++;
-    }
-
 }
 
 function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
