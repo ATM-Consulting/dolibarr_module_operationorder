@@ -56,7 +56,15 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 
 if($action == "createOperationOrderAction"){
 
+    global $langs;
+
     $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder);
+
+    if($res < 0){
+        setEventMessage($langs->trans('ErrorORActionCreation'), 'errors');
+    } else {
+        setEventMessage($langs->trans('SucessORActionCreation'));
+    }
 
 }
 
@@ -178,7 +186,7 @@ if($action == "createOperationOrderAction"){
                         let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
 
                         $.ajax({
-                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getTableDialogPlanable',
                             method: 'POST',
                             data: {
                                 'url': window.location.href,

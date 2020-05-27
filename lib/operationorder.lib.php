@@ -1073,10 +1073,10 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
             {
                 $res = $operationorder->setStatus($user, $fk_status);
-            }
-            else
-            {
-                //setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
+
+                if($res < 0) $error++;
+            } else {
+                $error++;
             }
         }
         else

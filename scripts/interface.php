@@ -150,7 +150,7 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
-	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
+	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
 //	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
@@ -159,7 +159,7 @@ echo json_encode($data);
 
 
 
-function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-event') {
+function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-event') {
     global $db, $langs, $hookmanager;
 
     $TPlanableOO = OperationOrder::getPlannableOperationOrder();
@@ -253,71 +253,6 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 					   
 					});
 			   </script>';
-
-//	$form = new Form($db);
-//    $TOutputForm = array(
-//    	'token' => array(
-//    		'html'  => '<input type="hidden" name="token" value="' . newToken() . '">',
-//			'value' => newToken()
-//		),
-//    	'startTime' => array(
-//    		'html'  => '<input type="hidden" name="startTime" value="' . $startTime . '">',
-//			'value' => $startTime
-//		),
-//    	'endTime' => array(
-//    		'html'  => '<input type="hidden" name="endTime" value="' . $endTime . '">',
-//			'value' => $endTime
-//		),
-//    	'allDay' => array(
-//    		'html'  => '<input type="hidden" name="allDay" value="' . $allDay. '">',
-//			'value' => $allDay
-//		),
-//		'action' => array(
-//			'html'  => '<input type="hidden" name="action" value="' . $action. '">',
-//			'value' => $action
-//		),
-//    	'operationorder' => array(
-//    		'html'  => $form->selectarray('operationorder', $TPlanableOOOptions, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1),
-//			'value' => ''
-//		)
-//	);
-//
-//	$parameters= array(
-//		'startTime' =>& $startTime,
-//		'endTime' =>& $endTime,
-//		'allDay' =>& $allDay,
-//		'id' =>& $id,
-//		'url' =>& $url,
-//		'TPlanableOOOptions' =>& $TPlanableOOOptions,
-//		'TPlanableOO' =>& $TPlanableOO,
-//		'TOutputForm' =>& $TOutputForm
-//	);
-//
-//	$reshook=$hookmanager->executeHooks('operationorderplannableform',$parameters,$form, $action);    // Note that $action and $object may have been modified by hook
-//
-//	if ($reshook>0)
-//	{
-//		$outForm = $hookmanager->resPrint;
-//	}
-//	else
-//	{
-//		$outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
-//
-//		// Note pour la suite : si création d'une vue manuel (remplacement de ce foreach), penser à ajouter aussi les inputs issues des hooks
-//		$TUsedFields = array(); // mettre ici les champs utilisés dans la vue personnalisée
-//
-//		// exemple de création d'une vue personnalisé
-//		// $outForm .= $TOutputForm['operationorder']['html]; // la sortie html a modifier comme on souhaite l'afficher.
-//		// $TUsedFields[] = 'operationorder'; // j'indique que le champ est utilisé
-//
-//		// Ajout aussi les inputs issues des hooks
-//		foreach ($TOutputForm as $inputName => $params){
-//			if(in_array($inputName, $TUsedFields)) continue;
-//			$outForm .= $params['html'] . "\n";
-//		}
-//
-//		$outForm .='</form>';
-//	}
 
     return $out;
 }
