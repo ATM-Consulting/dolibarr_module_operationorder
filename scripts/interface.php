@@ -150,8 +150,7 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
-	if($action=='getFormDialogPlanable') $data['result'] = _getFormDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
-	elseif ($action=='createOperationOrderAction') $data['result'] = _createOperationOrderAction($data['data']['startTime'], $data['data']['endTime'], $data['data']['allDay'], $data['data']['operationorder']);
+	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
@@ -159,7 +158,7 @@ echo json_encode($data);
 
 
 
-function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-event') {
+function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action') {
     global $db, $langs, $hookmanager;
 
     $TPlanableOO = OperationOrder::getPlannableOperationOrder();
@@ -170,139 +169,87 @@ function _getFormDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'crea
 		}
 	}
 
+    $out= '<table id="'.$id.'" class="table" style="width:800px;" >';
 
-	$form = new Form($db);
-    $TOutputForm = array(
-    	'token' => array(
-    		'html'  => '<input type="hidden" name="token" value="' . newToken() . '">',
-			'value' => newToken()
-		),
-    	'startTime' => array(
-    		'html'  => '<input type="hidden" name="startTime" value="' . $startTime . '">',
-			'value' => $startTime
-		),
-    	'endTime' => array(
-    		'html'  => '<input type="hidden" name="endTime" value="' . $endTime . '">',
-			'value' => $endTime
-		),
-    	'allDay' => array(
-    		'html'  => '<input type="hidden" name="allDay" value="' . $allDay. '">',
-			'value' => $allDay
-		),
-		'action' => array(
-			'html'  => '<input type="hidden" name="action" value="' . $action. '">',
-			'value' => $action
-		),
-    	'operationorder' => array(
-    		'html'  => $form->selectarray('operationorder', $TPlanableOOOptions, '',  0,  0,  0,  '',  0,  0,  0,  '',  '', 1),
-			'value' => ''
-		)
-	);
+    $out.= '<thead>';
 
-	$parameters= array(
-		'startTime' =>& $startTime,
-		'endTime' =>& $endTime,
-		'allDay' =>& $allDay,
-		'id' =>& $id,
-		'url' =>& $url,
-		'TPlanableOOOptions' =>& $TPlanableOOOptions,
-		'TPlanableOO' =>& $TPlanableOO,
-		'TOutputForm' =>& $TOutputForm
-	);
+    $out.= '<tr>';
+    $out.= ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('RefCustomer').'</th>';
+    $out.= ' <th class="text-center"  >'.$langs->trans('Module1Name').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('TimePlannedTheoretical').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('TimePlannedForced').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('Status').'</th>';
 
-	$reshook=$hookmanager->executeHooks('operationorderplannableform',$parameters,$form, $action);    // Note that $action and $object may have been modified by hook
+    $parameters = array(
+        'out' =>& $out
+    );
+    $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableTitle',$parameters,$object, $action);
+    if($reshook < 0) return -1;
 
-	if ($reshook>0)
-	{
-		$outForm = $hookmanager->resPrint;
-	}
-	else
-	{
-		$outForm = '<form name="'.$id.'" id="'.$id.'" action="' . $url .'" method="POST">' . "\n";
 
-		// Note pour la suite : si création d'une vue manuel (remplacement de ce foreach), penser à ajouter aussi les inputs issues des hooks
-		$TUsedFields = array(); // mettre ici les champs utilisés dans la vue personnalisée
+    $out.= '</tr>';
 
-		// exemple de création d'une vue personnalisé
-		// $outForm .= $TOutputForm['operationorder']['html]; // la sortie html a modifier comme on souhaite l'afficher.
-		// $TUsedFields[] = 'operationorder'; // j'indique que le champ est utilisé
+    $out.= '</thead>';
 
-		// Ajout aussi les inputs issues des hooks
-		foreach ($TOutputForm as $inputName => $params){
-			if(in_array($inputName, $TUsedFields)) continue;
-			$outForm .= $params['html'] . "\n";
-		}
+    $out.= '<tbody>';
 
-		$outForm .='</form>';
-	}
-
-    return $outForm;
-}
-
-function _createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
-
-    global $langs, $db, $user, $conf;
-
-    dol_include_once('/operationorder/class/operationorder.class.php');
-    dol_include_once('/operationorder/class/operationorderaction.class.php');
-
-    $error = 0;
-
-    if(!empty($id_operationorder))
+    foreach ($TPlanableOO as $operationOrder)
     {
 
-        $operationorder = new OperationOrder($db);
-        $res = $operationorder->fetch($id_operationorder);
+        $out.= '<tr>';
 
-        if ($res)
-        {
-            $action_or = new OperationOrderAction($db);
+        //ref OR
+        $url = DOL_URL_ROOT . "/custom/operationorder/operationorder_planning.php";
+        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="'.$url.'?action=createOperationOrderAction&operationorder='.$operationOrder->id.'&startTime='.$startTime.'&endTime='.$endTime.'">'.$operationOrder->ref.'</a></td>';
 
-            $action_or->dated = $startTime;
-            //OR temps forcé ou temps théorique ou rien
-            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
-            else $action_or->datef = $startTime + $operationorder->time_planned_t;
+        //ref client
+        //TODO : ajout lien vers planning page avec action pour ajouter l'événement
+        $out.= ' <td data-order="'.$operationOrder->ref_client.'" data-search="'.$operationOrder->ref_client.'"  >'.$operationOrder->ref_client.'</td>';
 
-            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
-			{
-				if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
-				else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
-				$action_or->datef = $TRes['total']['dateEnd'];
-			}
+        //Nom Client
+        $soc = new Societe($db);
+        $res = $soc->fetch($operationOrder->fk_soc);
+        if ($res < 0) return -1;
+        $out.= ' <td data-order="'.$soc->name.'" data-search="'.$soc->name.'"  >'.$soc->name.'</td>';
 
-            $action_or->fk_operationorder = $id_operationorder;
-            $action_or->fk_user_author = $user->id;
+        //durée théorique et forcée
+        $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_t).'</td>';
+        $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_f).'</td>';
 
-            $res = $action_or->save($user);
+        $out.= ' <td>'.$operationOrder->getLibStatut().'</td>';
 
-            $operationorder = new OperationOrder($db);
-            $res = $operationorder->fetch($id_operationorder);
-            if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
-            $operationorder->planned_date = intval($action_or->dated);
-            $operationorder->save($user);
-            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+        $parameters = array(
+            'out' =>& $out,
+            'operationOrder' => $operationOrder
+        );
+        $reshook=$hookmanager->executeHooks('addOperationorderPlannableTableField',$parameters,$object, $action);
+        if($reshook < 0) return -1;
 
-            $statusAllowed = new OperationOrderStatus($db);
-            $res = $statusAllowed->fetch($fk_status);
-            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
-            {
-                $res = $operationorder->setStatus($user, $fk_status);
-
-                return true;
-            }
-            else
-            {
-                //setEventMessage($langs->trans('ConfirmSetStatusNotAllowed'), 'errors');
-            }
-        }
-        else
-        {
-            $error++;
-        }
-    } else {
-        $error++;
+        $out.= '</tr>';
     }
+    $out.= '</tbody>';
 
+    $out.= '</table>';
+
+    $out.= '<script src="'. DOL_URL_ROOT .'/custom/operationorder/vendor/data-tables/datatables.min.js"></script>';
+    $out.='<script src="'.DOL_URL_ROOT.'/custom/operationorder/vendor/data-tables/jquery.dataTables.min.js"></script>';
+
+    $out.= '<script type="text/javascript" >
+					$(document).ready(function(){
+					   
+					    $("#' . $id . '").DataTable({
+						"pageLength" : 10,
+						"language": {
+							"url": "'.DOL_URL_ROOT.'/custom/operationorder/vendor/data-tables/french.json"
+						},
+						responsive: true
+					});
+					   
+					});
+			   </script>';
+
+    return $out;
 }
 
 function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){

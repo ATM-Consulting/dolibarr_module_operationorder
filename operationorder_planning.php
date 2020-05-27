@@ -3,6 +3,8 @@
 require 'config.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationorderaction.class.php');
+dol_include_once('operationorder/lib/operationorder.lib.php');
+
 
 
 if(empty($user->rights->operationorder->planning->read)) accessforbidden();
@@ -50,6 +52,20 @@ $res = $statusAllowed->fetch($fk_status);
 $userCanCreateEvent = 0;
 if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 	$userCanCreateEvent = 1;
+}
+
+if($action == "createOperationOrderAction"){
+
+    global $langs;
+
+    $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder);
+
+    if($res < 0){
+        setEventMessage($langs->trans('ErrorORActionCreation'), 'errors');
+    } else {
+        setEventMessage($langs->trans('SucessORActionCreation'));
+    }
+
 }
 
 ?>
@@ -170,7 +186,7 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
                         let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
 
                         $.ajax({
-                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getFormDialogPlanable',
+                            url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getTableDialogPlanable',
                             method: 'POST',
                             data: {
                                 'url': window.location.href,
@@ -283,43 +299,9 @@ if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
 			operationorderneweventmodal.dialog({
                 autoOpen: false,
 				autoResize:true,
-				buttons: {
-                    "<?php echo $langs->transnoentitiesnoconv('Create')?>": function() {
-                        $('#dialog-add-event').find("form").submit();
-                    }
-                },
                 close: function( event, ui ) {
                     calendar.refetchEvents();
                 }
-            });
-
-			//Action ajax d'ajout d'un événement lors de la soumission du formulaire
-            $(document).on("submit", "#create-operation-order-action", function(e) {
-
-                e.preventDefault();
-
-                var formData = {
-                    'startTime' : $('input[name=startTime]').val(),
-                    'endTime'   : $('input[name=endTime]').val(),
-                    'allDay'    : $('input[name=allDay]').val(),
-                    'operationorder' : $('select[name=operationorder]').val()
-                };
-
-                $.ajax({
-                    url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=createOperationOrderAction',
-                    method: 'POST',
-                    data: {
-                        'url' : window.location.href,
-                        'data' : formData
-                    },
-                    dataType: 'json',
-                    // La fonction à apeller si la requête aboutie
-                    success: function (data) {
-                        operationorderneweventmodal.dialog('close');
-                        calendar.refetchEvents();
-                    }
-                });
-
             });
 
             function getFullCalendarHeight(){

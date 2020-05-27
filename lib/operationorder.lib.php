@@ -1022,3 +1022,76 @@ function getTHoraire()
 
 	return $THoraire;
 }
+
+function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
+
+    global $langs, $db, $user, $conf;
+
+    dol_include_once('/operationorder/class/operationorder.class.php');
+    dol_include_once('/operationorder/class/operationorderaction.class.php');
+
+    $error = 0;
+
+    $db->begin();
+
+    if(!empty($id_operationorder))
+    {
+
+        $operationorder = new OperationOrder($db);
+        $res = $operationorder->fetch($id_operationorder);
+
+        if ($res)
+        {
+            $action_or = new OperationOrderAction($db);
+
+            $action_or->dated = $startTime;
+            //OR temps forcé ou temps théorique ou rien
+            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
+            else $action_or->datef = $startTime + $operationorder->time_planned_t;
+
+            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
+            {
+                if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
+                else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
+                $action_or->datef = $TRes['total']['dateEnd'];
+            }
+
+            $action_or->fk_operationorder = $id_operationorder;
+            $action_or->fk_user_author = $user->id;
+
+            $res = $action_or->save($user);
+
+            $operationorder = new OperationOrder($db);
+            $res = $operationorder->fetch($id_operationorder);
+            if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
+            $operationorder->planned_date = intval($action_or->dated);
+            $operationorder->save($user);
+            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+
+            $statusAllowed = new OperationOrderStatus($db);
+            $res = $statusAllowed->fetch($fk_status);
+            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
+            {
+                $res = $operationorder->setStatus($user, $fk_status);
+
+                if($res < 0) $error++;
+            } else {
+                $error++;
+            }
+        }
+        else
+        {
+            $error++;
+        }
+    } else {
+        $error++;
+    }
+
+    if(!$error) {
+        $db->commit();
+        return 1;
+    } else {
+        $db->rollback();
+        return -1;
+    }
+}

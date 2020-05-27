@@ -129,7 +129,6 @@ WarningORTimePlannedF=OR existant et associé non modifié
 planned_date_help=Date de plannification de la réparation/entretiens
 PlannedDate=Date de planification
 
-
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
 OperationOrderValid=Valider
@@ -204,3 +203,6 @@ CreateNewORAction=Créer un nouvel événement OR
 PublicHolidayNonWorkedDaysList=Liste des jours non travaillés
 oojoursOff=Jours non travaillés
 OnlineSync=Synchronisation en ligne
+HoursMinFormat=Format d'affichage en heures et minutes (hh:mm), veuillez saisir au même format
+ErrorORActionCreation=Erreur lors de la création de l'événement de type "Ordre de réparation"
+SucessORActionCreation=L'événement de type "Ordre de réparation" a été créé avec succès
