@@ -299,11 +299,6 @@ if($action == "createOperationOrderAction"){
 			operationorderneweventmodal.dialog({
                 autoOpen: false,
 				autoResize:true,
-				buttons: {
-                    "<?php echo $langs->transnoentitiesnoconv('Create')?>": function() {
-                        $('#dialog-add-event').find("form").submit();
-                    }
-                },
                 close: function( event, ui ) {
                     calendar.refetchEvents();
                 }

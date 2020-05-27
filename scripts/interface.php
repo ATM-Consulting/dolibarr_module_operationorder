@@ -218,11 +218,7 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
         $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_t).'</td>';
         $out.= ' <td>'.convertSecondToTime($operationOrder->time_planned_f).'</td>';
 
-        $orstatus = new OperationOrderStatusTarget($db);
-        $res = $orstatus->fetch($operationOrder->status);
-        if ($res < 0) return -1;
-
-        $out.= ' <td>'.$orstatus->name.'</td>';
+        $out.= ' <td>'.$operationOrder->getLibStatut().'</td>';
 
         $parameters = array(
             'out' =>& $out,
@@ -243,7 +239,7 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
     $out.= '<script type="text/javascript" >
 					$(document).ready(function(){
 					   
-					    $("#operationorder_table").DataTable({
+					    $("#' . $id . '").DataTable({
 						"pageLength" : 10,
 						"language": {
 							"url": "'.DOL_URL_ROOT.'/custom/operationorder/vendor/data-tables/french.json"
