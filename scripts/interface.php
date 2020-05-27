@@ -159,7 +159,7 @@ echo json_encode($data);
 
 
 
-function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-event') {
+function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action') {
     global $db, $langs, $hookmanager;
 
     $TPlanableOO = OperationOrder::getPlannableOperationOrder();
@@ -175,12 +175,12 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
     $out.= '<thead>';
 
     $out.= '<tr>';
-    $out.= ' <th class="" >'.$langs->trans('Ref').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('RefClient').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('NameClient').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('DateStart').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('DateEnd').'</th>';
-    $out.= ' <th class="" >'.$langs->trans('Status').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('Ref').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('RefCustomer').'</th>';
+    $out.= ' <th class="text-center"  >'.$langs->trans('Module1Name').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('TimePlannedTheoretical').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('TimePlannedForced').'</th>';
+    $out.= ' <th class="text-center" >'.$langs->trans('Status').'</th>';
 
     $parameters = array(
         'out' =>& $out
