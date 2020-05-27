@@ -94,6 +94,7 @@ TargetableStatus=Statuts accessibles depuis ce statut
 ConfirmValidateOperationOrderStatusBody=Êtes-vous sûr de vouloir passer cet ordre de réparation sous la référence <b>%s</b> à l'état <b>%s</b> ?
 ConfirmValidateOperationOrderStatusTitle=Passer l'ordre de réparation à l'état %s
 StatusChanged=Status modifié
+WarningORStatusCode=Lors de la définition de statut sur plusieurs entités, veillez à leur donner le même code dans chaque entité, afin de garder la cohérence des traitements
 
 # RIGHTS
 operationorder_read=Peut voir les ordres de réparation
