@@ -1075,6 +1075,7 @@ class OperationOrder extends SeedObject
                 if (!empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
                 $this->db->commit();
+				$this->setTimePlannedT();
                 return $result;
             }
             else
