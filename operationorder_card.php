@@ -906,7 +906,7 @@ else
 
 			print '
 			<script type="text/javascript">
-			
+
 			$(function()
 			{
 			    // Animate modified line
@@ -1057,7 +1057,7 @@ else
 					print '<div id="edit-item_'.$line->id.'" class="edit-line-form-wrap" title="'.$line->ref.'" >';
 					print '<div class="edit-line-form-body" >';
 					if($res>0){
-						print displayFormFieldsByOperationOrder($object, $line, 0);
+						print displayFormFieldsByOperationOrder($object, $line, 0, true);
 					}
 					else{
 						print $langs->trans('LineNotFound');
