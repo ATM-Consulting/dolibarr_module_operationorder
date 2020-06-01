@@ -541,13 +541,15 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 			$T = array();
 
-			$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc');
+			$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc', 'planned_date', 'time_planned_t', 'time_planned_f');
 
 			foreach ($operationOrder->fields as $fieldKey => $field){
 				if(!in_array($fieldKey, $TFieldForTooltip)) continue;
 
 				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$operationOrder->showOutputFieldQuick($fieldKey);
 			}
+
+			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
 
 			$event->msg.= implode('<br/>',$T);
 
