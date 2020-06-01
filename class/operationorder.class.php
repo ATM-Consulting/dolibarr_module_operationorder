@@ -96,7 +96,7 @@ class OperationOrder extends SeedObject
         'status' => array('type'=>'int', 'label'=>'Status', 'enabled'=>1, 'position'=>1000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=> array(-1 => 'OperationOrderStatusShortCanceled', 0 => 'OperationOrderStatusShortDraft', 1 => 'OperationOrderStatusShortValidated')),
         'last_main_doc' => array('type'=>'varchar(255)', 'label'=>'LastMainDoc', 'enabled'=>1, 'position'=>50, 'notnull'=>0, 'visible'=>0,),
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>1200, 'notnull'=>1, 'visible'=>0,),
-        'time_planned_t' => array ('type' => 'integer', 'label' => 'TimePlannedTheoretical', 'enabled' => 0, 'position' => 1300, 'notnull' => 1, 'visible' => 1, 'default' => 0, 'noteditable' => 1, 'help'=>"HoursMinFormat"),
+        'time_planned_t' => array ('type' => 'integer', 'label' => 'TimePlannedTheoretical', 'enabled' => 1, 'position' => 1300, 'notnull' => 1, 'visible' => 4, 'default' => 0, 'noteditable' => 1, 'help'=>"HoursMinFormat"),
         'time_planned_f' => array ('type' => 'integer', 'label' => 'TimePlannedForced', 'enabled' => 1, 'position' => 1400, 'notnull' => 0, 'visible' => 1, 'help'=>"HoursMinFormat"),
         'planned_date' => array ('type' => 'datetime', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1),
     );
