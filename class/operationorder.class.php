@@ -721,7 +721,7 @@ class OperationOrder extends SeedObject
 				}
 			}
 			else{
-				$this->error($langs->trans('Status'));
+				$this->error = $langs->trans('Status');
 			}
 		}
 
