@@ -1349,7 +1349,25 @@ class OperationOrder extends SeedObject
             }
         }
         else{
+            if($key == 'time_planned_t' || $key == 'time_planned_f'){
+                $val['type'] = 'duration';
+            }
             $out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
+        }
+
+        return $out;
+    }
+
+    public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+    {
+
+        if ($key == 'time_planned_f')
+        {
+            $out = '<input  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.convertSecondToTime($value).'" >';
+        }
+        else
+        {
+            $out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
         }
 
         return $out;
@@ -1846,6 +1864,7 @@ class OperationOrderDet extends SeedObject
 
 		return $out;
 	}
+
 
 	/**
 	 * Return HTML string to put an input field into a page
