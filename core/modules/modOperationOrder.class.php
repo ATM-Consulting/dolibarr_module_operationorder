@@ -143,7 +143,9 @@ class modOperationOrder extends DolibarrModules
 		// 'stock'            to add a tab in stock view
 		// 'thirdparty'       to add a tab in third party view
 		// 'user'             to add a tab in user view
-        $this->tabs = array();
+        $this->tabs = array('user:+planning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?userid=__ID__',
+            'group:+planning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?usergroupid=__ID__',
+            );
 
         // Dictionaries
 	    if (! isset($conf->operationorder->enabled))
@@ -263,6 +265,21 @@ class modOperationOrder extends DolibarrModules
         $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
         $this->rights[$r][4] = 'planning';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
         $this->rights[$r][5] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+        $r++;
+
+        $this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+        $this->rights[$r][1] = 'operationorder_userplanning_write';	// Permission label
+        $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+        $this->rights[$r][4] = 'userplanning';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+        $this->rights[$r][5] = 'write';
+        $r++;
+
+        // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+        $r++;$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+        $this->rights[$r][1] = 'operationorder_usergroupplanning_write';	// Permission label
+        $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+        $this->rights[$r][4] = 'usergroupplanning';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+        $this->rights[$r][5] = 'write';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
         $r++;
 
 		// Main menu entries
