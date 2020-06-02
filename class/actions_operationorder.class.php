@@ -173,5 +173,27 @@ class ActionsOperationOrder
 		}
 	}
 
+//    public function completeTabsHead($parameters, &$object, &$action, $hookmanager)
+//    {
+//        global $langs;
+//
+//        $contextArray = explode(':', $parameters['context']) ;
+//
+//        if (in_array('userplanning', $contextArray ))
+//        {
+//            $this->results = $parameters['head'];
+//            $this->results[] = array(
+//                dol_buildpath('operationorder/operationorder_userplanning.php?userid='.$parameters['object']->id.'', 1),
+//                $langs->trans('Planning').'<span class="badge marginleftonlyshort"></span>',
+//                'userplanning'
+//            );
+//
+//            return 1;
+//        }
+//
+//        return 0;
+//
+//    }
+
 
 }

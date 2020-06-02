@@ -1095,3 +1095,86 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         return -1;
     }
 }
+
+function getUserPlanning($user, $action = ''){
+
+    global $langs;
+
+    $out = '';
+
+    $out .= '<table width="100%" class="liste noborder nobottom">';
+    $out .= '<tr class="liste_titre">';
+    $out .= '<td>&nbsp</td>';
+    $out .= '<td>'.$langs->trans('Morning').'</td>';
+    $out .= '<td>'.$langs->trans('Afternoon').'</td>';
+    $out .= '<td>'.$langs->trans('MorningD').'</td>';
+    $out .= '<td>'.$langs->trans('MorningF').'</td>';
+    $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
+    $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
+    $out .= '</tr>';
+    $out .= '<tr>';
+    $out .= '<td>'.$langs->trans('Monday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '<tr>';
+    $out .= '<td>'.$langs->trans('Tuesday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '<tr>';
+    $out .= '<td>'.$langs->trans('Wednesday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '<tr>';
+    $out .= '<td>'.$langs->trans('Thursday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '<tr>';
+    $out .= '<td>'.$langs->trans('Friday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '<td>'.$langs->trans('Saturday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '</tr>';
+    $out .= '<td>'.$langs->trans('Sunday').'</td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '<td></td>';
+    $out .= '</tr>';
+    $out .= '</table>';
+
+    return $out;
+}

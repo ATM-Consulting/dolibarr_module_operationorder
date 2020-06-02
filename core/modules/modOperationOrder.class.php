@@ -92,7 +92,8 @@ class modOperationOrder extends DolibarrModules
 		    'models' => 1,
 			'triggers' => 1,
 			'hooks' => array(
-				'ordersuppliercard'
+				'ordersuppliercard',
+                'userplanning'
 			)
         );
 
@@ -143,8 +144,8 @@ class modOperationOrder extends DolibarrModules
 		// 'stock'            to add a tab in stock view
 		// 'thirdparty'       to add a tab in third party view
 		// 'user'             to add a tab in user view
-        $this->tabs = array('user:+planning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?userid=__ID__',
-            'group:+planning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?usergroupid=__ID__',
+        $this->tabs = array('user:+userplanning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?userid=__ID__',
+            'group:+usergroupplanning:Planning:operationorder@operationorder:$user->rights->operationorder->read:/operationorder/operationorder_userplanning.php?usergroupid=__ID__',
             );
 
         // Dictionaries
