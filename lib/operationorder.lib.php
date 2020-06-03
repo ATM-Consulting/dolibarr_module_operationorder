@@ -1187,6 +1187,13 @@ function getUserPlanning($object, $object_type, $action = ''){
 
         } else {
 
+
+            $out .= '<form method="POST" action="'.$_SERVER['PHP_SELF'].'"';
+            $out .= '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+            $out .= '<input type="hidden" name="action" value="save">';
+            $out .= '<input type="hidden" name="objectid" value="'.$object->id.'">';
+            $out .= '<input type="hidden" name="objecttype" value="'.$object_type.'">';
+
             $out .= '<table width="100%" class="liste noborder nobottom">';
             $out .= '<tr class="liste_titre">';
             $out .= '<td>&nbsp</td>';
@@ -1228,21 +1235,21 @@ function getUserPlanning($object, $object_type, $action = ''){
                     $out .= '<td>'.img_picto('', 'statut4').'</td>';
                 }
 
-                //MorningD
+                $form=new TFormCore($_SERVER['PHP_SELF'],'form1','POST');                //MorningD
                 $field = ''.$value.'_heuredam';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
 
                 //MorningF
                 $field = ''.$value.'_heurefam';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
 
                 //AfternoonD
                 $field = ''.$value.'_heuredpm';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
 
                 //AfternoonF
                 $field = ''.$value.'_heurefpm';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
 
 
                 $out .= '</tr>';
@@ -1251,8 +1258,8 @@ function getUserPlanning($object, $object_type, $action = ''){
 
             $out .= '</table>';
 
-            $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=save">'.$langs->trans('Save').'</a>';
-
+            $out .= '<div class="center"><input type="submit" class="button" name="save" value="'.$langs->trans('Save').'">';
+            $out .= '</div>';
         }
 
     }

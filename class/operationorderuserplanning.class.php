@@ -177,22 +177,16 @@ class OperationOrderUserPlanning extends SeedObject
 
         $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_object = '".$fk_object."' AND object_type = '".$object_type."'";
         $resql = $db->query($sql);
-
         if($resql){
             $obj = $db->fetch_object($resql);
 
             $res = $this->fetch($obj->rowid);
 
-            if($res)
-            {
-                return  $obj->rowid;
-            } else {
-                return -1;
-            }
+            return $res;
+
         } else {
             return -1;
         }
-
 
     }
 
