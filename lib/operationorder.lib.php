@@ -1096,7 +1096,7 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
     }
 }
 
-function getUserPlanning($user, $action = ''){
+function getUserPlanning($object, $object_type, $action = ''){
 
     global $langs, $db;
 
@@ -1106,67 +1106,154 @@ function getUserPlanning($user, $action = ''){
     $TDays = array('Monday'=> 'lundi', 'Tuesday' => 'mardi', 'Wednesday' => 'mercredi', 'Thursday' => 'jeudi', 'Friday' => 'vendredi', 'Saturday' => 'samedi', 'Sunday' => 'dimanche');
 
     $userplanning = new OperationOrderUserPlanning($db);
-    $res = $userplanning->fetchByObject($user->id, 'user');
+    $res = $userplanning->fetchByObject($object->id, $object_type);
 
     if($res < 0) $error ++;
 
     if(!$error)
     {
+
         $out = '';
 
-        $out .= '<table width="100%" class="liste noborder nobottom">';
-        $out .= '<tr class="liste_titre">';
-        $out .= '<td>&nbsp</td>';
-        $out .= '<td>'.$langs->trans('Morning').'</td>';
-        $out .= '<td>'.$langs->trans('Afternoon').'</td>';
-        $out .= '<td>'.$langs->trans('MorningD').'</td>';
-        $out .= '<td>'.$langs->trans('MorningF').'</td>';
-        $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
-        $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
-        $out .= '</tr>';
 
-        foreach ($TDays as $key => $value)
+        if($action != 'edit')
         {
 
-            $out .= '<tr>';
-            $out .= '<td>'.$langs->trans($key).'</td>';
-
-            //Morning
-            $field = ''.$value.'am';
-            if(empty($userplanning->$field)){
-                $out .= '<td>'.img_picto('', 'statut0').'</td>';
-            } else {
-                $out .= '<td>'.img_picto('', 'statut4').'</td>';
-            }
-
-            //Afternoon
-            $field = ''.$value.'pm';
-            if(empty($userplanning->$field)){
-                $out .= '<td>'.img_picto('', 'statut0').'</td>';
-            } else {
-                $out .= '<td>'.img_picto('', 'statut4').'</td>';
-            }
-
-            //MorningD
-            $field = ''.$value.'_heuredam';
-            $out .= '<td>'.$userplanning->$field.'</td>';
-
-            //MorningF
-            $field = ''.$value.'_heurefam';
-            $out .= '<td>'.$userplanning->$field.'</td>';
-
-            //AfternoonD
-            $field = ''.$value.'_heuredpm';
-            $out .= '<td>'.$userplanning->$field.'</td>';
-
-            //AfternoonF
-            $field = ''.$value.'_heurefpm';
-            $out .= '<td>'.$userplanning->$field.'</td>';
+            $out .= '<table width="100%" class="liste noborder nobottom">';
+            $out .= '<tr class="liste_titre">';
+            $out .= '<td>&nbsp</td>';
+            $out .= '<td>'.$langs->trans('Morning').'</td>';
+            $out .= '<td>'.$langs->trans('Afternoon').'</td>';
+            $out .= '<td>'.$langs->trans('MorningD').'</td>';
+            $out .= '<td>'.$langs->trans('MorningF').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
             $out .= '</tr>';
-            $out .= '<tr>';
+
+            foreach ($TDays as $key => $value)
+            {
+
+                $out .= '<tr>';
+
+                //Title
+                $out .= '<td>'.$langs->trans($key).'</td>';
+
+                //Morning
+                $field = ''.$value.'am';
+                if (empty($userplanning->$field))
+                {
+                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                }
+                else
+                {
+                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                }
+
+                //Afternoon
+                $field = ''.$value.'pm';
+                if (empty($userplanning->$field))
+                {
+                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                }
+                else
+                {
+                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                }
+
+                //MorningD
+                $field = ''.$value.'_heuredam';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //MorningF
+                $field = ''.$value.'_heurefam';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //AfternoonD
+                $field = ''.$value.'_heuredpm';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //AfternoonF
+                $field = ''.$value.'_heurefpm';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+
+                $out .= '</tr>';
+
+            }
+
+            $out .= '</table>';
+
+            $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=edit">'.$langs->trans('Modify').'</a>';
+
+        } else {
+
+            $out .= '<table width="100%" class="liste noborder nobottom">';
+            $out .= '<tr class="liste_titre">';
+            $out .= '<td>&nbsp</td>';
+            $out .= '<td>'.$langs->trans('Morning').'</td>';
+            $out .= '<td>'.$langs->trans('Afternoon').'</td>';
+            $out .= '<td>'.$langs->trans('MorningD').'</td>';
+            $out .= '<td>'.$langs->trans('MorningF').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
+            $out .= '</tr>';
+
+            foreach ($TDays as $key => $value)
+            {
+
+                $out .= '<tr>';
+
+                //Title
+                $out .= '<td>'.$langs->trans($key).'</td>';
+
+                //Morning
+                $field = ''.$value.'am';
+                if (empty($userplanning->$field))
+                {
+                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                }
+                else
+                {
+                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                }
+
+                //Afternoon
+                $field = ''.$value.'pm';
+                if (empty($userplanning->$field))
+                {
+                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                }
+                else
+                {
+                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                }
+
+                //MorningD
+                $field = ''.$value.'_heuredam';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //MorningF
+                $field = ''.$value.'_heurefam';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //AfternoonD
+                $field = ''.$value.'_heuredpm';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+                //AfternoonF
+                $field = ''.$value.'_heurefpm';
+                $out .= '<td>'.$userplanning->$field.'</td>';
+
+
+                $out .= '</tr>';
+
+            }
+
+            $out .= '</table>';
+
+            $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=save">'.$langs->trans('Save').'</a>';
 
         }
-        $out .= '</table>';
 
     }
 
