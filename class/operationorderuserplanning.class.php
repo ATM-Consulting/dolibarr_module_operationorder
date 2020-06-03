@@ -42,35 +42,39 @@ class OperationOrderUserPlanning extends SeedObject
         'jeudipm' => array('type'=>'integer', 'label'=>'jeudipm', 'enabled'=>1, 'position'=>100, 'notnull'=>1, 'visible'=>1, 'default'=>0),
         'vendrediam' => array('type'=>'integer', 'label'=>'vendrediam', 'enabled'=>1, 'position'=>110, 'notnull'=>1, 'visible'=>1, 'default'=>0),
         'vendredipm' => array('type'=>'integer', 'label'=>'vendredipm', 'enabled'=>1, 'position'=>120, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'lundi_heuredam' => array('type'=>'varchar(5)', 'label'=>'lundiheuredam', 'enabled'=>1, 'position'=>130, 'notnull'=>1, 'visible'=>1),
-        'lundi_heurefam' => array('type'=>'varchar(5)', 'label'=>'lundiheurefam', 'enabled'=>1, 'position'=>140, 'notnull'=>1, 'visible'=>1),
-        'lundi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'lundiheuredpm', 'enabled'=>1, 'position'=>150, 'notnull'=>1, 'visible'=>1),
-        'lundi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'lundiheurefpm', 'enabled'=>1, 'position'=>160, 'notnull'=>1, 'visible'=>1),
-        'mardi_heuredam' => array('type'=>'varchar(5)', 'label'=>'mardiheuredam', 'enabled'=>1, 'position'=>170, 'notnull'=>1, 'visible'=>1),
-        'mardi_heurefam' => array('type'=>'varchar(5)', 'label'=>'mardiheurefam', 'enabled'=>1, 'position'=>180, 'notnull'=>1, 'visible'=>1),
-        'mardi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'mardiheuredpm', 'enabled'=>1, 'position'=>190, 'notnull'=>1, 'visible'=>1),
-        'mardi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'mardiheurefpm', 'enabled'=>1, 'position'=>200, 'notnull'=>1, 'visible'=>1),
-        'mercredi_heuredam' => array('type'=>'varchar(5)', 'label'=>'mercrediheuredam', 'enabled'=>1, 'position'=>210, 'notnull'=>1, 'visible'=>1),
-        'mercredi_heurefam' => array('type'=>'varchar(5)', 'label'=>'mercrediheurefam', 'enabled'=>1, 'position'=>220, 'notnull'=>1, 'visible'=>1),
-        'mercredi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'mercrediheuredpm', 'enabled'=>1, 'position'=>230, 'notnull'=>1, 'visible'=>1),
-        'mercredi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'mercrediheurefpm', 'enabled'=>1, 'position'=>240, 'notnull'=>1, 'visible'=>1),
-        'jeudi_heuredam' => array('type'=>'varchar(5)', 'label'=>'jeudiheuredam', 'enabled'=>1, 'position'=>250, 'notnull'=>1, 'visible'=>1),
-        'jeudi_heurefam' => array('type'=>'varchar(5)', 'label'=>'jeudiheurefam', 'enabled'=>1, 'position'=>260, 'notnull'=>1, 'visible'=>1),
-        'jeudi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'jeudiheuredpm', 'enabled'=>1, 'position'=>270, 'notnull'=>1, 'visible'=>1),
-        'jeudi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'jeudiheurefpm', 'enabled'=>1, 'position'=>280, 'notnull'=>1, 'visible'=>1),
-        'vendredi_heuredam' => array('type'=>'varchar(5)', 'label'=>'vendrediheuredam', 'enabled'=>1, 'position'=>290, 'notnull'=>1, 'visible'=>1),
-        'vendredi_heurefam' => array('type'=>'varchar(5)', 'label'=>'vendrediheurefam', 'enabled'=>1, 'position'=>300, 'notnull'=>1, 'visible'=>1),
-        'vendredi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'vendrediheuredpm', 'enabled'=>1, 'position'=>310, 'notnull'=>1, 'visible'=>1),
-        'vendredi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'vendrediheurefpm', 'enabled'=>1, 'position'=>320, 'notnull'=>1, 'visible'=>1),
-        'samedi_heuredam' => array('type'=>'varchar(5)', 'label'=>'samediheuredam', 'enabled'=>1, 'position'=>330, 'notnull'=>1, 'visible'=>1),
-        'samedi_heurefam' => array('type'=>'varchar(5)', 'label'=>'samediheurefam', 'enabled'=>1, 'position'=>340, 'notnull'=>1, 'visible'=>1),
-        'samedi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'samediheuredpm', 'enabled'=>1, 'position'=>350, 'notnull'=>1, 'visible'=>1),
-        'samedi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'samediheurefpm', 'enabled'=>1, 'position'=>360, 'notnull'=>1, 'visible'=>1),
-        'dimanche_heuredam' => array('type'=>'varchar(5)', 'label'=>'dimancheheuredam', 'enabled'=>1, 'position'=>370, 'notnull'=>1, 'visible'=>1),
-        'dimanche_heurefam' => array('type'=>'varchar(5)', 'label'=>'dimancheheurefam', 'enabled'=>1, 'position'=>380, 'notnull'=>1, 'visible'=>1),
-        'dimanche_heuredpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheuredpm', 'enabled'=>1, 'position'=>390, 'notnull'=>1, 'visible'=>1),
-        'dimanche_heurefpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheurefpm', 'enabled'=>1, 'position'=>400, 'notnull'=>1, 'visible'=>1),
-        'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>410, 'notnull'=>1, 'visible'=>0,),
+        'samediam' => array('type'=>'integer', 'label'=>'samediam', 'enabled'=>1, 'position'=>130, 'notnull'=>1, 'visible'=>1, 'default'=>0),
+        'samedipm' => array('type'=>'integer', 'label'=>'samedipm', 'enabled'=>1, 'position'=>140, 'notnull'=>1, 'visible'=>1, 'default'=>0),
+        'dimancheam' => array('type'=>'integer', 'label'=>'dimancheam', 'enabled'=>1, 'position'=>150, 'notnull'=>1, 'visible'=>1, 'default'=>0),
+        'dimanchepm' => array('type'=>'integer', 'label'=>'dimanchepm', 'enabled'=>1, 'position'=>160, 'notnull'=>1, 'visible'=>1, 'default'=>0),
+        'lundi_heuredam' => array('type'=>'varchar(5)', 'label'=>'lundiheuredam', 'enabled'=>1, 'position'=>170, 'notnull'=>1, 'visible'=>1),
+        'lundi_heurefam' => array('type'=>'varchar(5)', 'label'=>'lundiheurefam', 'enabled'=>1, 'position'=>180, 'notnull'=>1, 'visible'=>1),
+        'lundi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'lundiheuredpm', 'enabled'=>1, 'position'=>190, 'notnull'=>1, 'visible'=>1),
+        'lundi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'lundiheurefpm', 'enabled'=>1, 'position'=>200, 'notnull'=>1, 'visible'=>1),
+        'mardi_heuredam' => array('type'=>'varchar(5)', 'label'=>'mardiheuredam', 'enabled'=>1, 'position'=>210, 'notnull'=>1, 'visible'=>1),
+        'mardi_heurefam' => array('type'=>'varchar(5)', 'label'=>'mardiheurefam', 'enabled'=>1, 'position'=>220, 'notnull'=>1, 'visible'=>1),
+        'mardi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'mardiheuredpm', 'enabled'=>1, 'position'=>230, 'notnull'=>1, 'visible'=>1),
+        'mardi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'mardiheurefpm', 'enabled'=>1, 'position'=>240, 'notnull'=>1, 'visible'=>1),
+        'mercredi_heuredam' => array('type'=>'varchar(5)', 'label'=>'mercrediheuredam', 'enabled'=>1, 'position'=>250, 'notnull'=>1, 'visible'=>1),
+        'mercredi_heurefam' => array('type'=>'varchar(5)', 'label'=>'mercrediheurefam', 'enabled'=>1, 'position'=>260, 'notnull'=>1, 'visible'=>1),
+        'mercredi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'mercrediheuredpm', 'enabled'=>1, 'position'=>270, 'notnull'=>1, 'visible'=>1),
+        'mercredi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'mercrediheurefpm', 'enabled'=>1, 'position'=>280, 'notnull'=>1, 'visible'=>1),
+        'jeudi_heuredam' => array('type'=>'varchar(5)', 'label'=>'jeudiheuredam', 'enabled'=>1, 'position'=>290, 'notnull'=>1, 'visible'=>1),
+        'jeudi_heurefam' => array('type'=>'varchar(5)', 'label'=>'jeudiheurefam', 'enabled'=>1, 'position'=>300, 'notnull'=>1, 'visible'=>1),
+        'jeudi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'jeudiheuredpm', 'enabled'=>1, 'position'=>310, 'notnull'=>1, 'visible'=>1),
+        'jeudi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'jeudiheurefpm', 'enabled'=>1, 'position'=>320, 'notnull'=>1, 'visible'=>1),
+        'vendredi_heuredam' => array('type'=>'varchar(5)', 'label'=>'vendrediheuredam', 'enabled'=>1, 'position'=>330, 'notnull'=>1, 'visible'=>1),
+        'vendredi_heurefam' => array('type'=>'varchar(5)', 'label'=>'vendrediheurefam', 'enabled'=>1, 'position'=>340, 'notnull'=>1, 'visible'=>1),
+        'vendredi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'vendrediheuredpm', 'enabled'=>1, 'position'=>350, 'notnull'=>1, 'visible'=>1),
+        'vendredi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'vendrediheurefpm', 'enabled'=>1, 'position'=>360, 'notnull'=>1, 'visible'=>1),
+        'samedi_heuredam' => array('type'=>'varchar(5)', 'label'=>'samediheuredam', 'enabled'=>1, 'position'=>370, 'notnull'=>1, 'visible'=>1),
+        'samedi_heurefam' => array('type'=>'varchar(5)', 'label'=>'samediheurefam', 'enabled'=>1, 'position'=>380, 'notnull'=>1, 'visible'=>1),
+        'samedi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'samediheuredpm', 'enabled'=>1, 'position'=>390, 'notnull'=>1, 'visible'=>1),
+        'samedi_heurefpm' => array('type'=>'varchar(5)', 'label'=>'samediheurefpm', 'enabled'=>1, 'position'=>400, 'notnull'=>1, 'visible'=>1),
+        'dimanche_heuredam' => array('type'=>'varchar(5)', 'label'=>'dimancheheuredam', 'enabled'=>1, 'position'=>410, 'notnull'=>1, 'visible'=>1),
+        'dimanche_heurefam' => array('type'=>'varchar(5)', 'label'=>'dimancheheurefam', 'enabled'=>1, 'position'=>420, 'notnull'=>1, 'visible'=>1),
+        'dimanche_heuredpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheuredpm', 'enabled'=>1, 'position'=>430, 'notnull'=>1, 'visible'=>1),
+        'dimanche_heurefpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheurefpm', 'enabled'=>1, 'position'=>440, 'notnull'=>1, 'visible'=>1),
+        'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>450, 'notnull'=>1, 'visible'=>0,),
     );
 
     public $fk_object;
@@ -85,6 +89,10 @@ class OperationOrderUserPlanning extends SeedObject
     public $jeudipm;
     public $vendrediam;
     public $vendredipm;
+    public $samediam;
+    public $samedipm;
+    public $dimancheam;
+    public $dimanchepm;
     public $lundi_heuredam;
     public $lundi_heurefam;
     public $lundi_heuredpm;
@@ -163,5 +171,29 @@ class OperationOrderUserPlanning extends SeedObject
         return parent::delete($user, $notrigger);
     }
 
+    public function fetchByObject($fk_object, $object_type){
+
+        global $db, $conf;
+
+        $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_object = '".$fk_object."' AND object_type = '".$object_type."'";
+        $resql = $db->query($sql);
+
+        if($resql){
+            $obj = $db->fetch_object($resql);
+
+            $res = $this->fetch($obj->rowid);
+
+            if($res)
+            {
+                return  $obj->rowid;
+            } else {
+                return -1;
+            }
+        } else {
+            return -1;
+        }
+
+
+    }
 
 }

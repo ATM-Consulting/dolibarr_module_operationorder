@@ -1098,83 +1098,77 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
 
 function getUserPlanning($user, $action = ''){
 
-    global $langs;
+    global $langs, $db;
 
-    $out = '';
+    dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 
-    $out .= '<table width="100%" class="liste noborder nobottom">';
-    $out .= '<tr class="liste_titre">';
-    $out .= '<td>&nbsp</td>';
-    $out .= '<td>'.$langs->trans('Morning').'</td>';
-    $out .= '<td>'.$langs->trans('Afternoon').'</td>';
-    $out .= '<td>'.$langs->trans('MorningD').'</td>';
-    $out .= '<td>'.$langs->trans('MorningF').'</td>';
-    $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
-    $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
-    $out .= '</tr>';
-    $out .= '<tr>';
-    $out .= '<td>'.$langs->trans('Monday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '<tr>';
-    $out .= '<td>'.$langs->trans('Tuesday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '<tr>';
-    $out .= '<td>'.$langs->trans('Wednesday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '<tr>';
-    $out .= '<td>'.$langs->trans('Thursday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '<tr>';
-    $out .= '<td>'.$langs->trans('Friday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '<td>'.$langs->trans('Saturday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '</tr>';
-    $out .= '<td>'.$langs->trans('Sunday').'</td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '<td></td>';
-    $out .= '</tr>';
-    $out .= '</table>';
+    $error = 0;
+    $TDays = array('Monday'=> 'lundi', 'Tuesday' => 'mardi', 'Wednesday' => 'mercredi', 'Thursday' => 'jeudi', 'Friday' => 'vendredi', 'Saturday' => 'samedi', 'Sunday' => 'dimanche');
+
+    $userplanning = new OperationOrderUserPlanning($db);
+    $res = $userplanning->fetchByObject($user->id, 'user');
+
+    if($res < 0) $error ++;
+
+    if(!$error)
+    {
+        $out = '';
+
+        $out .= '<table width="100%" class="liste noborder nobottom">';
+        $out .= '<tr class="liste_titre">';
+        $out .= '<td>&nbsp</td>';
+        $out .= '<td>'.$langs->trans('Morning').'</td>';
+        $out .= '<td>'.$langs->trans('Afternoon').'</td>';
+        $out .= '<td>'.$langs->trans('MorningD').'</td>';
+        $out .= '<td>'.$langs->trans('MorningF').'</td>';
+        $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
+        $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
+        $out .= '</tr>';
+
+        foreach ($TDays as $key => $value)
+        {
+
+            $out .= '<tr>';
+            $out .= '<td>'.$langs->trans($key).'</td>';
+
+            //Morning
+            $field = ''.$value.'am';
+            if(empty($userplanning->$field)){
+                $out .= '<td>'.img_picto('', 'statut0').'</td>';
+            } else {
+                $out .= '<td>'.img_picto('', 'statut4').'</td>';
+            }
+
+            //Afternoon
+            $field = ''.$value.'pm';
+            if(empty($userplanning->$field)){
+                $out .= '<td>'.img_picto('', 'statut0').'</td>';
+            } else {
+                $out .= '<td>'.img_picto('', 'statut4').'</td>';
+            }
+
+            //MorningD
+            $field = ''.$value.'_heuredam';
+            $out .= '<td>'.$userplanning->$field.'</td>';
+
+            //MorningF
+            $field = ''.$value.'_heurefam';
+            $out .= '<td>'.$userplanning->$field.'</td>';
+
+            //AfternoonD
+            $field = ''.$value.'_heuredpm';
+            $out .= '<td>'.$userplanning->$field.'</td>';
+
+            //AfternoonF
+            $field = ''.$value.'_heurefpm';
+            $out .= '<td>'.$userplanning->$field.'</td>';
+            $out .= '</tr>';
+            $out .= '<tr>';
+
+        }
+        $out .= '</table>';
+
+    }
 
     return $out;
 }
