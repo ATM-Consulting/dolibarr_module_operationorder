@@ -148,6 +148,9 @@ if($action == "createOperationOrderAction"){
 							return this.getAttribute("title");
 						}
 					});
+
+					let eventTitle = $(info.el).find('.fc-title')[0];
+					$(eventTitle).html($(eventTitle).text());
 				},
 				eventSources: [
 					{
