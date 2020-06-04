@@ -1107,7 +1107,6 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
     $userplanning = new OperationOrderUserPlanning($db);
     $res = $userplanning->fetchByObject($object->id, $object_type);
-
     if($res < 0) $error ++;
 
     if(!$error)
@@ -1254,5 +1253,6 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
     }
 
-    return $out;
+    if(!$error) return $out;
+    else return -1;
 }

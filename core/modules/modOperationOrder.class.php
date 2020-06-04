@@ -92,9 +92,8 @@ class modOperationOrder extends DolibarrModules
 		    'models' => 1,
 			'triggers' => 1,
 			'hooks' => array(
-				'ordersuppliercard',
-                'userplanning'
-			)
+				'ordersuppliercard'
+            )
         );
 
 		// Data directories to create when module is enabled.

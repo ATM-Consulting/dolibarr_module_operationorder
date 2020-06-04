@@ -62,15 +62,16 @@ $datasplanning['samedipm'] = GETPOST('samedipm');
 $datasplanning['dimancheam'] = GETPOST('dimancheam');
 $datasplanning['dimanchepm'] = GETPOST('dimanchepm');
 
-$hookmanager->initHooks(array('userplanning'));
 
 if($objecttype == 'user')
 {
+    $hookmanager->initHooks(array('userplanning'));
     $object = new User($db);
     $object->fetch($objectid);
 }
 elseif ($objecttype == 'usergroup')
 {
+    $hookmanager->initHooks(array('usergroupplanning'));
     $object = new Usergroup($db);
     $object->fetch($objectid);
 }
@@ -84,6 +85,7 @@ if($res < 0){
     $res = $userplanning->save($user);
 }
 
+/* ACTIONS */
 
 if($action == 'save'){
 
