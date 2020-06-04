@@ -88,10 +88,10 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
         <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php print (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : 0; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php print (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : 0; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start = "<?php print (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : 0; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php print (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : 0; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>";
 
         <?php } ?>
 
@@ -139,6 +139,14 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
                         startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_start, // a start time (10am in this example)
                         endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_end, // an end time (6pm in this example)
+                    },
+
+                    {
+                        // days of week. an array of zero-based day of week integers (0=Sunday)
+                        daysOfWeek: [<?php print $key ?>], // Monday
+
+                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start, // a start time (10am in this example)
+                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end, // an end time (6pm in this example)
                     },
 
                     <?php } ?>

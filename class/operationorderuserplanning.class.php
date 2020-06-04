@@ -75,6 +75,7 @@ class OperationOrderUserPlanning extends SeedObject
         'dimanche_heuredpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheuredpm', 'enabled'=>1, 'position'=>430, 'notnull'=>1, 'visible'=>1),
         'dimanche_heurefpm' => array('type'=>'varchar(5)', 'label'=>'dimancheheurefpm', 'enabled'=>1, 'position'=>440, 'notnull'=>1, 'visible'=>1),
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>450, 'notnull'=>1, 'visible'=>0,),
+        'active' => array('type'=>'integer', 'label'=>'Active', 'enabled'=>1, 'position'=>460, 'notnull'=>1, 'visible'=>0, 'default'=>0),
     );
 
     public $fk_object;
@@ -122,6 +123,7 @@ class OperationOrderUserPlanning extends SeedObject
     public $dimanche_heuredpm;
     public $dimanche_heurefpm;
     public $entity;
+    public $active;
 
 
     /**

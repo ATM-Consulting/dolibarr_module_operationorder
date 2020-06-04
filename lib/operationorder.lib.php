@@ -1267,9 +1267,9 @@ function getOperationOrderUserPlanning(){
     //cuserplanning en fonction de l'utilisateur
     $userplanning = new OperationOrderUserPlanning($db);
     $res = $userplanning->fetchByObject($user->id, 'user');
-var_dump($res); exit;
     //si utilisateur n'a pas de planning, recherche par groupe
-    if($res < 0){
+
+    if($res < 0 || $userplanning->active == 0){
 
         $sql = "SELECT fk_group_user FROM ".MAIN_DB_PREFIX."entity_extrafields WHERE fk_object = ". $conf->entity;
         $resql = $db->query($sql);
@@ -1277,20 +1277,20 @@ var_dump($res); exit;
         if($resql){
 
             $obj = $db->fetch_object($resql);
-            $res = $userplanning->fetchByObject($obj->fk_group_user, 'groupuser');
+
+
+            $res = $userplanning->fetchByObject($obj->fk_group_user, 'usergroup');
 
             //si groupe de l'entité n'a pas de planning, on retourne 0 car pas de planning configué disponible
-            if($res < 0) return 0;
+            if($res < 0 || $userplanning->active == 0) return 0;
 
         } else {
             return -1;
         }
 
     }
-
     foreach ($userplanning->fields as $key => $value)
     {
-        if (empty($userplanning->$key)) $userplanning->$key = "00:00";
         $TSchedules[$key] = $userplanning->$key;
     }
 
