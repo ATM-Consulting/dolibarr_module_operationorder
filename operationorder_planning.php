@@ -203,6 +203,7 @@ if($action == "createOperationOrderAction"){
                                 $('#dialog-add-event').html(data.result);
                                 operationorderneweventmodal.dialog("open");
                                 operationorderneweventmodal.dialog({height: 'auto', width: 'auto'}); // resize to content
+                                operationorderneweventmodal.parent().css({"top":"20%"});
                             }
                         });
                     }
