@@ -502,6 +502,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$operationOrder = new OperationOrder($db);
 			$operationOrder->fetch($obj->id);
 			$operationOrder->loadStatusObj();
+            if(!empty($conf->fournisseur->enabled)) $operationOrder->isStockAvailable();
 			$event->title	= $operationOrder->ref;
 
 			$obj->dated = $db->jdate($obj->dated);

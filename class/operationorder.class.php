@@ -1536,6 +1536,22 @@ class OperationOrder extends SeedObject
         }
 
     }
+
+    public function isStockAvailable() {
+        if($this->planned_date < strtotime('today midnight')) return 1; // Pas besoin de vérifier pour les ORs passés
+        foreach($this->lines as $line) {
+            if(empty($line->product) && !empty($line->fk_product)) $line->fetch_product();
+            if($line->product->type == Product::TYPE_PRODUCT) {
+                if(empty($line->product->stock_reel)) $line->product->load_stock();
+                if($line->product->stock_reel < $line->qty) { //Si on a pas assez de stock physique il faut vérifier le stock virtuel en tenant compte des dates de livraisons des CFs
+                    $line->isVirtualStockAvailableForDate($this->planned_date);
+                }
+                else return 1;
+                var_dump($line->product);
+                exit;
+            }
+        }
+    }
 }
 
 
@@ -2077,6 +2093,67 @@ class OperationOrderDet extends SeedObject
 			return - 1;
 		}
 	}
+
+	public function isVirtualStockAvailableForDate($date) {
+	    global $conf;
+	    $virtualStock = 0;
+        if(!empty($date) && !empty($this->product)) {
+            $virtualStock = $this->product->stock_reel;
+            $supplierQty = $this->loadSupplierOrderQty($date);
+            $receptionQty = $this->loadSupplierOrderReceptionQty($date); //On retire ce qui a déjà été réceptionné car c'est contenu dans le stock reel
+
+            // Stock Increase mode
+            if (!empty($conf->global->STOCK_CALCULATE_ON_RECEPTION) || !empty($conf->global->STOCK_CALCULATE_ON_RECEPTION_CLOSE)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            elseif (!empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_DISPATCH_ORDER)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            elseif (!empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER)) {
+                $virtualStock -= $receptionQty;
+            }
+            elseif (!empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_BILL)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            var_dump($supplierQty,$receptionQty, $virtualStock);exit;
+        }
+    }
+    public function loadSupplierOrderQty($date) {
+        $sql = "SELECT SUM(cd.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande_fournisseur as c";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE c.rowid = cd.fk_commande";
+        $sql .= " AND c.fk_soc = s.rowid";
+        $sql .= " AND c.entity IN (".getEntity('supplier_order').")";
+        $sql .= " AND cd.fk_product = ".$this->product->id;
+        $sql .= " AND c.fk_statut in (1,2,3,4)";
+        $sql .= " AND c.date_livraison < '".date('Y-m-d', $date)."'";
+        $resql = $this->db->query($sql);
+        if(!empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            if(!empty($obj->qty)) return $obj->qty;
+        }
+        return 0;
+    }
+    public function loadSupplierOrderReceptionQty($date) {
+        $sql = "SELECT SUM(fd.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as fd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande_fournisseur as cf";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE cf.rowid = fd.fk_commande";
+        $sql .= " AND cf.fk_soc = s.rowid";
+        $sql .= " AND cf.entity IN (".getEntity('supplier_order').")";
+        $sql .= " AND fd.fk_product = ".$this->product->id;
+        $sql .= " AND cf.fk_statut in (4)";
+        $sql .= " AND cf.date_livraison < '".date('Y-m-d', $date)."'";
+        $resql = $this->db->query($sql);
+        if(!empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            if(!empty($obj->qty)) return $obj->qty;
+        }
+        return 0;
+    }
 }
 
 
