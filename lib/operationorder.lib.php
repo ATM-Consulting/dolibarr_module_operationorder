@@ -25,6 +25,9 @@
 /**
  * @return array
  */
+
+dol_include_once('operationorder/class/operationorderuserplanning.class.php');
+
 function operationorderAdminPrepareHead()
 {
     global $langs, $conf;
@@ -1100,8 +1103,6 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
     global $langs, $db;
 
-    dol_include_once('operationorder/class/operationorderuserplanning.class.php');
-
     $error = 0;
     $TDays = array('Monday'=> 'lundi', 'Tuesday' => 'mardi', 'Wednesday' => 'mercredi', 'Thursday' => 'jeudi', 'Friday' => 'vendredi', 'Saturday' => 'samedi', 'Sunday' => 'dimanche');
 
@@ -1255,4 +1256,44 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
     if(!$error) return $out;
     else return -1;
+}
+
+function getOperationOrderUserPlanning(){
+
+    global $db, $conf, $user;
+
+    $TSchedules = array();
+
+    //cuserplanning en fonction de l'utilisateur
+    $userplanning = new OperationOrderUserPlanning($db);
+    $res = $userplanning->fetchByObject($user->id, 'user');
+var_dump($res); exit;
+    //si utilisateur n'a pas de planning, recherche par groupe
+    if($res < 0){
+
+        $sql = "SELECT fk_group_user FROM ".MAIN_DB_PREFIX."entity_extrafields WHERE fk_object = ". $conf->entity;
+        $resql = $db->query($sql);
+
+        if($resql){
+
+            $obj = $db->fetch_object($resql);
+            $res = $userplanning->fetchByObject($obj->fk_group_user, 'groupuser');
+
+            //si groupe de l'entité n'a pas de planning, on retourne 0 car pas de planning configué disponible
+            if($res < 0) return 0;
+
+        } else {
+            return -1;
+        }
+
+    }
+
+    foreach ($userplanning->fields as $key => $value)
+    {
+        if (empty($userplanning->$key)) $userplanning->$key = "00:00";
+        $TSchedules[$key] = $userplanning->$key;
+    }
+
+    return $TSchedules;
+
 }
