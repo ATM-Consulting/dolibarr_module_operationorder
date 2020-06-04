@@ -1099,7 +1099,16 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
     }
 }
 
-function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
+/**
+ * Renvoie l'html qui permet l'affichage du planning utilisateur
+ * @param object $object
+ * @param string $object_type, "user" ou "usergroup"
+ * @param string $action
+ * @param integer $usercanmodify
+ * @return string $out
+ */
+
+function getOperationOrderUserPlanningToDisplay($object, $object_type, $action = '', $usercanmodify = 0){
 
     global $langs, $db;
 
@@ -1122,12 +1131,12 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
             $out .= '<table width="100%" class="liste noborder nobottom">';
             $out .= '<tr class="liste_titre">';
             $out .= '<td>&nbsp</td>';
-            $out .= '<td>'.$langs->trans('Morning').'</td>';
-            $out .= '<td>'.$langs->trans('Afternoon').'</td>';
-            $out .= '<td>'.$langs->trans('MorningD').'</td>';
-            $out .= '<td>'.$langs->trans('MorningF').'</td>';
-            $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
-            $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
+            $out .= '<td class="center">'.$langs->trans('Morning').'</td>';
+            $out .= '<td class="center">'.$langs->trans('Afternoon').'</td>';
+            $out .= '<td class="center">'.$langs->trans('MorningD').'</td>';
+            $out .= '<td class="center">'.$langs->trans('MorningF').'</td>';
+            $out .= '<td class="center">'.$langs->trans('AfternoonD').'</td>';
+            $out .= '<td class="center">'.$langs->trans('AfternoonF').'</td>';
             $out .= '</tr>';
 
             foreach ($TDays as $key => $value)
@@ -1142,39 +1151,39 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
                 $field = ''.$value.'am';
                 if (empty($userplanning->$field))
                 {
-                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                    $out .= '<td class="center">'.img_picto('', 'statut0').'</td>';
                 }
                 else
                 {
-                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                    $out .= '<td class="center">'.img_picto('', 'statut4').'</td>';
                 }
 
                 //Afternoon
                 $field = ''.$value.'pm';
                 if (empty($userplanning->$field))
                 {
-                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
+                    $out .= '<td class="center">'.img_picto('', 'statut0').'</td>';
                 }
                 else
                 {
-                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
+                    $out .= '<td class="center">'.img_picto('', 'statut4').'</td>';
                 }
 
                 //MorningD
                 $field = ''.$value.'_heuredam';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
 
                 //MorningF
                 $field = ''.$value.'_heurefam';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
 
                 //AfternoonD
                 $field = ''.$value.'_heuredpm';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
 
                 //AfternoonF
                 $field = ''.$value.'_heurefpm';
-                $out .= '<td>'.$userplanning->$field.'</td>';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
 
 
                 $out .= '</tr>';
@@ -1183,7 +1192,16 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
             $out .= '</table>';
 
+            $out .= '<div class = "center">';
+
             if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=edit">'.$langs->trans('Modify').'</a>';
+            if(empty($userplanning->active)){
+                if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=activate">'.$langs->trans('Activate').'</a>';
+            } else {
+                if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=disable">'.$langs->trans('Disable').'</a>';
+            }
+
+            $out .= '</div>';
 
         } else {
 
@@ -1208,7 +1226,7 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
             foreach ($TDays as $key => $value)
             {
 
-                $out .= '<tr>';
+                $out .= '<tr class="oddeven">';
 
                 //Title
                 $out .= '<td>'.$langs->trans($key).'</td>';
@@ -1258,17 +1276,22 @@ function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
     else return -1;
 }
 
-function getOperationOrderUserPlanning(){
+/**
+ * Renvoie le planning utilisateur / groupe utilisateur à appliquer si il existe en fonction de l'utilisateur et de l'entité
+ * @return array si planning existe, 0 si inexistant, -1 si erreur
+ */
+
+function getOperationOrderUserPlanningByEntityAndUser(){
 
     global $db, $conf, $user;
 
     $TSchedules = array();
 
-    //cuserplanning en fonction de l'utilisateur
+    //userplanning en fonction de l'utilisateur
     $userplanning = new OperationOrderUserPlanning($db);
     $res = $userplanning->fetchByObject($user->id, 'user');
-    //si utilisateur n'a pas de planning, recherche par groupe
 
+    //si utilisateur n'a pas de planning, recherche par groupe
     if($res < 0 || $userplanning->active == 0){
 
         $sql = "SELECT fk_group_user FROM ".MAIN_DB_PREFIX."entity_extrafields WHERE fk_object = ". $conf->entity;

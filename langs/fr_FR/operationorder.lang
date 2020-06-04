@@ -208,3 +208,9 @@ OnlineSync=Synchronisation en ligne
 HoursMinFormat=Format d'affichage en heures et minutes (hh:mm), veuillez saisir au même format
 ErrorORActionCreation=Erreur lors de la création de l'événement de type "Ordre de réparation"
 SucessORActionCreation=L'événement de type "Ordre de réparation" a été créé avec succès
+
+#PLanninUser
+MorningD=Début de matinée
+MorningF=Fin de matinée
+AfternoonD=Début d'après-midi
+AfternoonF=Fin d'après-midi

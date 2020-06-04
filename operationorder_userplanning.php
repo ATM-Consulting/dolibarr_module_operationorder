@@ -95,6 +95,7 @@ if($action == 'save'){
             $userplanning->$key = $value;
         }
 
+        //Quand on modifie on active le calendrier
         $userplanning->active = 1;
 
         $userplanning->save($user);
@@ -102,6 +103,23 @@ if($action == 'save'){
     }
 
     header('Location: '.$_SERVER['PHP_SELF'].'?objectid='.$objectid.'&objecttype='.$objecttype);
+} elseif($action == 'activate') {
+
+    $userplanning->active = 1;
+
+    $userplanning->save($user);
+
+    header('Location: '.$_SERVER['PHP_SELF'].'?objectid='.$objectid.'&objecttype='.$objecttype);
+
+
+} elseif($action == 'disable') {
+
+    $userplanning->active = 0;
+
+    $userplanning->save($user);
+
+    header('Location: '.$_SERVER['PHP_SELF'].'?objectid='.$objectid.'&objecttype='.$objecttype);
+
 }
 
 /* VIEW */
@@ -115,7 +133,7 @@ if($objecttype == 'user')
     $title = $langs->trans("User");
     dol_fiche_head($head, 'userplanning', $title, -1, 'user');
 
-    print getUserPlanning($object, $objecttype, $action, $usercanmodifyuserplanning);
+    print getOperationOrderUserPlanningToDisplay($object, $objecttype, $action, $usercanmodifyuserplanning);
 
 } elseif ($objecttype == 'usergroup')
 {
@@ -124,6 +142,6 @@ if($objecttype == 'user')
     $title = $langs->trans("Group");
     dol_fiche_head($head, 'usergroupplanning', $title, -1, 'group');
 
-    print getUserPlanning($object, 'usergroup', $action, $usercanmodifygroupplanning);
+    print getOperationOrderUserPlanningToDisplay($object, 'usergroup', $action, $usercanmodifygroupplanning);
 
 }

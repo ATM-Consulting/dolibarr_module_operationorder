@@ -68,8 +68,9 @@ if($action == "createOperationOrderAction"){
 
 }
 
+//tableaux d'horaires à utiliser en fonction du planning utilisateur/groupe
 $fullcalendar_scheduler_businessHours = array();
-$Tfullcalendar_scheduler_businessHours = getOperationOrderUserPlanning();
+$Tfullcalendar_scheduler_businessHours = getOperationOrderUserPlanningByEntityAndUser();
 
 $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', '3'=>'mercredi', '4'=>'jeudi', '5' => 'vendredi', '6'=>'samedi', '7'=>'dimanche')
 
@@ -83,9 +84,14 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
 		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '24:00'; ?>";
 
+		//définition des horaires pour le comportement pas défaut
 		fullcalendar_scheduler_businessHours_week_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
 		fullcalendar_scheduler_businessHours_week_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
 
+        fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
+        fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
+
+        //définition des horaires en fonction du planning utilisateur/groupe
         <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
         fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
@@ -94,9 +100,6 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
         fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>";
 
         <?php } ?>
-
-        fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
-		fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
 
 		// fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
 		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
@@ -130,33 +133,35 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 editable:true,
                 businessHours: [
 
+                    //si nous possédons des horaires, on les applique
                     <?php if(is_array($Tfullcalendar_scheduler_businessHours)) { ?>
                     <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
+                    //matinée
                     {
-                        // days of week. an array of zero-based day of week integers (0=Sunday)
-                        daysOfWeek: [<?php print $key ?>], // Monday
+                        daysOfWeek: [<?php print $key ?>], // Jour
 
-                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_start, // a start time (10am in this example)
-                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_end, // an end time (6pm in this example)
+                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_start, // début de l'horaire
+                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_end, // fin de l'horaire
                     },
 
+                    //après-midi
                     {
-                        // days of week. an array of zero-based day of week integers (0=Sunday)
-                        daysOfWeek: [<?php print $key ?>], // Monday
+                        daysOfWeek: [<?php print $key ?>],
 
-                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start, // a start time (10am in this example)
-                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end, // an end time (6pm in this example)
+                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start,
+                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end,
                     },
 
                     <?php } ?>
+
+                    //sinon on applique la comportement par défaut
                     <?php } else { ?>
                     {
-                        // days of week. an array of zero-based day of week integers (0=Sunday)
-                        daysOfWeek: [1,2,3,4,5], // Monday
+                        daysOfWeek: [1,2,3,4,5],
 
-                        startTime: fullcalendar_scheduler_businessHours_weekend_start, // a start time (10am in this example)
-                        endTime: fullcalendar_scheduler_businessHours_week_end, // an end time (6pm in this example)
+                        startTime: fullcalendar_scheduler_businessHours_weekend_start,
+                        endTime: fullcalendar_scheduler_businessHours_week_end,
                     }
 
                     <?php } ?>
