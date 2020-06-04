@@ -10,8 +10,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('operationorder/lib/operationorder.lib.php');
 
-
-$usercanmodify = $user->rights->operationorder->userplanning->write | $user->rights->operationorder->usergroupplanning->write;
+//rights
+$usercanmodifyuserplanning = $user->rights->operationorder->userplanning->write;
+$usercanmodifygroupplanning = $user->rights->operationorder->usergroupplanning->write;
 
 $contextpage = GETPOST('contextpage', 'aZ') ?GETPOST('contextpage', 'aZ') : 'userplanning';
 $objecttype = GETPOST('objecttype');
@@ -46,6 +47,20 @@ $datasplanning['dimanche_heuredam'] = GETPOST('dimanche_heuredam');
 $datasplanning['dimanche_heurefam'] = GETPOST('dimanche_heurefam');
 $datasplanning['dimanche_heuredpm'] = GETPOST('dimanche_heuredpm');
 $datasplanning['dimanche_heurefpm'] = GETPOST('dimanche_heurefpm');
+$datasplanning['lundiam'] = GETPOST('lundiam');
+$datasplanning['lundipm'] = GETPOST('lundipm');
+$datasplanning['mardiam'] = GETPOST('mardiam');
+$datasplanning['mardipm'] = GETPOST('mardipm');
+$datasplanning['mercrediam'] = GETPOST('mercrediam');
+$datasplanning['mercredipm'] = GETPOST('mercredipm');
+$datasplanning['jeudiam'] = GETPOST('jeudiam');
+$datasplanning['jeudipm'] = GETPOST('jeudipm');
+$datasplanning['vendrediam'] = GETPOST('vendrediam');
+$datasplanning['vendredipm'] = GETPOST('vendredipm');
+$datasplanning['samediam'] = GETPOST('samediam');
+$datasplanning['samedipm'] = GETPOST('samedipm');
+$datasplanning['dimancheam'] = GETPOST('dimancheam');
+$datasplanning['dimanchepm'] = GETPOST('dimanchepm');
 
 $hookmanager->initHooks(array('userplanning'));
 
@@ -96,7 +111,7 @@ if($objecttype == 'user')
     $title = $langs->trans("User");
     dol_fiche_head($head, 'userplanning', $title, -1, 'user');
 
-    print getUserPlanning($object, $objecttype, $action);
+    print getUserPlanning($object, $objecttype, $action, $usercanmodifyuserplanning);
 
 } elseif ($objecttype == 'usergroup')
 {
@@ -105,6 +120,6 @@ if($objecttype == 'user')
     $title = $langs->trans("Group");
     dol_fiche_head($head, 'usergroupplanning', $title, -1, 'group');
 
-    print getUserPlanning($object, 'usergroup', $action);
+    print getUserPlanning($object, 'usergroup', $action, $usercanmodifygroupplanning);
 
 }

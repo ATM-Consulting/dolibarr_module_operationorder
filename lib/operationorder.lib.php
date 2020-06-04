@@ -1096,7 +1096,7 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
     }
 }
 
-function getUserPlanning($object, $object_type, $action = ''){
+function getUserPlanning($object, $object_type, $action = '', $usercanmodify){
 
     global $langs, $db;
 
@@ -1183,7 +1183,7 @@ function getUserPlanning($object, $object_type, $action = ''){
 
             $out .= '</table>';
 
-            $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=edit">'.$langs->trans('Modify').'</a>';
+            if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=edit">'.$langs->trans('Modify').'</a>';
 
         } else {
 
@@ -1215,41 +1215,31 @@ function getUserPlanning($object, $object_type, $action = ''){
 
                 //Morning
                 $field = ''.$value.'am';
-                if (empty($userplanning->$field))
-                {
-                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
-                }
-                else
-                {
-                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
-                }
+                if (empty($userplanning->$field)) $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1"></td>';
+                else $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1" checked="checked" ></td>';
 
                 //Afternoon
                 $field = ''.$value.'pm';
-                if (empty($userplanning->$field))
-                {
-                    $out .= '<td>'.img_picto('', 'statut0').'</td>';
-                }
-                else
-                {
-                    $out .= '<td>'.img_picto('', 'statut4').'</td>';
-                }
+                if (empty($userplanning->$field)) $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1"></td>';
+                else $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1" checked="checked" ></td>';
 
-                $form=new TFormCore($_SERVER['PHP_SELF'],'form1','POST');                //MorningD
+                $form=new TFormCore($_SERVER['PHP_SELF'],'form1','POST');
+
+                //MorningD
                 $field = ''.$value.'_heuredam';
-                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00am', '12:00pm').'</td>';
 
                 //MorningF
                 $field = ''.$value.'_heurefam';
-                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00am', '12:00pm').'</td>';
 
                 //AfternoonD
                 $field = ''.$value.'_heuredpm';
-                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00pm', '12:00am').'</td>';
 
                 //AfternoonF
                 $field = ''.$value.'_heurefpm';
-                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5).'</td>';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00pm', '12:00am').'</td>';
 
 
                 $out .= '</tr>';

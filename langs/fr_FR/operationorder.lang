@@ -102,6 +102,8 @@ operationorder_write=Peut créer et modifier les ordres de réparations
 operationorder_status_read=Peut consulter les différents status d'ordres de réparation
 operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
 operationorder_planning_read=Peut consulter le planning des ordres de réparations
+operationorder_userplanning_write=Peut modifier les planning utilisateur
+operationorder_usergroupplanning_write=Peut modifier les planning groupe d'utilisateurs
 
 # LIST
 OperationOrderList=Liste ordre de réparation
