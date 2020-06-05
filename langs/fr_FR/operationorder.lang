@@ -208,3 +208,5 @@ OnlineSync=Synchronisation en ligne
 HoursMinFormat=Format d'affichage en heures et minutes (hh:mm), veuillez saisir au même format
 ErrorORActionCreation=Erreur lors de la création de l'événement de type "Ordre de réparation"
 SucessORActionCreation=L'événement de type "Ordre de réparation" a été créé avec succès
+OnlyVirtualStockIsEnough=Stock physique insuffisant, stock théorique suffisant (en tenant compte des dates de livraison prévues)
+NotEnoughStock=Stock physique et théorique insuffisant (en tenant compte des dates de livraison prévues)
