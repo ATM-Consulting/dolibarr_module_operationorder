@@ -34,6 +34,8 @@ $TIncludeJS = array(
 );
 $langs->loadLangs(array('operationorder@operationorder'));
 
+$hookmanager->initHooks(array('operationorderplanning'));
+
 $action = GETPOST('action');
 $id_operationorder = GETPOST('operationorder');
 $startTime = GETPOST('startTime');
@@ -85,6 +87,27 @@ if($action == "createOperationOrderAction"){
 		fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
         fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
 		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
+
+        eventSources_parameters = [
+            {
+                url: operationOrderInterfaceUrl,
+                extraParams: {
+                    eventsType: 'orPlanned'
+                },
+                failure: function() {
+                    //document.getElementById('script-warning').style.display = 'block'
+                }
+            },
+            {
+                url: operationOrderInterfaceUrl,
+                extraParams: {
+                    eventsType: 'dayOff'
+                },
+                failure: function() {
+                    //document.getElementById('script-warning').style.display = 'block'
+                }
+            }
+        ]
 
 		document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
@@ -152,26 +175,7 @@ if($action == "createOperationOrderAction"){
 					let eventTitle = $(info.el).find('.fc-title')[0];
 					$(eventTitle).html($(eventTitle).text());
 				},
-				eventSources: [
-					{
-						url: operationOrderInterfaceUrl,
-						extraParams: {
-							eventsType: 'orPlanned'
-						},
-						failure: function() {
-							//document.getElementById('script-warning').style.display = 'block'
-						}
-					},
-					{
-						url: operationOrderInterfaceUrl,
-						extraParams: {
-							eventsType: 'dayOff'
-						},
-						failure: function() {
-							//document.getElementById('script-warning').style.display = 'block'
-						}
-					}
-				],
+				eventSources: eventSources_parameters,
 				loading: function(bool) {
 					//document.getElementById('loading').style.display = bool ? 'block' : 'none';
 				},
