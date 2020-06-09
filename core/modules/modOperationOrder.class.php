@@ -497,10 +497,6 @@ class modOperationOrder extends DolibarrModules
 		$e = new ExtraFields($this->db);
 		$res = $e->addExtraField('oorder_available_for_supplier_order', "oorder_available_for_supplier_order", 'boolean', 0, 1, 'product', 0, 0, '', '', 1, 1, 1, "oorder_available_for_supplier_order_help", "", 0, 'operationorder@operationorder');
 
-        // usergroup entity
-        $e = new ExtraFields($this->db);
-        $e->addExtraField('fk_group_user', 'groupUser', 'sellist', 540, '', 'entity', 0, 0, 0, unserialize('a:1:{s:7:"options";a:1:{s:13:"usergroup:nom";N;}}'), 1, '', 1, '', '', 0, 'operationorder@operationorder');
-
         return $this->_init($sql, $options);
 	}
 
