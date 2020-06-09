@@ -92,7 +92,8 @@ class modOperationOrder extends DolibarrModules
 		    'models' => 1,
 			'triggers' => 1,
 			'hooks' => array(
-				'ordersuppliercard'
+				'ordersuppliercard',
+                'productdao'
 			)
         );
 

@@ -897,7 +897,7 @@ else
 			$TNested = $object->fetch_all_children_nested();
 			print '<div id="ajaxResults" ></div>';
 			print '<div id="nestedLines" >';
-			print _displaySortableNestedItems($TNested, 'sortableLists', true);
+			print _displaySortableNestedItems($TNested, 'sortableLists', true, $object->planned_date);
 			print '</div>';
 			print '<script src="'.dol_buildpath('operationorder/js/jquery-sortable-lists.min.js',1).'" ></script>';
 			print '<link rel="stylesheet" href="'.dol_buildpath('operationorder/css/sortable.css',1).'" >';
@@ -1312,7 +1312,7 @@ function _displayDialogSupplierOrder($lineid){
 	</script>';
 }
 
-function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
+function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planned_date = ''){
 	global $langs, $user, $extrafields, $conf, $object;
 	if(!empty($TNested) && is_array($TNested)){
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
@@ -1452,7 +1452,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 			// STOCK
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
-			$out .= $line->stockStatus();
+			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date));
 
 			// display object linked on line
             $line->fetchObjectLinked();
@@ -1523,7 +1523,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true){
 
 
 			$out.= '</div>';
-			$out.= _displaySortableNestedItems($v['children'], '', $open);
+			$out.= _displaySortableNestedItems($v['children'], '', $open, $planned_date);
 			$out.= '</li>';
 		}
 		$out.= '</ul>';

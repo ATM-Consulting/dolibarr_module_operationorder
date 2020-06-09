@@ -1806,8 +1806,10 @@ class OperationOrderDet extends SeedObject
 		if ($this->fk_product > 0 && empty($this->product_type) && $this->product) {
 
 			$this->product->load_stock();
+            if(!empty($params['planned_date'])) $this->isVirtualStockAvailableForDate($params['planned_date']);
 
-			$tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
+
+            $tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
 			$tooltipLabel.= $langs->trans('VirtualStock').' : '.$this->product->stock_theorique;
 
 			if(empty($params['attr']['title'])){
@@ -2126,6 +2128,8 @@ class OperationOrderDet extends SeedObject
                 }
                 $sendingQty = $this->loadSendingQty($date, $filterShipmentStatus);
             }
+            $ooQty = $this->loadOperationOrderQty($date);
+            if(!empty($ooQty)) $virtualStock -= $ooQty;
 
             // Stock decrease mode
             if(! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT) || ! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE)) {
@@ -2151,9 +2155,33 @@ class OperationOrderDet extends SeedObject
             else if(! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_BILL)) {
                 $virtualStock += ($supplierQty - $receptionQty);
             }
+            $this->product->stock_theorique = $virtualStock;
             if($virtualStock >= $this->qty) return true;
             else return false;
         }
+    }
+
+    public function loadOperationOrderQty($date = '') {
+	    $qty = 0;
+        $oOStatus = new OperationOrderStatus($this->db);
+        $TStatus = $oOStatus->fetchAll(0, false, array("check_virtual_stock"=> 1));
+        $TStatusId = array();
+        if(!empty($TStatus)) {
+            foreach($TStatus as $status) $TStatusId[] = $status->id;
+            $sql = "SELECT SUM(ood.qty) as qty 
+                    FROM ".MAIN_DB_PREFIX."operationorderdet as ood 
+                    LEFT JOIN ".MAIN_DB_PREFIX."operationorder as oo ON (oo.rowid = ood.fk_operation_order)
+                    WHERE ood.fk_product = ".$this->product->id." 
+                    AND oo.status IN (".implode(',',$TStatusId).") ";
+            if(!empty($date)) $sql .= "AND oo.planned_date < '".date('Y-m-d', $date)."'";
+            $resql = $this->db->query($sql);
+            if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+                $obj = $this->db->fetch_object($resql);
+                if(! empty($obj->qty)) return $obj->qty;
+            }
+        }
+
+        return $qty;
     }
 
     public function loadSendingQty($date, $filterShipmentStatus = array()) {
