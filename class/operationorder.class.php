@@ -2172,6 +2172,7 @@ class OperationOrderDet extends SeedObject
                     FROM ".MAIN_DB_PREFIX."operationorderdet as ood 
                     LEFT JOIN ".MAIN_DB_PREFIX."operationorder as oo ON (oo.rowid = ood.fk_operation_order)
                     WHERE ood.fk_product = ".$this->product->id." 
+                    AND oo.entity IN (".getEntity('operationorder').") 
                     AND oo.status IN (".implode(',',$TStatusId).") ";
             if(!empty($date)) $sql .= "AND oo.planned_date < '".date('Y-m-d', $date)."'";
             $resql = $this->db->query($sql);
