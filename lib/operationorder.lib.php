@@ -1283,38 +1283,47 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
 
 function getOperationOrderUserPlanningByEntityAndUser(){
 
+    require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
+
     global $db, $conf, $user;
 
     $TSchedules = array();
+    $TSchedulesByUser = array();
 
-    //userplanning en fonction de l'utilisateur
-    $userplanning = new OperationOrderUserPlanning($db);
-    $res = $userplanning->fetchByObject($user->id, 'user');
+    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
 
-    //si utilisateur n'a pas de planning, recherche par groupe
-    if($res < 0 || $userplanning->active == 0){
+    //select all user in group
 
-        $sql = "SELECT fk_group_user FROM ".MAIN_DB_PREFIX."entity_extrafields WHERE fk_object = ". $conf->entity;
-        $resql = $db->query($sql);
+    $usergroup = new UserGroup($db);
+    $res = $usergroup->fetch($fk_groupuser);
+    $TUsers = $usergroup->listUsersForGroup(); //TODO Verif par entité
 
-        if($resql){
+    foreach ($TUsers as $user)
+    {
+        //userplanning en fonction de l'utilisateur
+        $userplanning = new OperationOrderUserPlanning($db);
+        $res = $userplanning->fetchByObject($user->id, 'user');
 
-            $obj = $db->fetch_object($resql);
-
-
-            $res = $userplanning->fetchByObject($obj->fk_group_user, 'usergroup');
-
-            //si groupe de l'entité n'a pas de planning, on retourne 0 car pas de planning configué disponible
-            if($res < 0 || $userplanning->active == 0) return 0;
-
-        } else {
-            return -1;
+        if($res > 0 && $userplanning->active > 0){
+            $TSchedulesByUser[] = $userplanning;
         }
 
     }
+
     foreach ($userplanning->fields as $key => $value)
     {
-        $TSchedules[$key] = $userplanning->$key;
+        foreach($TSchedulesByUser as $userplanning)
+        {
+            if(empty($TSchedules[$key])){
+                $TSchedules[$key] = $userplanning->$key;
+            } else {
+                if(strstr($key, 'heured') &&  $userplanning->$key < $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)]){
+                    $TSchedules[$key] = $userplanning->$key;
+                } elseif (strstr($key, 'heuref') &&  $userplanning->$key > $TSchedules[$key]){
+                    $TSchedules[$key] = $userplanning->$key;
+                }
+            }
+        }
     }
 
     return $TSchedules;
