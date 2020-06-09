@@ -94,7 +94,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
         fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
 
         //définition des horaires en fonction du planning utilisateur/groupe
-        <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
+        <?php
+        foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
         fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
         fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>";
@@ -157,7 +158,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 businessHours: [
 
                     //si nous possédons des horaires, on les applique
-                    <?php if(is_array($Tfullcalendar_scheduler_businessHours)) { ?>
+                    <?php if(!empty($Tfullcalendar_scheduler_businessHours)) { ?>
                     <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
                     //matinée

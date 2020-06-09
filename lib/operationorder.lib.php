@@ -1290,36 +1290,61 @@ function getOperationOrderUserPlanningByEntityAndUser(){
     $TSchedules = array();
     $TSchedulesByUser = array();
 
+    //usergroup paramétré
     $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
 
-    //select all user in group
+    //initialisation userplanning
+    $userplanning = new OperationOrderUserPlanning($db);
 
-    $usergroup = new UserGroup($db);
-    $res = $usergroup->fetch($fk_groupuser);
-    $TUsers = $usergroup->listUsersForGroup(); //TODO Verif par entité
-
-    foreach ($TUsers as $user)
+    if(!empty($fk_groupuser))
     {
-        //userplanning en fonction de l'utilisateur
-        $userplanning = new OperationOrderUserPlanning($db);
-        $res = $userplanning->fetchByObject($user->id, 'user');
+        $usergroup = new UserGroup($db);
+        $res = $usergroup->fetch($fk_groupuser);
+        $TUsers = $usergroup->listUsersForGroup(); //TODO Verif par entité
 
-        if($res > 0 && $userplanning->active > 0){
-            $TSchedulesByUser[] = $userplanning;
+        //userplanning en fonction des utilisateurs
+        foreach ($TUsers as $user)
+        {
+            $res = $userplanning->fetchByObject($user->id, 'user');
+
+            if ($res > 0 && $userplanning->active > 0)
+            {
+                $TSchedulesByUser[] = $userplanning;
+            }
+
+            foreach ($userplanning->fields as $key => $value)
+            {
+                foreach ($TSchedulesByUser as $userplanning)
+                {
+                    if (empty($TSchedules[$key]))
+                    {
+                        $TSchedules[$key] = $userplanning->$key;
+                    }
+                    else
+                    {
+                        if (strstr($key, 'heured') && $userplanning->$key < $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)])
+                        {
+                            $TSchedules[$key] = $userplanning->$key;
+                        }
+                        elseif (strstr($key, 'heuref') && $userplanning->$key > $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)])
+                        {
+                            $TSchedules[$key] = $userplanning->$key;
+                        }
+                    }
+                }
+            }
+
         }
 
-    }
-
-    foreach ($userplanning->fields as $key => $value)
-    {
-        foreach($TSchedulesByUser as $userplanning)
+        //userplanning en fonction du groupe d'utilisateurs
+        if (empty($TSchedules))
         {
-            if(empty($TSchedules[$key])){
-                $TSchedules[$key] = $userplanning->$key;
-            } else {
-                if(strstr($key, 'heured') &&  $userplanning->$key < $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)]){
-                    $TSchedules[$key] = $userplanning->$key;
-                } elseif (strstr($key, 'heuref') &&  $userplanning->$key > $TSchedules[$key]){
+            $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
+
+            if ($res > 0 && $userplanning->active > 0)
+            {
+                foreach ($userplanning->fields as $key => $value)
+                {
                     $TSchedules[$key] = $userplanning->$key;
                 }
             }

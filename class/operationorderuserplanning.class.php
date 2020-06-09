@@ -178,6 +178,7 @@ class OperationOrderUserPlanning extends SeedObject
         global $db, $conf;
 
         $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_object = '".$fk_object."' AND object_type = '".$object_type."'";
+
         $resql = $db->query($sql);
         if($resql){
             $obj = $db->fetch_object($resql);
