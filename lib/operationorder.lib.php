@@ -1307,9 +1307,21 @@ function getOperationOrderUserPlanningByEntityAndUser(){
         {
             $res = $userplanning->fetchByObject($user->id, 'user');
 
+            //si l'utilisateur a un planning actif alors on utilise son planning
             if ($res > 0 && $userplanning->active > 0)
             {
                 $TSchedulesByUser[] = $userplanning;
+            }
+            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning
+            else {
+
+                $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
+
+                if ($res > 0 && $userplanning->active > 0)
+                {
+                    $TSchedulesByUser[] = $userplanning;
+                }
+
             }
 
             foreach ($userplanning->fields as $key => $value)
