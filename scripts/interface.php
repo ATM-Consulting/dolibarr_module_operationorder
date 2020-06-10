@@ -40,7 +40,9 @@ if(GETPOST('action'))
 
 		if($eventsType == 'dayOff'){
 			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
-		}
+		} elseif ($eventsType == 'dayFull') {
+            $data = _getJourFull($range_start, $range_end);
+        }
 		else
 		{
 			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $eventsType);
@@ -639,6 +641,79 @@ function  _getJourOff($start = 0, $end = 0){
 	}
 
 	return $TRes;
+}
+
+function _getJourFull($start = 0, $end = 0){
+
+    global $db;
+
+    $TDays = array();
+    $TRes = array();
+
+    $date_start_details = date_parse($start->format('Y-m-d'));
+    $date_end_details = date_parse($end->format('Y-m-d'));
+
+    $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
+    $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
+
+    for ($i = $debut_date; $i < $fin_date; $i += 86400)
+    {
+        $TDays[] = $i;
+    }
+
+    foreach($TDays as $day){
+
+        $res_TimeAvailable = getTimeAvailableByDay($day);
+        $res_TimePlanned = getTimePlannedByDay($day);
+
+        if($res_TimeAvailable - $res_TimePlanned <= 0){
+            $event = new fullCalendarEvent();
+
+            $event->title = "Full";
+            $event->start	= date('c', $day);
+            // $event->end	= date('c', $dayOff->date);
+            $event->allDay  = true; // will make the time show
+            $event->msg = '';
+            $event->color = '#FF0000';
+
+            $TRes[] = $event;
+
+            $eventbg = clone $event;
+            $eventbg->rendering = 'background';
+            $TRes[] = $eventbg;
+        }
+
+    }
+//
+//    if (!empty($TDayOff))
+//    {
+//        foreach ($TDayOff as $dayOff)
+//        {
+//            $event = new fullCalendarEvent();
+//
+//            $event->title	= $dayOff->label;
+//
+//            $event->url		= '';
+//            $event->start	= date('c', $dayOff->date);
+//            // $event->end	= date('c', $dayOff->date);
+//            $event->allDay  = true; // will make the time show
+//            $event->msg = '';
+//            $event->color = '#FF0000';
+//
+//            if($db->jdate($dayOff->date) < time()){
+//                $event->color = OO_colorLighten($event->color, 10);
+//            }
+//
+//            $TRes[] = $event;
+//
+//            $eventbg = clone $event;
+//            $eventbg->rendering = 'background';
+//            $TRes[] = $eventbg;
+//        }
+//    }
+
+    return $TRes;
+
 }
 
 

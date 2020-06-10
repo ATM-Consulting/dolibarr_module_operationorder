@@ -106,6 +106,15 @@ if($action == "createOperationOrderAction"){
                 failure: function() {
                     //document.getElementById('script-warning').style.display = 'block'
                 }
+            },
+            {
+                url: operationOrderInterfaceUrl,
+                extraParams: {
+                    eventsType: 'dayFull'
+                },
+                failure: function() {
+                    //document.getElementById('script-warning').style.display = 'block'
+                }
             }
         ]
 

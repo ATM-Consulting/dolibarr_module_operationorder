@@ -1095,3 +1095,14 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         return -1;
     }
 }
+
+function getTimeAvailableByDay($day_timestamp){
+
+    $res = getOperationOrderUserPlanningByEntityAndUser();
+    var_dump($res);
+    return 3;
+}
+
+function getTimePlannedByDay($day_timestamp){
+    return 4;
+}
