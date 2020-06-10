@@ -32,6 +32,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 require_once '../lib/operationorder.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 
 // Translations
 $langs->loadLangs(array('operationorder@operationorder', 'admin', 'other'));
@@ -223,6 +224,12 @@ setup_print_title("Parameters");
 setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
 
 setup_print_on_off('OPODER_SUPPLIER_ORDER_AUTO_VALIDATE');
+
+$confKey = 'OPODER_USERSCAPACITY_PERCENTAGEALERT';
+$formother = new FormOther($db);
+$customInputHtml = $formother->select_percent($conf->global->OPODER_USERSCAPACITY_PERCENTAGEALERT, 'OPODER_USERSCAPACITY_PERCENTAGEALERT');
+setup_print_input_form_part($confKey, $langs->trans('OPODER_USERSCAPACITY_PERCENTAGEALERT'), '', array(), $customInputHtml);
+
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
