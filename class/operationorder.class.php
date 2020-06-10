@@ -1543,19 +1543,23 @@ class OperationOrder extends SeedObject
 
     public function isStockAvailable() {
         if($this->planned_date < strtotime('today midnight')) return 1; // Pas besoin de vérifier pour les ORs passés
+        $return = $this::OR_STOCK_IS_ENOUGH;
         foreach($this->lines as $line) {
             if(empty($line->product) && !empty($line->fk_product)) $line->fetch_product();
             if($line->product->type == Product::TYPE_PRODUCT) {
                 if(empty($line->product->stock_reel)) $line->product->load_stock();
                 if($line->product->stock_reel < $line->qty) { //Si on a pas assez de stock physique il faut vérifier le stock virtuel en tenant compte des dates de livraisons des CFs
                     if($line->isVirtualStockAvailableForDate($this->planned_date)) {
-                        return $this::OR_ONLY_PHYSICAL_STOCK_NOT_ENOUGH; //virtual stock available but not physical
+                        $return = $this::OR_ONLY_PHYSICAL_STOCK_NOT_ENOUGH; //virtual stock available but not physical
                     }
-                    else return $this::OR_ALL_STOCK_NOT_ENOUGH;//not enough virtual stock
+                    else { // On break dans ce cas là car ça signifie qu'au moins une ligne n'a pas assez de stocks
+                        $return = $this::OR_ALL_STOCK_NOT_ENOUGH;
+                        break;
+                    }//not enough virtual stock
                 }
             }
         }
-        return $this::OR_STOCK_IS_ENOUGH;
+        return $return;
     }
 }
 
