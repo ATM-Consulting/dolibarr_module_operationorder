@@ -224,6 +224,8 @@ setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
 
 setup_print_on_off('OPODER_SUPPLIER_ORDER_AUTO_VALIDATE');
 
+setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLAY_STOCK_ON_PLANNING_help');
+
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
 

@@ -135,6 +135,16 @@ class OperationOrderStatus extends SeedObject
 			'default'=>0,
 			'help'=>'DisplayOnPlanningHelp'
 		),
+        'check_virtual_stock' => array(
+            'type'=>'boolean',
+            'label'=>'CheckVirtualStock',
+            'enabled'=>1,
+            'position'=>50,
+            'visible'=> -1,
+            'required'=>0,
+            'default'=>0,
+            'help'=>'CheckVirtualStockHelp'
+        ),
 //		'edit' => array(
 //			'type'=>'smallint',
 //			'label'=>'CouldEdit',
