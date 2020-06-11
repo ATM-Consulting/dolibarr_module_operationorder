@@ -1253,6 +1253,7 @@ function getOperationOrderUserPlanningSchedule(){
 
     $TSchedules = array();
     $TSchedulesByUser = array();
+    $TDays = array('lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche');
 
     //usergroup paramétré
     $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
@@ -1288,45 +1289,113 @@ function getOperationOrderUserPlanningSchedule(){
 
             }
 
-            foreach ($userplanning->fields as $key => $value)
+            foreach ($TDays as $day)
             {
+                $i = 0;
+
                 foreach ($TSchedulesByUser as $userplanning)
                 {
-                    if (empty($TSchedules[$key]))
+                    if(empty($userplanning->{$day.'_heuredam'})
+                    && empty($userplanning->{$day.'_heurefam'})
+                    && empty($userplanning->{$day.'_heuredpm'})
+                    && empty($userplanning->{$day.'_heurefpm'}))
+                        continue;
+
+                    if(empty($userplanning->{$day.'_heuredam'})) $userplanning->{$day.'_heuredam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefam'})) $userplanning->{$day.'_heurefam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heuredpm'})) $userplanning->{$day.'_heuredpm'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heurefpm'} = '00:00';
+
+                    if (empty($TSchedules[$day]))
                     {
-                        $TSchedules[$key] = $userplanning->$key;
+                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredam'};
+                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefam'};
+                        $i++;
+                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredpm'};
+                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefpm'};
                     }
                     else
                     {
-                        if (strstr($key, 'heured') && $userplanning->$key < $TSchedules[$key])
-                        {
-                            $TSchedules[$key] = $userplanning->$key;
+                        $scheduletoaddam = true;
+                        $scheduletoaddpm = true;
+
+                        foreach($TSchedules[$day] as $schedule){
+
+                            //si l'heure de début est inférieure au minimum et que l'heure de fin est contenue dans le créneau, alors on usurpe le minimum
+                            if($userplanning->{$day.'_heuredam'} < $schedule['min'] && ($userplanning->{$day.'_heurefam'} <= $schedule['max'] && $userplanning->{$day.'_heurefam'} >= $schedule['min'])){
+                                $schedule['min'] = $userplanning->{$day.'_heuredam'};
+                                $scheduletoaddam = false;
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} < $schedule['min'] && ($userplanning->{$day.'_heurefpm'} <= $schedule['max'] && $userplanning->{$day.'_heurefpm'} >= $schedule['min'])){
+                                $schedule['min'] = $userplanning->{$day.'_heuredpm'};
+                                $scheduletoaddpm = false;
+                            }
+
+                            //si l'heure de fin est supérieure au maximum et que l'heure du début est contenue dans le créneau, alors on usurpe le maximum
+                            elseif($userplanning->{$day.'_heurefam'} > $schedule['max'] && ($userplanning->{$day.'_heuredam'} >= $schedule['min'] && $userplanning->{$day.'_heuredam'} <= $schedule['max']))
+                            {
+                                $schedule['max'] = $userplanning->{$day.'_heurefam'};
+                                $scheduletoaddam = false;
+
+                            }
+                            elseif($userplanning->{$day.'_heurefpm'} > $schedule['max'] && ($userplanning->{$day.'_heuredpm'} >= $schedule['min'] && $userplanning->{$day.'_heuredpm'} <= $schedule['max']))
+                            {
+                                $schedule['max'] = $userplanning->{$day.'_heurefpm'};
+                                $scheduletoaddpm = false;
+
+                            }
+
+                            //si l'heure de fin est supérieure au maximum et que l'heure de début est inférieure au minimum alors on usurpe le min et le max
+                            elseif($userplanning->{$day.'_heuredam'} <= $schedule['min'] && $userplanning->{$day.'_heurefam'} >= $schedule['max']){
+                                $schedule['min'] = $userplanning->{$day.'_heuredam'};
+                                $schedule['max'] = $userplanning->{$day.'_heurefam'};
+                                $scheduletoaddam = false;
+
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} <= $schedule['min'] && $userplanning->{$day.'_heurefpm'} >= $schedule['max']){
+                                $schedule['min'] = $userplanning->{$day.'_heuredpm'};
+                                $schedule['max'] = $userplanning->{$day.'_heurefpm'};
+                                $scheduletoaddpm = false;
+
+                            }
+
+                            elseif($userplanning->{$day.'_heuredam'} >= $schedule['min'] && $userplanning->{$day.'_heurefam'} <= $schedule['max']){
+                                $scheduletoaddam = false;
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} >= $schedule['min'] && $userplanning->{$day.'_heurefpm'} <= $schedule['max']){
+                                $scheduletoaddpm = false;
+                            }
+
                         }
-                        elseif (strstr($key, 'heuref') && $userplanning->$key > $TSchedules[$key])
-                        {
-                            $TSchedules[$key] = $userplanning->$key;
+
+                        if($scheduletoaddam) {
+                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredam'}, 'max' => $userplanning->{$day.'_heurefam'});
+                        }
+                        elseif($scheduletoaddpm) {
+                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredpm'}, 'max' => $userplanning->{$day.'_heurefpm'});
                         }
                     }
+
+                    $i++;
                 }
             }
 
         }
 
-        //userplanning en fonction du groupe d'utilisateurs
-        if (empty($TSchedules))
-        {
-            $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
-
-            if ($res > 0 && $userplanning->active > 0)
-            {
-                foreach ($userplanning->fields as $key => $value)
-                {
-                    $TSchedules[$key] = $userplanning->$key;
-                }
-            }
-        }
+//        //userplanning en fonction du groupe d'utilisateurs
+//        if (empty($TSchedules))
+//        {
+//            $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
+//
+//            if ($res > 0 && $userplanning->active > 0)
+//            {
+//                foreach ($userplanning->fields as $key => $value)
+//                {
+//                    $TSchedules[$key] = $userplanning->$key;
+//                }
+//            }
+//        }
     }
 
     return $TSchedules;
-
 }

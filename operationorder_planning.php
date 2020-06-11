@@ -94,15 +94,15 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
         fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
 
         //définition des horaires en fonction du planning utilisateur/groupe
-        <?php
-        foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
-
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] )) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>";
-
-        <?php } ?>
+<!--        --><?php
+//        foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
+//
+//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>//";
+//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>//";
+//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>//";
+//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] )) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>//";
+//
+//        <?php //} ?>
 
 		// fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
 		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
@@ -159,24 +159,20 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
                     //si nous possédons des horaires, on les applique
                     <?php if(!empty($Tfullcalendar_scheduler_businessHours)) { ?>
-                    <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
+                    <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){?>
+                    <?php
+                    if(!empty($Tfullcalendar_scheduler_businessHours[$day])) {
+                    foreach ($Tfullcalendar_scheduler_businessHours[$day] as $i=>$TSchedules){?>
 
-                    //matinée
                     {
                         daysOfWeek: [<?php print $key ?>], // Jour
 
-                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_start, // début de l'horaire
-                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>am_end, // fin de l'horaire
+                        startTime: '<?php print $TSchedules['min']?>', // début de l'horaire
+                        endTime:  '<?php print $TSchedules['max']?>', // fin de l'horaire
                     },
 
-                    //après-midi
-                    {
-                        daysOfWeek: [<?php print $key ?>],
-
-                        startTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start,
-                        endTime: fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end,
-                    },
-
+                    <?php } ?>
+                    <?php } ?>
                     <?php } ?>
 
                     //sinon on applique la comportement par défaut
