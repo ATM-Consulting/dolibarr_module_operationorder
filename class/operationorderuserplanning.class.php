@@ -32,20 +32,6 @@ class OperationOrderUserPlanning extends SeedObject
     public $fields=array(
         'fk_object' => array('type'=>'integer', 'label'=>'Object', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1),
         'object_type' => array('type'=>'varchar(255)', 'label'=>'ObjectType', 'enabled'=>1, 'position'=>20, 'notnull'=>1, 'visible'=>1),
-        'lundiam' => array('type'=>'integer', 'label'=>'lundiam', 'enabled'=>1, 'position'=>30, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'lundipm' => array('type'=>'integer', 'label'=>'lundipm', 'enabled'=>1, 'position'=>40, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'mardiam' => array('type'=>'integer', 'label'=>'mardiam', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'mardipm' => array('type'=>'integer', 'label'=>'mardipm', 'enabled'=>1, 'position'=>60, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'mercrediam' => array('type'=>'integer', 'label'=>'mercrediam', 'enabled'=>1, 'position'=>70, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'mercredipm' => array('type'=>'integer', 'label'=>'mercredipm', 'enabled'=>1, 'position'=>80, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'jeudiam' => array('type'=>'integer', 'label'=>'jeudiam', 'enabled'=>1, 'position'=>90, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'jeudipm' => array('type'=>'integer', 'label'=>'jeudipm', 'enabled'=>1, 'position'=>100, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'vendrediam' => array('type'=>'integer', 'label'=>'vendrediam', 'enabled'=>1, 'position'=>110, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'vendredipm' => array('type'=>'integer', 'label'=>'vendredipm', 'enabled'=>1, 'position'=>120, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'samediam' => array('type'=>'integer', 'label'=>'samediam', 'enabled'=>1, 'position'=>130, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'samedipm' => array('type'=>'integer', 'label'=>'samedipm', 'enabled'=>1, 'position'=>140, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'dimancheam' => array('type'=>'integer', 'label'=>'dimancheam', 'enabled'=>1, 'position'=>150, 'notnull'=>1, 'visible'=>1, 'default'=>0),
-        'dimanchepm' => array('type'=>'integer', 'label'=>'dimanchepm', 'enabled'=>1, 'position'=>160, 'notnull'=>1, 'visible'=>1, 'default'=>0),
         'lundi_heuredam' => array('type'=>'varchar(5)', 'label'=>'lundiheuredam', 'enabled'=>1, 'position'=>170, 'notnull'=>1, 'visible'=>1),
         'lundi_heurefam' => array('type'=>'varchar(5)', 'label'=>'lundiheurefam', 'enabled'=>1, 'position'=>180, 'notnull'=>1, 'visible'=>1),
         'lundi_heuredpm' => array('type'=>'varchar(5)', 'label'=>'lundiheuredpm', 'enabled'=>1, 'position'=>190, 'notnull'=>1, 'visible'=>1),
@@ -80,20 +66,20 @@ class OperationOrderUserPlanning extends SeedObject
 
     public $fk_object;
     public $object_type;
-    public $lundiam;
-    public $lundipm;
-    public $mardiam;
-    public $mardipm;
-    public $mercrediam;
-    public $mercredipm;
-    public $jeudiam;
-    public $jeudipm;
-    public $vendrediam;
-    public $vendredipm;
-    public $samediam;
-    public $samedipm;
-    public $dimancheam;
-    public $dimanchepm;
+//    public $lundiam;
+//    public $lundipm;
+//    public $mardiam;
+//    public $mardipm;
+//    public $mercrediam;
+//    public $mercredipm;
+//    public $jeudiam;
+//    public $jeudipm;
+//    public $vendrediam;
+//    public $vendredipm;
+//    public $samediam;
+//    public $samedipm;
+//    public $dimancheam;
+//    public $dimanchepm;
     public $lundi_heuredam;
     public $lundi_heurefam;
     public $lundi_heuredpm;

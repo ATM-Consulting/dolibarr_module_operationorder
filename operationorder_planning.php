@@ -72,7 +72,7 @@ if($action == "createOperationOrderAction"){
 
 //tableaux d'horaires à utiliser en fonction du planning utilisateur/groupe
 $fullcalendar_scheduler_businessHours = array();
-$Tfullcalendar_scheduler_businessHours = getOperationOrderUserPlanningByEntityAndUser();
+$Tfullcalendar_scheduler_businessHours = getOperationOrderUserPlanningSchedule();
 
 $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', '3'=>'mercredi', '4'=>'jeudi', '5' => 'vendredi', '6'=>'samedi', '7'=>'dimanche')
 
@@ -97,10 +97,10 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
         <?php
         foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
 
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'am'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>";
-        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'pm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>am_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>am_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_start = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>";
+        fullcalendar_scheduler_businessHours_<?php print $day ?>pm_end = "<?php (!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] )) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>";
 
         <?php } ?>
 

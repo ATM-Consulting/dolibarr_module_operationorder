@@ -1131,8 +1131,6 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
             $out .= '<table width="100%" class="liste noborder nobottom">';
             $out .= '<tr class="liste_titre">';
             $out .= '<td>&nbsp</td>';
-            $out .= '<td class="center">'.$langs->trans('Morning').'</td>';
-            $out .= '<td class="center">'.$langs->trans('Afternoon').'</td>';
             $out .= '<td class="center">'.$langs->trans('MorningD').'</td>';
             $out .= '<td class="center">'.$langs->trans('MorningF').'</td>';
             $out .= '<td class="center">'.$langs->trans('AfternoonD').'</td>';
@@ -1146,28 +1144,6 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
 
                 //Title
                 $out .= '<td>'.$langs->trans($key).'</td>';
-
-                //Morning
-                $field = ''.$value.'am';
-                if (empty($userplanning->$field))
-                {
-                    $out .= '<td class="center">'.img_picto('', 'statut0').'</td>';
-                }
-                else
-                {
-                    $out .= '<td class="center">'.img_picto('', 'statut4').'</td>';
-                }
-
-                //Afternoon
-                $field = ''.$value.'pm';
-                if (empty($userplanning->$field))
-                {
-                    $out .= '<td class="center">'.img_picto('', 'statut0').'</td>';
-                }
-                else
-                {
-                    $out .= '<td class="center">'.img_picto('', 'statut4').'</td>';
-                }
 
                 //MorningD
                 $field = ''.$value.'_heuredam';
@@ -1215,8 +1191,6 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
             $out .= '<table width="100%" class="liste noborder nobottom">';
             $out .= '<tr class="liste_titre">';
             $out .= '<td>&nbsp</td>';
-            $out .= '<td>'.$langs->trans('Morning').'</td>';
-            $out .= '<td>'.$langs->trans('Afternoon').'</td>';
             $out .= '<td>'.$langs->trans('MorningD').'</td>';
             $out .= '<td>'.$langs->trans('MorningF').'</td>';
             $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
@@ -1230,16 +1204,6 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
 
                 //Title
                 $out .= '<td>'.$langs->trans($key).'</td>';
-
-                //Morning
-                $field = ''.$value.'am';
-                if (empty($userplanning->$field)) $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1"></td>';
-                else $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1" checked="checked" ></td>';
-
-                //Afternoon
-                $field = ''.$value.'pm';
-                if (empty($userplanning->$field)) $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1"></td>';
-                else $out .=  '<td><input id="'.$field.'" type="checkbox" name="'.$field.'" value="1" checked="checked" ></td>';
 
                 $form=new TFormCore($_SERVER['PHP_SELF'],'form1','POST');
 
@@ -1281,11 +1245,11 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
  * @return array si planning existe, 0 si inexistant, -1 si erreur
  */
 
-function getOperationOrderUserPlanningByEntityAndUser(){
+function getOperationOrderUserPlanningSchedule(){
 
     require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
 
-    global $db, $conf, $user;
+    global $db, $conf;
 
     $TSchedules = array();
     $TSchedulesByUser = array();
@@ -1334,11 +1298,11 @@ function getOperationOrderUserPlanningByEntityAndUser(){
                     }
                     else
                     {
-                        if (strstr($key, 'heured') && $userplanning->$key < $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)])
+                        if (strstr($key, 'heured') && $userplanning->$key < $TSchedules[$key])
                         {
                             $TSchedules[$key] = $userplanning->$key;
                         }
-                        elseif (strstr($key, 'heuref') && $userplanning->$key > $TSchedules[$key] && $TSchedules[explode('_', $key)[0].substr($key, -2)])
+                        elseif (strstr($key, 'heuref') && $userplanning->$key > $TSchedules[$key])
                         {
                             $TSchedules[$key] = $userplanning->$key;
                         }
