@@ -108,6 +108,7 @@ if($action == 'save'){
 
 llxHeader('', $langs->trans("UserPlanning"));
 
+$userCanModify = '';
 
 if($objecttype == 'user')
 {
@@ -115,7 +116,7 @@ if($objecttype == 'user')
     $title = $langs->trans("User");
     dol_fiche_head($head, 'userplanning', $title, -1, 'user');
 
-    print getOperationOrderUserPlanningToDisplay($object, $objecttype, $action, $usercanmodifyuserplanning);
+    $userCanModify = $user->rights->operationorder->userplanning->write;
 
 } elseif ($objecttype == 'usergroup')
 {
@@ -124,6 +125,8 @@ if($objecttype == 'user')
     $title = $langs->trans("Group");
     dol_fiche_head($head, 'usergroupplanning', $title, -1, 'group');
 
-    print getOperationOrderUserPlanningToDisplay($object, 'usergroup', $action, $usercanmodifygroupplanning);
-
+    $userCanModify = $user->rights->operationorder->usergroupplanning->write;
 }
+
+print getOperationOrderUserPlanningToDisplay($object, $objecttype, $action, $userCanModify);
+
