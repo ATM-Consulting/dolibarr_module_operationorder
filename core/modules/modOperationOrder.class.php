@@ -92,8 +92,9 @@ class modOperationOrder extends DolibarrModules
 		    'models' => 1,
 			'triggers' => 1,
 			'hooks' => array(
-				'ordersuppliercard'
-            )
+				'ordersuppliercard',
+                'productdao'
+			)
         );
 
 		// Data directories to create when module is enabled.
@@ -497,7 +498,8 @@ class modOperationOrder extends DolibarrModules
 		$e = new ExtraFields($this->db);
 		$res = $e->addExtraField('oorder_available_for_supplier_order', "oorder_available_for_supplier_order", 'boolean', 0, 1, 'product', 0, 0, '', '', 1, 1, 1, "oorder_available_for_supplier_order_help", "", 0, 'operationorder@operationorder');
 
-        return $this->_init($sql, $options);
+
+		return $this->_init($sql, $options);
 	}
 
 	/**

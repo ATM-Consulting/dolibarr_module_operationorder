@@ -173,4 +173,35 @@ class ActionsOperationOrder
 		}
 	}
 
+    public function loadvirtualstock($parameters, &$object, &$action, $hookmanager) {
+        //On écrase le stock virtuel
+        if (in_array('productdao', explode(':', $parameters['context']))) {
+            dol_include_once('/operationorder/class/operationorder.class.php');
+            $ooStatus = new OperationOrderDet($this->db);
+            $ooStatus->product = $object;
+            $object->stock_theorique -= $ooStatus->loadOperationOrderQty();
+        }
+    }
+
+    public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager) {
+        if (in_array('stockproductcard', explode(':', $parameters['context']))) {
+            global $langs, $conf, $db;
+            dol_include_once('/operationorder/class/operationorder.class.php');
+            $langs->load('operationorder@operationorder');
+            $ooStatus = new OperationOrderDet($this->db);
+            $ooStatus->product = $object;
+            ?>
+            <script type="text/javascript">
+                $(document).ready(function(){
+                    let tdVirtual = $('td:contains("<?php echo $langs->trans('VirtualStock'); ?>")').next();
+                    let content = tdVirtual.find('.classfortooltip').attr('title') + "<br/>" + "<?php echo $langs->trans('ProductQtyInOperationOrder') .' : '.$ooStatus->loadOperationOrderQty(); ?>";
+                    tdVirtual.find('.classfortooltip').attr('title', content);
+                });
+            </script>
+            <?php
+
+        }
+    }
+
+
 }
