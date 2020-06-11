@@ -212,3 +212,7 @@ HoursMinFormat=Format d'affichage en heures et minutes (hh:mm), veuillez saisir 
 ErrorORActionCreation=Erreur lors de la création de l'événement de type "Ordre de réparation"
 SucessORActionCreation=L'événement de type "Ordre de réparation" a été créé avec succès
 OnlyVirtualStockIsEnough=Stock physique insuffisant, stock théorique suffisant (en tenant compte des dates de livraison prévues)
+NotEnoughStock=Stock physique et théorique insuffisant (en tenant compte des dates de livraison prévues)
+CheckVirtualStock=Vérification du stock théorique
+CheckVirtualStockHelp=Si la case est cochée, ce statut sera vérifié lors du calcul du stock théorique (les produits contenus dans les ORs à ce statut en seront déduits)
+ProductQtyInOperationOrder=Quantité de produit dans les ordres de réparation
