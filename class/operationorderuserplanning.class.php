@@ -66,20 +66,6 @@ class OperationOrderUserPlanning extends SeedObject
 
     public $fk_object;
     public $object_type;
-//    public $lundiam;
-//    public $lundipm;
-//    public $mardiam;
-//    public $mardipm;
-//    public $mercrediam;
-//    public $mercredipm;
-//    public $jeudiam;
-//    public $jeudipm;
-//    public $vendrediam;
-//    public $vendredipm;
-//    public $samediam;
-//    public $samedipm;
-//    public $dimancheam;
-//    public $dimanchepm;
     public $lundi_heuredam;
     public $lundi_heurefam;
     public $lundi_heuredpm;

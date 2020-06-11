@@ -47,21 +47,6 @@ $datasplanning['dimanche_heuredam'] = GETPOST('dimanche_heuredam');
 $datasplanning['dimanche_heurefam'] = GETPOST('dimanche_heurefam');
 $datasplanning['dimanche_heuredpm'] = GETPOST('dimanche_heuredpm');
 $datasplanning['dimanche_heurefpm'] = GETPOST('dimanche_heurefpm');
-$datasplanning['lundiam'] = !empty(GETPOST('lundiam')) ? GETPOST('lundiam') : 0;
-$datasplanning['lundipm'] = !empty(GETPOST('lundipm')) ? GETPOST('lundipm') : 0;
-$datasplanning['mardiam'] = !empty(GETPOST('mardiam')) ? GETPOST('mardiam') : 0;
-$datasplanning['mardipm'] = !empty(GETPOST('mardipm')) ? GETPOST('mardipm') : 0;
-$datasplanning['mercrediam'] = !empty(GETPOST('mercrediam')) ? GETPOST('mercrediam') : 0;
-$datasplanning['mercredipm'] = !empty(GETPOST('mercredipm')) ? GETPOST('mercredipm') : 0;
-$datasplanning['jeudiam'] = !empty(GETPOST('jeudiam')) ? GETPOST('jeudiam') : 0;
-$datasplanning['jeudipm'] = !empty(GETPOST('jeudipm')) ? GETPOST('jeudipm') : 0;
-$datasplanning['vendrediam'] = !empty(GETPOST('vendrediam')) ? GETPOST('vendrediam') : 0;
-$datasplanning['vendredipm'] = !empty(GETPOST('vendredipm')) ? GETPOST('vendredipm') : 0;
-$datasplanning['samediam'] = !empty(GETPOST('samediam')) ? GETPOST('samediam') : 0;
-$datasplanning['samedipm'] = !empty(GETPOST('samedipm')) ? GETPOST('samedipm') : 0;
-$datasplanning['dimancheam'] = !empty(GETPOST('dimancheam')) ? GETPOST('dimancheam') : 0;
-$datasplanning['dimanchepm'] = !empty(GETPOST('dimanchepm')) ? GETPOST('dimanchepm') : 0;
-
 
 if($objecttype == 'user')
 {
@@ -94,9 +79,6 @@ if($action == 'save'){
         foreach ($datasplanning as $key=>$value){
             $userplanning->$key = $value;
         }
-
-        //Quand on modifie on active le calendrier
-        $userplanning->active = 1;
 
         $userplanning->save($user);
 
