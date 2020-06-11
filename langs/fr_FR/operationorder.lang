@@ -216,3 +216,9 @@ NotEnoughStock=Stock physique et théorique insuffisant (en tenant compte des da
 CheckVirtualStock=Vérification du stock théorique
 CheckVirtualStockHelp=Si la case est cochée, ce statut sera vérifié lors du calcul du stock théorique (les produits contenus dans les ORs à ce statut en seront déduits)
 ProductQtyInOperationOrder=Quantité de produit dans les ordres de réparation
+
+#USERPLANNING
+MorningD=Début de matinée
+MorningF=Fin de matinée
+AfternoonD=Début d'après-midi
+AfternoonF=Fin d'après-midi
