@@ -1,1 +1,4 @@
-ALTER TABLE `llx_operationorder_status_usergroup_rights` ADD UNIQUE( `fk_operationorderstatus`, `code`, `fk_usergroup`);
+ALTER TABLE llx_operationorder_status_usergroup_rights ADD UNIQUE(fk_operationorderstatus, code, fk_usergroup);
+ALTER TABLE llx_operationorder_status_usergroup_rights ADD CONSTRAINT llx_operationorder_status_usergroup_rights_ibfk_1 FOREIGN KEY (fk_operationorderstatus) REFERENCES llx_operationorder_status (rowid) ON DELETE CASCADE;
+ALTER TABLE llx_operationorder_status_usergroup_rights ADD CONSTRAINT llx_operationorder_status_usergroup_rights_ibfk_2 FOREIGN KEY (fk_usergroup) REFERENCES llx_usergroup (rowid) ON DELETE CASCADE;
+
