@@ -894,7 +894,7 @@ class OperationOrderStatus extends SeedObject
 
 		if (! $db->query($sql))
 		{
-			dol_print_error($db->db);
+			dol_print_error($db);
 			return false;
 		}
 
