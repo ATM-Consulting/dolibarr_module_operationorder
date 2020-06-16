@@ -32,6 +32,8 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 require_once '../lib/operationorder.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationorderbarcode.class.php');
+
 
 require_once DOL_DOCUMENT_ROOT.'/core/lib/barcode.lib.php';
 
@@ -44,12 +46,52 @@ if (! $user->admin && empty($user->rights->operationorder->status->write)) {
     accessforbidden();
 }
 
+//object
+$object=new OperationOrderBarCode($db);
+$TBarCodes = $object->fetchAll();
+
 // Parameters
 $action = GETPOST('action', 'alpha');
+$label_barcode = GETPOST('imp_label', 'alpha');
 
 /*
  * Actions
  */
+
+if($action == 'addbarcodeimp'){
+
+    $object->label = $label_barcode;
+
+    $sql = "SELECT MAX(code) as code FROM ".MAIN_DB_PREFIX."operationorderbarcode";
+    $resql = $db->query($sql);
+
+    if($resql){
+
+        if($db->num_rows($resql) > 0){
+
+            $obj = $db->fetch_object($resql);
+            $last_number = intval(substr($obj->code, 3));
+            $codenumber = str_pad(($last_number + 1), 5, '0', STR_PAD_LEFT);
+
+        } else {
+            $codenumber = str_pad(1, 5, '0', STR_PAD_LEFT);
+        }
+
+        $object->code = 'IMP'.$codenumber;
+
+        $res = $object->create($user);
+        if($res < 0){
+            $error++;
+        } else {
+            header('Location: '.$_SERVER['PHP_SELF']);
+        }
+
+    } else {
+        $error++;
+    }
+
+
+}
 
 
 
@@ -82,7 +124,32 @@ print '<table class="noborder" width="100%">';
 
 setup_print_title($langs->trans("BarCodeImpSetup"));
 
+print '<tr>';
+print '<th>Label</th>';
+print '<th>Code</th>';
+print '</tr>';
+
+
+print '<tr>';
+foreach($TBarCodes as $barcode){
+    if(strstr($barcode->code, 'IMP')){
+        print '</tr>';
+        print '<td class="center">'.$barcode->label.'</td>';
+        print '<td class="center">'.$barcode->code.'</td>';
+        print '</tr>';
+    }
+}
+print '</tr>';
+
 print '</table>';
+
+print '<form name="addproduct" action="' . $_SERVER['PHP_SELF'] .'" method="POST">' . "\n";
+print '<input type="hidden" name="action" value="addbarcodeimp">' . "\n";
+
+print '<div class="right">';
+print '<span>Label</span>';
+print '<input type="text" id="imp_label" name="imp_label"><button type="submit" class="button" >'.$langs->trans('AddBarCode').'</button>';
+print '</div>';
 
 
 
