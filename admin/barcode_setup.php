@@ -53,12 +53,15 @@ $TBarCodes = $object->fetchAll();
 // Parameters
 $action = GETPOST('action', 'alpha');
 $label_barcode = GETPOST('imp_label', 'alpha');
+$id_barcode = GETPOST('barcodeid', 'alpha');
 
 /*
  * Actions
  */
 
 if($action == 'addbarcodeimp'){
+
+    $error = 0;
 
     $object->label = $label_barcode;
 
@@ -82,15 +85,40 @@ if($action == 'addbarcodeimp'){
         $res = $object->create($user);
         if($res < 0){
             $error++;
-        } else {
-            header('Location: '.$_SERVER['PHP_SELF']);
         }
 
     } else {
         $error++;
     }
 
+    if($error){
+        header('Location: '.$_SERVER['PHP_SELF']);
+        setEventMessage('Error', 'errors');
+    } else {
+        header('Location: '.$_SERVER['PHP_SELF']);
+        setEventMessage($langs->trans('BarCodeAdded'));
+    }
 
+
+} elseif($action == 'ask_deletebarcode') {
+
+    $error = 0;
+
+    $res = $object->fetch($id_barcode);
+    if($res < 0) $error++;
+
+    if(!$error){
+        $res = $object->delete($user);
+        if($res < 0) $error ++;
+    }
+
+    if($error){
+        header('Location: '.$_SERVER['PHP_SELF']);
+        setEventMessage('Error', 'errors');
+    } else {
+        header('Location: '.$_SERVER['PHP_SELF']);
+        setEventMessage($langs->trans('BarCodeDeleted'));
+    }
 }
 
 
@@ -125,17 +153,21 @@ print '<table class="noborder" width="100%">';
 setup_print_title($langs->trans("BarCodeImpSetup"));
 
 print '<tr>';
-print '<th>Label</th>';
-print '<th>Code</th>';
+print '<th>'.$langs->trans("Label").'</th>';
+print '<th>'.$langs->trans("Code").'</th>';
 print '</tr>';
 
 
 print '<tr>';
 foreach($TBarCodes as $barcode){
     if(strstr($barcode->code, 'IMP')){
+
         print '</tr>';
         print '<td class="center">'.$barcode->label.'</td>';
         print '<td class="center">'.$barcode->code.'</td>';
+        print '<td class="center"><a href="'.$_SERVER["PHP_SELF"].'?action=ask_deletebarcode&barcodeid='.$barcode->id.'">';
+		print img_delete();
+		print '</a></td>';
         print '</tr>';
     }
 }
@@ -147,7 +179,7 @@ print '<form name="addproduct" action="' . $_SERVER['PHP_SELF'] .'" method="POST
 print '<input type="hidden" name="action" value="addbarcodeimp">' . "\n";
 
 print '<div class="right">';
-print '<span>Label</span>';
+print '<span>'.$langs->trans("Label").'</span>';
 print '<input type="text" id="imp_label" name="imp_label"><button type="submit" class="button" >'.$langs->trans('AddBarCode').'</button>';
 print '</div>';
 
