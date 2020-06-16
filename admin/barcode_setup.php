@@ -162,10 +162,10 @@ print '<tr>';
 foreach($TBarCodes as $barcode){
     if(strstr($barcode->code, 'IMP')){
 
-        print '</tr>';
-        print '<td class="center">'.$barcode->label.'</td>';
-        print '<td class="center">'.$barcode->code.'</td>';
-        print '<td class="center"><a href="'.$_SERVER["PHP_SELF"].'?action=ask_deletebarcode&barcodeid='.$barcode->id.'">';
+        print '<tr id = "barcode_'.$barcode->id.'">';
+        print '<td class="center barcode_label">'.$barcode->label.'</td>';
+        print '<td class="center barcode_code">'.$barcode->code.'</td>';
+        print '<td class="center delete_action"><a href="'.$_SERVER["PHP_SELF"].'?action=ask_deletebarcode&barcodeid='.$barcode->id.'">';
 		print img_delete();
 		print '</a></td>';
         print '</tr>';
