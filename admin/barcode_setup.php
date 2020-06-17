@@ -33,6 +33,7 @@ require_once '../lib/operationorder.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
+dol_include_once('/operationorder/class/operationorderbarcodeimplist.class.php');
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 
 
@@ -123,8 +124,6 @@ if($action == 'addbarcodeimp'){
     }
 } elseif($action == 'generatedocument') {
 
-    $object->commonGenerateDocument();
-
 }
 
 
@@ -196,7 +195,10 @@ print '<div>';
 print '<button type="submit" class="button" >'.$langs->trans('GenerateDocument').'</button>';
 print '</div>';
 
+$test = new OperationOrderBarCodeImpList($db);
+$res = $test->generateDocument('', $langs);
 
+var_dump($res);
 dol_fiche_end(-1);
 
 llxFooter();
