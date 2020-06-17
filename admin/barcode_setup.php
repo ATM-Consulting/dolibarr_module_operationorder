@@ -33,6 +33,8 @@ require_once '../lib/operationorder.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+
 
 
 require_once DOL_DOCUMENT_ROOT.'/core/lib/barcode.lib.php';
@@ -119,6 +121,10 @@ if($action == 'addbarcodeimp'){
         header('Location: '.$_SERVER['PHP_SELF']);
         setEventMessage($langs->trans('BarCodeDeleted'));
     }
+} elseif($action == 'generatedocument') {
+
+    $object->commonGenerateDocument();
+
 }
 
 
@@ -183,6 +189,12 @@ print '<span>'.$langs->trans("Label").'</span>';
 print '<input type="text" id="imp_label" name="imp_label"><button type="submit" class="button" >'.$langs->trans('AddBarCode').'</button>';
 print '</div>';
 
+print '<form name="generatedocument" action="' . $_SERVER['PHP_SELF'] .'" method="POST">' . "\n";
+print '<input type="hidden" name="action" value="generatedocument">' . "\n";
+
+print '<div>';
+print '<button type="submit" class="button" >'.$langs->trans('GenerateDocument').'</button>';
+print '</div>';
 
 
 dol_fiche_end(-1);
