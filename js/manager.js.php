@@ -114,6 +114,13 @@ class Application
 			this.getORLines(oOrder);
 		}
 
+		if (lig !== null)
+		{
+			// TODO faire un truc selon la ligne (pointable ou sortie de stock)
+			// si c'est un pointable il nous faut un user dans le state
+			this.resetState();
+		}
+
 	}
 
 	/* Récupération de données */
@@ -197,20 +204,21 @@ class Application
 		}).done(function (data) {
 			console.log(data);
 			let orLines = $('#tableLines tbody');
-			//orLines.empty();
+			orLines.empty();
 
-			//if (data.oOrders.length) {
-			//	data.oOrders.forEach(function(item) {
-			//		var tr = '<tr class="oorder" onclick="javascript:setParam(\'' + item.barcode + '\')">';
-			//		tr+= '<td>'+item.client+'</td>';
-			//		tr+= '<td>'+item.ref+'</td>';
-			//		if (item.immat !== undefined) tr+= '<td>'+item.immat+'</td>';
-			//		tr+= '<td>'+item.barcode+'</td></tr>';
-			//
-			//		orList.append(tr);
-			//	});
-			//}
+			if (data.oOrderLines.length) {
+				data.oOrderLines.forEach(function(item) {
+					var tr = '<tr class="oorderline" onclick="javascript:setParam(\'' + item.barcode + '\')">';
+					tr+= '<td>'+item.ref+'</td>';
+					tr+= '<td>'+item.qty+'</td>';
+					tr+= '<td>'+item.action+'</td>';
+					tr+= '<td>'+item.barcode+'</td></tr>';
+
+					orLines.append(tr);
+				});
+			}
 		});
+
 	}
 
 	/* ACTION */

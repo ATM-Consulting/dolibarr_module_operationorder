@@ -75,18 +75,22 @@ $hookmanager->initHooks(array('OOmanagercard'));
 	</div>
 	<div id="ORLines" class="row">
 		<table id="tableLines">
-			<tr>
-				<th>Ref Article</th>
-				<th>Qty</th>
-				<th>Action</th>
-				<th>Code Barre</th>
-			</tr>
-			<tr>
-				<td>Vid-05-112</td>
-				<td>1</td>
-				<td>Start</td>
-				<td>Code barre</td>
-			</tr>
+			<thead>
+				<tr>
+					<th>Ref Article</th>
+					<th>Qty</th>
+					<th>Action</th>
+					<th>Code Barre</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Vid-05-112</td>
+					<td>1</td>
+					<td>Start</td>
+					<td>Code barre</td>
+				</tr>
+			</tbody>
 		</table>
 	</div>
 
