@@ -212,7 +212,7 @@ print '<form name="generatedocument" action="' . $_SERVER['PHP_SELF'] .'" method
 print '<input type="hidden" name="action" value="generatedocument">' . "\n";
 
 print '<div class="right">';
-print '<button type="submit" class="button" >'.$langs->trans('GenerateFile').'</button>';
+print '<button type="submit" class="button" >'.$langs->transnoentities('GenerateFile').'</button>';
 print '</div>';
 
 print '</form>';
