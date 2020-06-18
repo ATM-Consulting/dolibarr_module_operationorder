@@ -132,7 +132,7 @@ class pdf_barcodeimp extends CommonDocGenerator
 		global $conf, $langs, $mysoc;
 
 		// Translations
-		$langs->loadLangs(array("main", "bills", "products"));
+		$langs->loadLangs(array("main"));
 
 		$this->db = $db;
 		$this->name = "barcodeimp";
@@ -149,35 +149,6 @@ class pdf_barcodeimp extends CommonDocGenerator
 		$this->marge_droite=isset($conf->global->MAIN_PDF_MARGIN_RIGHT)?$conf->global->MAIN_PDF_MARGIN_RIGHT:10;
 		$this->marge_haute =isset($conf->global->MAIN_PDF_MARGIN_TOP)?$conf->global->MAIN_PDF_MARGIN_TOP:10;
 		$this->marge_basse =isset($conf->global->MAIN_PDF_MARGIN_BOTTOM)?$conf->global->MAIN_PDF_MARGIN_BOTTOM:10;
-
-		$this->option_logo = 1;                    // Display logo
-		$this->option_tva = 1;                     // Manage the vat option FACTURE_TVAOPTION
-		$this->option_modereg = 1;                 // Display payment mode
-		$this->option_condreg = 1;                 // Display payment terms
-		$this->option_codeproduitservice = 1;      // Display product-service code
-		$this->option_multilang = 1;               // Available in several languages
-		$this->option_escompte = 0;                // Displays if there has been a discount
-		$this->option_credit_note = 0;             // Support credit notes
-		$this->option_freetext = 1;				   // Support add of a personalised text
-		$this->option_draft_watermark = 1;		   // Support add of a watermark on drafts
-
-		$this->franchise=!$mysoc->tva_assuj;
-
-		// Get source company
-		$this->emetteur=$mysoc;
-		if (empty($this->emetteur->country_code)) $this->emetteur->country_code=substr($langs->defaultlang, -2);    // By default, if was not defined
-
-		// Define position of columns
-		$this->posxdesc=$this->marge_gauche+1;
-
-
-		$this->tabTitleHeight = 5; // default height
-
-		$this->tva=array();
-		$this->localtax1=array();
-		$this->localtax2=array();
-		$this->atleastoneratenotnull=0;
-		$this->atleastonediscount=0;
 	}
 
 	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
@@ -195,7 +166,7 @@ class pdf_barcodeimp extends CommonDocGenerator
 	public function write_file($object, $outputlangs, $srctemplatepath = '', $hidedetails = 0, $hidedesc = 0, $hideref = 0)
     {
         // phpcs:enable
-        global $user, $langs, $conf, $mysoc, $db, $hookmanager, $nblines;
+        global $user, $langs, $conf, $db;
 
         /**
          * @var  $object OperationOrder
@@ -206,7 +177,7 @@ class pdf_barcodeimp extends CommonDocGenerator
         if (! empty($conf->global->MAIN_USE_FPDF)) $outputlangs->charset_output='ISO-8859-1';
 
         // Translations
-        $outputlangs->loadLangs(array("main", "dict", "companies", "bills", "products", "orders", "deliveries", "stocks"));
+        $outputlangs->loadLangs(array("main"));
 
         $hideref = 1; // force hidden ref
 
@@ -219,22 +190,9 @@ class pdf_barcodeimp extends CommonDocGenerator
 
         if ($conf->operationorder->dir_output)
         {
-            $object->fetch_thirdparty();
 
-            $deja_regle = 0;
-
-            // Definition of $dir and $file
-            if ($object->specimen)
-            {
-                $dir = $conf->operationorder->multidir_output[$conf->entity];
-                $file = $dir . "/SPECIMEN.pdf";
-            }
-            else
-            {
-                $objectref = dol_sanitizeFileName($object->ref);
-                $dir = $conf->operationorder->multidir_output[$object->entity];
-                $file = $dir . "/barcodeimp_list.pdf";
-            }
+            $dir = $conf->operationorder->multidir_output[$object->entity];
+            $file = $dir . "/barcodeimp_list.pdf";
 
             if (! file_exists($dir))
             {
@@ -247,17 +205,6 @@ class pdf_barcodeimp extends CommonDocGenerator
 
             if (file_exists($dir))
             {
-                // Add pdfgeneration hook
-                if (!is_object($hookmanager))
-                {
-                    include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
-                    $hookmanager = new HookManager($this->db);
-                }
-                $hookmanager->initHooks(array('pdfgeneration'));
-                $parameters = array('file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs);
-                global $action;
-                $reshook = $hookmanager->executeHooks('beforePDFCreation', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
-
                 // Create pdf instance
                 $pdf = pdf_getInstance($this->format);
                 $default_font_size = pdf_getPDFFontSize($outputlangs); // Must be after pdf_getInstance
@@ -284,8 +231,8 @@ class pdf_barcodeimp extends CommonDocGenerator
 
                 $pagenb=0;
 
-                $pdf->SetTitle($outputlangs->convToOutputCharset('hey'));
-                $pdf->SetSubject($outputlangs->transnoentities("PdfOrderTitle"));
+                $pdf->SetTitle($outputlangs->transnoentities('PdfBarcodeImpTitle'));
+                $pdf->SetSubject($outputlangs->transnoentities("PdfBarcodeImpTitle"));
                 $pdf->SetCreator("Dolibarr ".DOL_VERSION);
                 $pdf->SetAuthor($outputlangs->convToOutputCharset($user->getFullName($outputlangs)));
                 $pdf->SetKeyWords($outputlangs->convToOutputCharset($object->ref)." ".$outputlangs->transnoentities("PdfOrderTitle")." ".$outputlangs->convToOutputCharset($object->thirdparty->name));

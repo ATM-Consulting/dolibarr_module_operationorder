@@ -202,6 +202,7 @@ Multicompany=Options du module multi sociétés
 PdfCustomOrderTitle=Ordre de réparation
 OperationOrderDate=Date
 PDFolafDescription=Modèle standard des ordres de réparations
+PdfBarcodeImpTitle=PDF Code-barres Improductifs
 
 # Planning
 LeftMenuOperationOrderPlanning=Planification
