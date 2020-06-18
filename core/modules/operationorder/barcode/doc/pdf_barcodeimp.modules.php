@@ -252,27 +252,25 @@ class pdf_barcodeimp extends CommonDocGenerator
                 $posx=$this->page_largeur-$this->marge_droite-100;
                 $pdf->SetXY($this->marge_gauche, $posy);
 
+
+                //Code-barres de type "improductif"
                 $barCodeHeight = 10;
                 $style= array(
                     'text'=> true,
                     'fontsize'=>4
                 );
 
-                foreach($object->list as $id=>$label)
+                foreach($object->list as $idbarcode=>$label)
                 {
                     $operationorderbarcode = new OperationOrderBarCode($db);
-                    $res =$operationorderbarcode->fetch($id);
+                    $res =$operationorderbarcode->fetch($idbarcode);
 
                     $pdf->startTransaction();
 
-                    $pageposbeforenote = $pagenb;
-                    $posystart = $posy;
                     $pdf->SetXY($this->marge_gauche, $posy);
                     $pdf->MultiCell(100, 3, $operationorderbarcode->label, '', 'C');
                     $pdf->write1DBarcode($operationorderbarcode->code, 'C128', $this->marge_gauche + 100, $posy, 50, $barCodeHeight, '', $style);
                     $posy = $posy + $barCodeHeight + 20;
-                    $pageposafternote = $pdf->getPage();
-
                     $posyend = $pdf->GetY();
 
                     if ($posyend > $this->page_hauteur - $heightforfooter)
