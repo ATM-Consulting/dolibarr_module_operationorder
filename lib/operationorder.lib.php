@@ -1402,9 +1402,72 @@ function getOperationOrderUserPlanningSchedule(){
 
 function getTimeAvailableByDay($day_timestamp){
 
-    $res = getOperationOrderUserPlanningByEntityAndUser();
-    var_dump($res);
-    return 3;
+    global $db, $conf;
+
+    $nb_seconds_total = 0;
+
+    $day = date('D', $day_timestamp);
+    var_dump($day);
+
+    //usergroup paramétré
+    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+
+    $usergroup = new UserGroup($db);
+    $res = $usergroup->fetch($fk_groupuser);
+    $TUsers = $usergroup->listUsersForGroup();
+
+    foreach ($TUsers as $user)
+    {
+
+        $userplanning = new OperationOrderUserPlanning($db);
+        $res = $userplanning->fetchByObject($user->id, 'user');
+
+
+        if($res > 0 && $userplanning->active){
+
+        }
+        else {
+
+
+
+            $res = $userplanning->fetchByObject($usergroup->id, 'usergroup');
+
+
+            if($res > 0 && $userplanning->active){
+
+            }
+            //config par défaut
+            else {
+
+                //semaine
+                if($day == 'Mon' || $day == 'Tue' ||$day == 'Wed' ||$day == 'Thu' ||$day == 'Fri' ||$day == 'Sat')
+                {
+                    $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START);
+                    $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END);
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                }
+                //week-end
+                else
+                {
+                    $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START);
+                    $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END);
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                }
+
+            }
+        }
+
+    }
+
+    return $nb_seconds_total;
 }
 
 function getTimePlannedByDay($day_timestamp){
