@@ -1423,8 +1423,25 @@ function getTimeAvailableByDay($date_timestamp){
         $userplanning = new OperationOrderUserPlanning($db);
         $res = $userplanning->fetchByObject($user->id, 'user');
 
-
         if($res > 0 && $userplanning->active){
+
+            //matin
+            $start = new DateTime($userplanning->{$day.'_heuredam'});
+            $end = new DateTime($userplanning->{$day.'_heurefam'});
+            $diff = $start->diff($end);
+            $diffStr = $diff->format('%H:%I');
+            $THoursMin = explode(':', $diffStr);
+
+            $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+            //après-midi
+            $start = new DateTime($userplanning->{$day.'_heuredpm'});
+            $end = new DateTime($userplanning->{$day.'_heurefpm'});
+            $diff = $start->diff($end);
+            $diffStr = $diff->format('%H:%I');
+            $THoursMin = explode(':', $diffStr);
+
+            $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
 
         }
         else {
@@ -1487,5 +1504,7 @@ function getTimeAvailableByDay($date_timestamp){
 }
 
 function getTimePlannedByDay($day_timestamp){
+
+    //TODO : calcul
     return 4;
 }
