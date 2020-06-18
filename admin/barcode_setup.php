@@ -124,13 +124,17 @@ if($action == 'addbarcodeimp'){
     }
 } elseif($action == 'generatedocument') {
 
-    $test = new OperationOrderBarCodeImpList($db);
+    $barcodeImpList = new OperationOrderBarCodeImpList($db);
 
-    $res = $test->generateDocument('', $langs);
+    $res = $barcodeImpList->generateDocument('', $langs);
 
+    if($res > 0){
+        setEventMessage('FileGenerated');
+    } else {
+        setEventMessage('Error', 'errors');
+
+    }
 }
-
-
 
 /*
  * View
@@ -156,6 +160,10 @@ dol_fiche_head(
 
 // Setup page goes here
 $form=new Form($db);
+$formfile = new FormFile($db);
+
+
+//BarCodeImp List
 
 print '<table class="noborder" width="100%">';
 
@@ -165,7 +173,6 @@ print '<tr>';
 print '<th>'.$langs->trans("Label").'</th>';
 print '<th>'.$langs->trans("Code").'</th>';
 print '</tr>';
-
 
 print '<tr>';
 foreach($TBarCodes as $barcode){
@@ -184,6 +191,8 @@ print '</tr>';
 
 print '</table>';
 
+//Add a barcode
+
 print '<form name="addproduct" action="' . $_SERVER['PHP_SELF'] .'" method="POST">' . "\n";
 print '<input type="hidden" name="action" value="addbarcodeimp">' . "\n";
 
@@ -193,7 +202,8 @@ print '<input type="text" id="imp_label" name="imp_label"><button type="submit" 
 print '</div>';
 print '</form>';
 
-$formfile = new FormFile($db);
+//Show Barcode PDF
+
 $filedir = $conf->operationorder->multidir_output[$conf->entity];
 
 print $formfile->showdocuments('operationorder', '', $filedir, $_SERVER['PHP_SELF'], 0, 0, '', 1, 1, 0, 48, 1);
