@@ -241,8 +241,9 @@ class OperationOrder extends SeedObject
 				return -1;
 			}
 		}
+		$needCreate = empty($this->id);
         $id = parent::create($user, $notrigger);
-		if($id > 0) {
+		if($needCreate && $id > 0) {
             $oOHistory = new OperationOrderHistory($this->db);
             $oOHistory->saveCreationOrDeletion($this);
 		}

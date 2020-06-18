@@ -28,6 +28,7 @@ OPODER_DISPLAY_STOCK_ON_PLANNING_help=Prenant en compte les commandes fournisseu
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
+LeftMenuOperationOrderListHistory=Historique
 OperationOrderTopMenu=Réparations
 LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
@@ -228,3 +229,6 @@ OODelete = Suppression de l'ordre de réparation %s
 OOLineDelete = Suppression de ligne dans l'ordre de réparation %s, produit %s
 OOCreate = Création de l'ordre de réparation %s
 OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
+
+
+OperationOrderHistoryList=Historique

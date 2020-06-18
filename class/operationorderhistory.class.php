@@ -116,7 +116,7 @@ class OperationOrderHistory extends SeedObject
                 $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
             }
             foreach($TDiff as $keyDiff => $diff) {
-                if($keyDiff == 'fields' || $keyDiff == 'oldcopy' || ($object->element == 'operationorderdet' && $keyDiff == 'label')) continue;
+                if($keyDiff == 'fields' || $keyDiff == 'oldcopy' || ($object->element == 'operationorderdet' && $keyDiff == 'label') || is_object($diff)) continue;
                 if(!is_array($diff)) {
                     if(!empty($object->fields[$keyDiff])) {
                         $oldvalue = $oldcopy->showOutputFieldQuick($keyDiff);
@@ -153,14 +153,14 @@ class OperationOrderHistory extends SeedObject
         global $langs, $user;
         if(strpos($object->element, 'det') !== false) {
             if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOLineCreate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
-            else $this->title = $langs->transnoentitiesnoconv('OOLineDelete', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
+            else $this->title = $langs->transnoentitiesnoconv('OOLineDelete', OperationOrder::getStaticRef($object->fk_operation_order).'('.$object->fk_operation_order.')', $object->getProductRef());
             $this->description = $langs->transnoentitiesnoconv($object->fields['qty']['label']). ' : '.$object->showOutputFieldQuick('qty');
             $this->fk_operationorder = $object->fk_operation_order;
             $this->fk_operationorderdet = $object->id;
         }
         else {
             if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOCreate', $object->ref);
-            else $this->title = $langs->transnoentitiesnoconv('OODelete', $object->ref);
+            else $this->title = $langs->transnoentitiesnoconv('OODelete', $object->ref . '('.$object->id.')');
 
             $this->description = $langs->transnoentitiesnoconv($object->fields['fk_soc']['label']). ' : '.$object->showOutputFieldQuick('fk_soc');
             if(!empty($object->array_options)) {
@@ -168,6 +168,7 @@ class OperationOrderHistory extends SeedObject
                 $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
                 foreach($object->array_options as $keyExtra => $valExtra) {
                     if(!empty($valExtra)) {
+                        $keyExtra = str_replace('options_', '', $keyExtra);
                         $this->description .= '</br>';
                         $this->description .= $langs->transnoentitiesnoconv($extralabels[$keyExtra]).' : '.$extrafields->showOutputField($keyExtra, $valExtra);
                     }
