@@ -225,6 +225,13 @@ setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
 
 setup_print_on_off('OPODER_SUPPLIER_ORDER_AUTO_VALIDATE');
 
+
+$confKey = 'OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING';
+setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING'), '', array(), $form->select_dolgroups($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING, 'OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING'));
+
+setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLAY_STOCK_ON_PLANNING_help');
+
+
 $confKey = 'OPODER_USERSCAPACITY_PERCENTAGEALERT';
 $formother = new FormOther($db);
 $customInputHtml = $formother->select_percent($conf->global->OPODER_USERSCAPACITY_PERCENTAGEALERT, 'OPODER_USERSCAPACITY_PERCENTAGEALERT');

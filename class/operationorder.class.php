@@ -161,6 +161,10 @@ class OperationOrder extends SeedObject
      */
     public $TOperationOrderDet = array();
 
+    const OR_ALL_STOCK_NOT_ENOUGH = -2;
+    const OR_ONLY_PHYSICAL_STOCK_NOT_ENOUGH = -1;
+    const OR_STOCK_IS_ENOUGH = 1;
+
     /**
      * OperationOrder constructor.
      * @param DoliDB    $db    Database connector
@@ -1536,6 +1540,27 @@ class OperationOrder extends SeedObject
         }
 
     }
+
+    public function isStockAvailable() {
+        if($this->planned_date < strtotime('today midnight')) return 1; // Pas besoin de vérifier pour les ORs passés
+        $return = $this::OR_STOCK_IS_ENOUGH;
+        foreach($this->lines as $line) {
+            if(empty($line->product) && !empty($line->fk_product)) $line->fetch_product();
+            if($line->product->type == Product::TYPE_PRODUCT) {
+                if(empty($line->product->stock_reel)) $line->product->load_stock();
+                if($line->product->stock_reel < $line->qty) { //Si on a pas assez de stock physique il faut vérifier le stock virtuel en tenant compte des dates de livraisons des CFs
+                    if($line->isVirtualStockAvailableForDate($this->planned_date)) {
+                        $return = $this::OR_ONLY_PHYSICAL_STOCK_NOT_ENOUGH; //virtual stock available but not physical
+                    }
+                    else { // On break dans ce cas là car ça signifie qu'au moins une ligne n'a pas assez de stocks
+                        $return = $this::OR_ALL_STOCK_NOT_ENOUGH;
+                        break;
+                    }//not enough virtual stock
+                }
+            }
+        }
+        return $return;
+    }
 }
 
 
@@ -1785,8 +1810,10 @@ class OperationOrderDet extends SeedObject
 		if ($this->fk_product > 0 && empty($this->product_type) && $this->product) {
 
 			$this->product->load_stock();
+            if(!empty($params['planned_date'])) $this->isVirtualStockAvailableForDate($params['planned_date']);
 
-			$tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
+
+            $tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
 			$tooltipLabel.= $langs->trans('VirtualStock').' : '.$this->product->stock_theorique;
 
 			if(empty($params['attr']['title'])){
@@ -2077,6 +2104,202 @@ class OperationOrderDet extends SeedObject
 			return - 1;
 		}
 	}
+
+    public function isVirtualStockAvailableForDate($date) {
+        global $conf;
+        $virtualStock = 0;
+        if(! empty($date) && ! empty($this->product)) {
+
+            $virtualStock = $this->product->stock_reel;
+            $orderQty = 0;
+            $sendingQty = 0;
+            $supplierQty = 0;
+            $receptionQty = 0;
+
+            //Load qtys
+            if(!empty($conf->fournisseur->enabled)) {
+                $supplierQty = $this->loadSupplierOrderQty($date);
+                $receptionQty = $this->loadSupplierOrderReceptionQty($date); //On retire ce qui a déjà été réceptionné car c'est contenu dans le stock reel
+            }
+            if(! empty($conf->commande->enabled)) $orderQty = $this->loadOrderQty($date);
+            if(! empty($conf->expedition->enabled) && (! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT) || ! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE))) {
+                require_once DOL_DOCUMENT_ROOT.'/expedition/class/expedition.class.php';
+                if(! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT)) {
+                    $filterShipmentStatus = Expedition::STATUS_VALIDATED.','.Expedition::STATUS_CLOSED;
+                }
+                else if(! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE)) {
+                    $filterShipmentStatus = Expedition::STATUS_CLOSED;
+                }
+                $sendingQty = $this->loadSendingQty($date, $filterShipmentStatus);
+            }
+            $ooQty = $this->loadOperationOrderQty($date);
+            if(!empty($ooQty)) $virtualStock -= $ooQty;
+
+            // Stock decrease mode
+            if(! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT) || ! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE)) {
+                $virtualStock -= ($orderQty - $sendingQty);
+            }
+            else if(! empty($conf->global->STOCK_CALCULATE_ON_VALIDATE_ORDER)) {
+                $virtualStock += 0;
+            }
+            else if(! empty($conf->global->STOCK_CALCULATE_ON_BILL)) {
+                $virtualStock -= $orderQty;
+            }
+
+            // Stock Increase mode
+            if(! empty($conf->global->STOCK_CALCULATE_ON_RECEPTION) || ! empty($conf->global->STOCK_CALCULATE_ON_RECEPTION_CLOSE)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            else if(! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_DISPATCH_ORDER)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            else if(! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER)) {
+                $virtualStock -= $receptionQty;
+            }
+            else if(! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_BILL)) {
+                $virtualStock += ($supplierQty - $receptionQty);
+            }
+            $this->product->stock_theorique = $virtualStock;
+            if($virtualStock >= $this->qty) return true;
+            else return false;
+        }
+    }
+
+    public function loadOperationOrderQty($date = '') {
+	    $qty = 0;
+        $oOStatus = new OperationOrderStatus($this->db);
+        $TStatus = $oOStatus->fetchAll(0, false, array("check_virtual_stock"=> 1));
+        $TStatusId = array();
+        if(!empty($TStatus)) {
+            foreach($TStatus as $status) $TStatusId[] = $status->id;
+            $sql = "SELECT SUM(ood.qty) as qty 
+                    FROM ".MAIN_DB_PREFIX."operationorderdet as ood 
+                    LEFT JOIN ".MAIN_DB_PREFIX."operationorder as oo ON (oo.rowid = ood.fk_operation_order)
+                    WHERE ood.fk_product = ".$this->product->id." 
+                    AND oo.entity IN (".getEntity('operationorder').") 
+                    AND oo.status IN (".implode(',',$TStatusId).") ";
+            if(!empty($date)) $sql .= "AND oo.planned_date < '".date('Y-m-d', $date)."'";
+            $resql = $this->db->query($sql);
+            if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+                $obj = $this->db->fetch_object($resql);
+                if(! empty($obj->qty)) return $obj->qty;
+            }
+        }
+
+        return $qty;
+    }
+
+    public function loadSendingQty($date, $filterShipmentStatus = array()) {
+        $sql = "SELECT SUM(ed.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."expeditiondet as ed";
+        $sql .= ", ".MAIN_DB_PREFIX."commandedet as cd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande as c";
+        $sql .= ", ".MAIN_DB_PREFIX."expedition as e";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE e.rowid = ed.fk_expedition";
+        $sql .= " AND c.rowid = cd.fk_commande";
+        $sql .= " AND e.fk_soc = s.rowid";
+        $sql .= " AND e.entity IN (".getEntity('expedition').")";
+        $sql .= " AND ed.fk_origin_line = cd.rowid";
+        $sql .= " AND cd.fk_product = ".$this->product->id;
+        $sql .= " AND c.fk_statut in (1,2)";
+        if(! empty($filterShipmentStatus)) $sql .= " AND e.fk_statut IN (".$filterShipmentStatus.")";
+        $sql .= " AND e.date_delivery < '".date('Y-m-d', $date)."'";
+
+        $resql = $this->db->query($sql);
+        if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            if(! empty($obj->qty)) return $obj->qty;
+        }
+        return 0;
+    }
+
+    public function loadOrderQty($date) {
+        global $conf;
+        $tmpqty = 0;
+        $sql = "SELECT SUM(cd.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."commandedet as cd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande as c";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE c.rowid = cd.fk_commande";
+        $sql .= " AND c.fk_soc = s.rowid";
+        $sql .= " AND c.entity IN (".getEntity('commande').")";
+        $sql .= " AND cd.fk_product = ".$this->product->id;
+        $sql .= " AND c.fk_statut in (1,2)";
+        $sql .= " AND c.date_livraison < '".date('Y-m-d', $date)."'";
+        $resql = $this->db->query($sql);
+        if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            $tmpqty = $obj->qty;
+        }
+        else return 0;
+
+        if(empty($tmpqty)) $tmpqty = 0;
+
+        // If stock decrease is on invoice validation, the theorical stock continue to
+        // count the orders to ship in theorical stock when some are already removed b invoice validation.
+        // If option DECREASE_ONLY_UNINVOICEDPRODUCTS is on, we make a compensation.
+        if(! empty($conf->global->STOCK_CALCULATE_ON_BILL)) {
+            if(! empty($conf->global->DECREASE_ONLY_UNINVOICEDPRODUCTS)) {
+                $adeduire = 0;
+                $sql = "SELECT sum(fd.qty) as count FROM ".MAIN_DB_PREFIX."facturedet fd ";
+                $sql .= " JOIN ".MAIN_DB_PREFIX."facture f ON fd.fk_facture = f.rowid ";
+                $sql .= " JOIN ".MAIN_DB_PREFIX."element_element el ON el.fk_target = f.rowid and el.targettype = 'facture' and sourcetype = 'commande'";
+                $sql .= " JOIN ".MAIN_DB_PREFIX."commande c ON el.fk_source = c.rowid ";
+                $sql .= " WHERE c.fk_statut IN (1,2) AND c.facture = 0 AND fd.fk_product = ".$this->product->id;
+                $sql .= " AND c.date_livraison < '".date('Y-m-d', $date)."'";
+
+                $resql = $this->db->query($sql);
+                if($resql) {
+                    if($this->db->num_rows($resql) > 0) {
+                        $obj = $this->db->fetch_object($resql);
+                        $adeduire += $obj->count;
+                    }
+                }
+                $tmpqty -= $adeduire;
+            }
+        }
+
+        return $tmpqty;
+    }
+
+    public function loadSupplierOrderQty($date) {
+        $sql = "SELECT SUM(cd.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande_fournisseur as c";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE c.rowid = cd.fk_commande";
+        $sql .= " AND c.fk_soc = s.rowid";
+        $sql .= " AND c.entity IN (".getEntity('supplier_order').")";
+        $sql .= " AND cd.fk_product = ".$this->product->id;
+        $sql .= " AND c.fk_statut in (1,2,3,4)";
+        $sql .= " AND c.date_livraison < '".date('Y-m-d', $date)."'";
+        $resql = $this->db->query($sql);
+        if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            if(! empty($obj->qty)) return $obj->qty;
+        }
+        return 0;
+    }
+
+    public function loadSupplierOrderReceptionQty($date) {
+        $sql = "SELECT SUM(fd.qty) as qty";
+        $sql .= " FROM ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as fd";
+        $sql .= ", ".MAIN_DB_PREFIX."commande_fournisseur as cf";
+        $sql .= ", ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " WHERE cf.rowid = fd.fk_commande";
+        $sql .= " AND cf.fk_soc = s.rowid";
+        $sql .= " AND cf.entity IN (".getEntity('supplier_order').")";
+        $sql .= " AND fd.fk_product = ".$this->product->id;
+        $sql .= " AND cf.fk_statut in (4)";
+        $sql .= " AND cf.date_livraison < '".date('Y-m-d', $date)."'";
+        $resql = $this->db->query($sql);
+        if(! empty($resql) && $this->db->num_rows($resql) > 0) {
+            $obj = $this->db->fetch_object($resql);
+            if(! empty($obj->qty)) return $obj->qty;
+        }
+        return 0;
+    }
 }
 
 

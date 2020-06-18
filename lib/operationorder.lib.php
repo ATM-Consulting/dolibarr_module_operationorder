@@ -25,6 +25,9 @@
 /**
  * @return array
  */
+
+dol_include_once('operationorder/class/operationorderuserplanning.class.php');
+
 function operationorderAdminPrepareHead()
 {
     global $langs, $conf;
@@ -1094,6 +1097,307 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         $db->rollback();
         return -1;
     }
+}
+
+/**
+ * Renvoie l'html qui permet l'affichage du planning utilisateur
+ * @param object $object
+ * @param string $object_type, "user" ou "usergroup"
+ * @param string $action
+ * @param integer $usercanmodify
+ * @return string $out
+ */
+
+function getOperationOrderUserPlanningToDisplay($object, $object_type, $action = '', $usercanmodify = 0){
+
+    global $langs, $db;
+
+    $error = 0;
+    $TDays = array('Monday'=> 'lundi', 'Tuesday' => 'mardi', 'Wednesday' => 'mercredi', 'Thursday' => 'jeudi', 'Friday' => 'vendredi', 'Saturday' => 'samedi', 'Sunday' => 'dimanche');
+
+    $userplanning = new OperationOrderUserPlanning($db);
+    $res = $userplanning->fetchByObject($object->id, $object_type);
+    if($res < 0) $error ++;
+
+    if(!$error)
+    {
+
+        $out = '';
+
+
+        if($action != 'edit')
+        {
+
+            $out .= '<table width="100%" class="liste noborder nobottom">';
+            $out .= '<tr class="liste_titre">';
+            $out .= '<td>&nbsp</td>';
+            $out .= '<td class="center">'.$langs->trans('MorningD').'</td>';
+            $out .= '<td class="center">'.$langs->trans('MorningF').'</td>';
+            $out .= '<td class="center">'.$langs->trans('AfternoonD').'</td>';
+            $out .= '<td class="center">'.$langs->trans('AfternoonF').'</td>';
+            $out .= '</tr>';
+
+            foreach ($TDays as $key => $value)
+            {
+
+                $out .= '<tr>';
+
+                //Title
+                $out .= '<td>'.$langs->trans($key).'</td>';
+
+                //MorningD
+                $field = ''.$value.'_heuredam';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
+
+                //MorningF
+                $field = ''.$value.'_heurefam';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
+
+                //AfternoonD
+                $field = ''.$value.'_heuredpm';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
+
+                //AfternoonF
+                $field = ''.$value.'_heurefpm';
+                $out .= '<td class="center">'.$userplanning->$field.'</td>';
+
+
+                $out .= '</tr>';
+
+            }
+
+            $out .= '</table>';
+
+            $out .= '<div class = "center">';
+
+            if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=edit">'.$langs->trans('Modify').'</a>';
+            if(empty($userplanning->active)){
+                if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=activate">'.$langs->trans('Activate').'</a>';
+            } else {
+                if($usercanmodify) $out .= '<a class="butAction" href = "'.$_SERVER['PHP_SELF'].'?objectid='.$object->id.'&objecttype='.$object_type.'&action=disable">'.$langs->trans('Disable').'</a>';
+            }
+
+            $out .= '</div>';
+
+        } else {
+
+
+            $out .= '<form method="POST" action="'.$_SERVER['PHP_SELF'].'"';
+            $out .= '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+            $out .= '<input type="hidden" name="action" value="save">';
+            $out .= '<input type="hidden" name="objectid" value="'.$object->id.'">';
+            $out .= '<input type="hidden" name="objecttype" value="'.$object_type.'">';
+
+            $out .= '<table width="100%" class="liste noborder nobottom">';
+            $out .= '<tr class="liste_titre">';
+            $out .= '<td>&nbsp</td>';
+            $out .= '<td>'.$langs->trans('MorningD').'</td>';
+            $out .= '<td>'.$langs->trans('MorningF').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonD').'</td>';
+            $out .= '<td>'.$langs->trans('AfternoonF').'</td>';
+            $out .= '</tr>';
+
+            foreach ($TDays as $key => $value)
+            {
+
+                $out .= '<tr class="oddeven">';
+
+                //Title
+                $out .= '<td>'.$langs->trans($key).'</td>';
+
+                $form=new TFormCore($_SERVER['PHP_SELF'],'form1','POST');
+
+                //MorningD
+                $field = ''.$value.'_heuredam';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00am', '12:00pm').'</td>';
+
+                //MorningF
+                $field = ''.$value.'_heurefam';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00am', '12:00pm').'</td>';
+
+                //AfternoonD
+                $field = ''.$value.'_heuredpm';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00pm', '12:00am').'</td>';
+
+                //AfternoonF
+                $field = ''.$value.'_heurefpm';
+                $out .= '<td>'.$form->timepicker('',$field, $userplanning->$field ,5,5, '', 'text', 'H:i', '12:00pm', '12:00am').'</td>';
+
+
+                $out .= '</tr>';
+
+            }
+
+            $out .= '</table>';
+
+            $out .= '<div class="center"><input type="submit" class="button" name="save" value="'.$langs->trans('Save').'">';
+            $out .= '</div>';
+        }
+
+    }
+
+    if(!$error) return $out;
+    else return -1;
+}
+
+/**
+ * Renvoie le planning utilisateur / groupe utilisateur à appliquer si il existe en fonction de l'utilisateur et de l'entité
+ * @return array si planning existe, 0 si inexistant, -1 si erreur
+ */
+
+function getOperationOrderUserPlanningSchedule(){
+
+    require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
+
+    global $db, $conf;
+
+    $TSchedules = array();
+    $TSchedulesByUser = array();
+    $TDays = array('lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche');
+
+    //usergroup paramétré
+    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+
+    //initialisation userplanning
+    $userplanning = new OperationOrderUserPlanning($db);
+
+    if(!empty($fk_groupuser))
+    {
+        $usergroup = new UserGroup($db);
+        $res = $usergroup->fetch($fk_groupuser);
+        $TUsers = $usergroup->listUsersForGroup(); //TODO Verif par entité
+
+        //userplanning en fonction des utilisateurs
+        foreach ($TUsers as $user)
+        {
+            $res = $userplanning->fetchByObject($user->id, 'user');
+
+            //si l'utilisateur a un planning actif alors on utilise son planning
+            if ($res > 0 && $userplanning->active > 0)
+            {
+                $TSchedulesByUser[] = $userplanning;
+            }
+            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning
+            else {
+
+                $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
+
+                if ($res > 0 && $userplanning->active > 0)
+                {
+                    $TSchedulesByUser[] = $userplanning;
+                }
+
+            }
+
+            foreach ($TDays as $day)
+            {
+                $i = 0;
+
+                foreach ($TSchedulesByUser as $userplanning)
+                {
+                    if(empty($userplanning->{$day.'_heuredam'})
+                    && empty($userplanning->{$day.'_heurefam'})
+                    && empty($userplanning->{$day.'_heuredpm'})
+                    && empty($userplanning->{$day.'_heurefpm'}))
+                        continue;
+
+                    if(empty($userplanning->{$day.'_heuredam'})) $userplanning->{$day.'_heuredam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefam'})) $userplanning->{$day.'_heurefam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heuredpm'})) $userplanning->{$day.'_heuredpm'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heurefpm'} = '00:00';
+
+                    if (empty($TSchedules[$day]))
+                    {
+                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredam'};
+                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefam'};
+                        $i++;
+                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredpm'};
+                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefpm'};
+                    }
+                    else
+                    {
+                        $scheduletoaddam = true;
+                        $scheduletoaddpm = true;
+
+                        foreach($TSchedules[$day] as $schedule){
+
+                            //si l'heure de début est inférieure au minimum et que l'heure de fin est contenue dans le créneau, alors on usurpe le minimum
+                            if($userplanning->{$day.'_heuredam'} < $schedule['min'] && ($userplanning->{$day.'_heurefam'} <= $schedule['max'] && $userplanning->{$day.'_heurefam'} >= $schedule['min'])){
+                                $schedule['min'] = $userplanning->{$day.'_heuredam'};
+                                $scheduletoaddam = false;
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} < $schedule['min'] && ($userplanning->{$day.'_heurefpm'} <= $schedule['max'] && $userplanning->{$day.'_heurefpm'} >= $schedule['min'])){
+                                $schedule['min'] = $userplanning->{$day.'_heuredpm'};
+                                $scheduletoaddpm = false;
+                            }
+
+                            //si l'heure de fin est supérieure au maximum et que l'heure du début est contenue dans le créneau, alors on usurpe le maximum
+                            elseif($userplanning->{$day.'_heurefam'} > $schedule['max'] && ($userplanning->{$day.'_heuredam'} >= $schedule['min'] && $userplanning->{$day.'_heuredam'} <= $schedule['max']))
+                            {
+                                $schedule['max'] = $userplanning->{$day.'_heurefam'};
+                                $scheduletoaddam = false;
+
+                            }
+                            elseif($userplanning->{$day.'_heurefpm'} > $schedule['max'] && ($userplanning->{$day.'_heuredpm'} >= $schedule['min'] && $userplanning->{$day.'_heuredpm'} <= $schedule['max']))
+                            {
+                                $schedule['max'] = $userplanning->{$day.'_heurefpm'};
+                                $scheduletoaddpm = false;
+
+                            }
+
+                            //si l'heure de fin est supérieure au maximum et que l'heure de début est inférieure au minimum alors on usurpe le min et le max
+                            elseif($userplanning->{$day.'_heuredam'} <= $schedule['min'] && $userplanning->{$day.'_heurefam'} >= $schedule['max']){
+                                $schedule['min'] = $userplanning->{$day.'_heuredam'};
+                                $schedule['max'] = $userplanning->{$day.'_heurefam'};
+                                $scheduletoaddam = false;
+
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} <= $schedule['min'] && $userplanning->{$day.'_heurefpm'} >= $schedule['max']){
+                                $schedule['min'] = $userplanning->{$day.'_heuredpm'};
+                                $schedule['max'] = $userplanning->{$day.'_heurefpm'};
+                                $scheduletoaddpm = false;
+
+                            }
+
+                            elseif($userplanning->{$day.'_heuredam'} >= $schedule['min'] && $userplanning->{$day.'_heurefam'} <= $schedule['max']){
+                                $scheduletoaddam = false;
+                            }
+                            elseif($userplanning->{$day.'_heuredpm'} >= $schedule['min'] && $userplanning->{$day.'_heurefpm'} <= $schedule['max']){
+                                $scheduletoaddpm = false;
+                            }
+
+                        }
+
+                        if($scheduletoaddam) {
+                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredam'}, 'max' => $userplanning->{$day.'_heurefam'});
+                        }
+                        elseif($scheduletoaddpm) {
+                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredpm'}, 'max' => $userplanning->{$day.'_heurefpm'});
+                        }
+                    }
+
+                    $i++;
+                }
+            }
+
+        }
+
+//        //userplanning en fonction du groupe d'utilisateurs
+//        if (empty($TSchedules))
+//        {
+//            $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
+//
+//            if ($res > 0 && $userplanning->active > 0)
+//            {
+//                foreach ($userplanning->fields as $key => $value)
+//                {
+//                    $TSchedules[$key] = $userplanning->$key;
+//                }
+//            }
+//        }
+    }
+
+    return $TSchedules;
 }
 
 function getTimeAvailableByDay($day_timestamp){

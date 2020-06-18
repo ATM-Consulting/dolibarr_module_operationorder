@@ -1,0 +1,2 @@
+ALTER TABLE llx_operationorder_status_target ADD CONSTRAINT llx_operationorder_status_target_ibfk_1 FOREIGN KEY (fk_operationorderstatus) REFERENCES llx_operationorder_status (rowid) ON DELETE CASCADE;
+ALTER TABLE llx_operationorder_status_target ADD CONSTRAINT llx_operationorder_status_target_ibfk_2 FOREIGN KEY (fk_operationorderstatus_target) REFERENCES llx_operationorder_status (rowid) ON DELETE CASCADE;

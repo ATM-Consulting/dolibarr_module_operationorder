@@ -500,11 +500,23 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 		while ($obj = $db->fetch_object($resql))
 		{
 			$event = new fullCalendarEvent();
-
+            $event->title	= '';
+            $event->msg = '';
 			$operationOrder = new OperationOrder($db);
 			$operationOrder->fetch($obj->id);
 			$operationOrder->loadStatusObj();
-			$event->title	= $operationOrder->ref;
+            if($conf->stock->enabled && !empty($conf->global->OPODER_DISPLAY_STOCK_ON_PLANNING)) {
+                $isStockAvailable = $operationOrder->isStockAvailable();
+                if($isStockAvailable === $operationOrder::OR_ONLY_PHYSICAL_STOCK_NOT_ENOUGH) {
+                    $event->title .= '<i class="fa fa-exclamation" aria-hidden="true" style="color:orange;"></i> &nbsp;';
+                    $event->msg .= '<i class="fa fa-exclamation" aria-hidden="true" style="color:orange;"></i> &nbsp;'.$langs->trans('OnlyVirtualStockIsEnough').'<br/>';
+                }
+                if($isStockAvailable === $operationOrder::OR_ALL_STOCK_NOT_ENOUGH) {
+                    $event->title .= '<i class="fa fa-exclamation" aria-hidden="true" style="color:red;"></i> &nbsp;';
+                    $event->msg .= '<i class="fa fa-exclamation" aria-hidden="true" style="color:red;"></i> &nbsp;'.$langs->trans('NotEnoughStock').'<br/>';
+                }
+            }
+			$event->title	.= $operationOrder->ref;
 
 			$obj->dated = $db->jdate($obj->dated);
 			$obj->datef = $db->jdate($obj->datef);
@@ -532,7 +544,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$event->operationOrderId = $obj->id;
 			$event->operationOrderActionId = $obj->actionid;
 
-			$event->msg = '';
+
 
 			$event->color = $operationOrder->objStatus->color;
 
