@@ -50,13 +50,14 @@ class OperationOrderBarCodeImpList extends SeedObject
 
                 $res = $barcode->fetch($obj->rowid);
 
-                if($res > 0) $TBarCodeList[] = $barcode;
+                $TBarCodeList[$barcode->id] = $barcode->label;
+
+
             }
+
         }
 
         $this->list = $TBarCodeList;
-
-
 
         $this->entity = $conf->entity;
     }

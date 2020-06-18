@@ -124,6 +124,11 @@ if($action == 'addbarcodeimp'){
     }
 } elseif($action == 'generatedocument') {
 
+    $test = new OperationOrderBarCodeImpList($db);
+    $filedir = $conf->operationorder->multidir_output[$conf->entity];
+
+    $res = $test->generateDocument('', $langs);
+
 }
 
 
@@ -187,6 +192,7 @@ print '<div class="right">';
 print '<span>'.$langs->trans("Label").'</span>';
 print '<input type="text" id="imp_label" name="imp_label"><button type="submit" class="button" >'.$langs->trans('AddBarCode').'</button>';
 print '</div>';
+print '</form>';
 
 print '<form name="generatedocument" action="' . $_SERVER['PHP_SELF'] .'" method="POST">' . "\n";
 print '<input type="hidden" name="action" value="generatedocument">' . "\n";
@@ -195,10 +201,13 @@ print '<div>';
 print '<button type="submit" class="button" >'.$langs->trans('GenerateDocument').'</button>';
 print '</div>';
 
-$test = new OperationOrderBarCodeImpList($db);
-$res = $test->generateDocument('', $langs);
+print '</form>';
 
-var_dump($res);
+$formfile = new FormFile($db);
+print $formfile->showdocuments('operationorder', '', $filedir, $_SERVER['PHP_SELF'], 0, 0, '', 1, 1, 0, 48, 1);
+
+
+
 dol_fiche_end(-1);
 
 llxFooter();
