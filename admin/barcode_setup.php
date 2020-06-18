@@ -51,7 +51,7 @@ if (! $user->admin && empty($user->rights->operationorder->status->write)) {
 
 //object
 $object=new OperationOrderBarCode($db);
-$TBarCodes = $object->fetchAll();
+$TBarCodes = $object->fetchAll('', '', array('entity' => $conf->entity));
 
 // Parameters
 $action = GETPOST('action', 'alpha');
