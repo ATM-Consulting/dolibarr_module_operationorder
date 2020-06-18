@@ -27,19 +27,23 @@ class OperationOrderHistory extends SeedObject
     public $picto = 'operationorder@operationorder';
 
     public $fields=array(
-        'date' => array('type'=>'date', 'label'=>'Date', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1),
-        'fk_operationorder' => array('type'=>'text', 'label'=>'OperationOrder', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
-        'desc' => array('type'=>'desc', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
-        'fk_user_author' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'foreignkey'=>'user.rowid',),
+        'date_creation' => array('type'=>'datetime', 'label'=>'Date', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1),
+        'fk_operationorder' => array('type'=>'integer', 'label'=>'OperationOrderId', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+        'fk_operationorderdet' => array('type'=>'integer', 'label'=>'OperationOrderDetId', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+        'title' => array('type'=>'varchar', 'label'=>'Title', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+        'description' => array('type'=>'text', 'label'=>'Description', 'enabled'=>1, 'position'=>40, 'notnull'=>0, 'visible'=>1),
+        'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'foreignkey'=>'user.rowid',),
         'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>1, 'position'=>60, 'notnull'=>1, 'visible'=>0,),
     );
 
-    public $date;
+    public $date_creation;
 
-    public $type;
-    public $desc;
+    public $fk_operationorder;
+    public $fk_operationorderdet;
+    public $title;
+    public $description;
 
-    public $fk_user_author;
+    public $fk_user_creat;
 
     public $entity;
 
@@ -101,8 +105,10 @@ class OperationOrderHistory extends SeedObject
     }
 
     public function compareAndSaveDiff($oldcopy, $object) {
-        global $langs;
-        $this->desc = '';
+        global $langs, $user;
+        if(strpos($object->element, 'det') !== false) $this->title = $langs->transnoentitiesnoconv('OOLineUpdate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
+        else $this->title = $langs->transnoentitiesnoconv('OOUpdate', $object->ref);
+        $this->description = '';
         $TDiff = $this->recursiveArrayDiff((array) $oldcopy, (array) $object);
         if(!empty($TDiff)) {
             if(array_key_exists('array_options', $TDiff)) {
@@ -120,18 +126,57 @@ class OperationOrderHistory extends SeedObject
                         $oldvalue = $diff;
                         $newvalue = $object->{$keyDiff};
                     }
-                    $this->desc .= $langs->transnoentitiesnoconv($object->fields[$keyDiff]['label']).' : '.$oldvalue.' => '.$newvalue .' <br/>';
+                    $this->description .= $langs->transnoentitiesnoconv($object->fields[$keyDiff]['label']).' : '.$oldvalue.' => '.$newvalue .' <br/>';
                 }
                 if($keyDiff == 'array_options') {
                     foreach($diff as $keyExtra => $diffExtra) {
                         $keyExtra = str_replace('options_', '', $keyExtra);
                         $oldvalue = $extrafields->showOutputField($keyExtra, $diffExtra);
-                        $newvalue = $extrafields->showOutputField($keyExtra, $object->array_options[$diffExtra]);
-                        $this->desc .= $langs->transnoentitiesnoconv($extralabels[$keyExtra]).' : '.$oldvalue.' => '.$newvalue .' <br/>';
+                        $newvalue = $extrafields->showOutputField($keyExtra, $object->array_options['options_'.$keyExtra]);
+                        $this->description .= $langs->transnoentitiesnoconv($extralabels[$keyExtra]).' : '.$oldvalue.' => '.$newvalue .' <br/>';
                     }
                 }
             }
         }
+        if(!empty($this->description)) { // Something has been updated
+            if(strpos($object->element, 'det') !== false) {
+                $this->fk_operationorder = $object->fk_operation_order;
+                $this->fk_operationorderdet = $object->id;
+            } else {
+                $this->fk_operationorder = $object->id;
+            }
+            $this->save($user);
+        }
+    }
+
+    public function saveCreationOrDeletion($object, $type = 'create') {
+        global $langs, $user;
+        if(strpos($object->element, 'det') !== false) {
+            if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOLineCreate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
+            else $this->title = $langs->transnoentitiesnoconv('OOLineDelete', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
+            $this->description = $langs->transnoentitiesnoconv($object->fields['qty']['label']). ' : '.$object->showOutputFieldQuick('qty');
+            $this->fk_operationorder = $object->fk_operation_order;
+            $this->fk_operationorderdet = $object->id;
+        }
+        else {
+            if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOCreate', $object->ref);
+            else $this->title = $langs->transnoentitiesnoconv('OODelete', $object->ref);
+
+            $this->description = $langs->transnoentitiesnoconv($object->fields['fk_soc']['label']). ' : '.$object->showOutputFieldQuick('fk_soc');
+            if(!empty($object->array_options)) {
+                $extrafields = new ExtraFields($this->db);
+                $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
+                foreach($object->array_options as $keyExtra => $valExtra) {
+                    if(!empty($valExtra)) {
+                        $this->description .= '</br>';
+                        $this->description .= $langs->transnoentitiesnoconv($extralabels[$keyExtra]).' : '.$extrafields->showOutputField($keyExtra, $valExtra);
+                    }
+                }
+
+            }
+            $this->fk_operationorder = $object->id;
+        }
+        $this->save($user);
     }
 
 

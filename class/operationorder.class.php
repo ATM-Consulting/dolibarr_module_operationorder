@@ -241,8 +241,12 @@ class OperationOrder extends SeedObject
 				return -1;
 			}
 		}
-
-        return parent::create($user, $notrigger);
+        $id = parent::create($user, $notrigger);
+		if($id > 0) {
+            $oOHistory = new OperationOrderHistory($this->db);
+            $oOHistory->saveCreationOrDeletion($this);
+		}
+        return $id;
     }
 
 	/**
@@ -319,6 +323,16 @@ class OperationOrder extends SeedObject
 
 		return $result;
 	}
+
+	public function getSocName() {
+        $sql = "SELECT nom FROM ".MAIN_DB_PREFIX."societe WHERE rowid = ".$this->fk_soc;
+        $resql = $this->db->query($sql);
+        if(!empty($resql)) {
+            $obj = $this->db->fetch_object($resql);
+            return $obj->nom;
+        }
+        return '';
+    }
     /**
      * Function to update object or create or delete if needed
      *
@@ -494,6 +508,10 @@ class OperationOrder extends SeedObject
         $this->deleteObjectLinked();
 
         $res = $this->deleteORAction();
+
+        $oOHistory = new OperationOrderHistory($this->db);
+        $oOHistory->saveCreationOrDeletion($this, 'delete');
+
         if($res < 0) return -1;
 
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
@@ -512,6 +530,18 @@ class OperationOrder extends SeedObject
 		}
 
 		return $this->ref;
+    }
+
+    public static function getStaticRef($fk_operationorder) {
+        global $db;
+
+        $sql = "SELECT ref FROM ".MAIN_DB_PREFIX."operationorder WHERE rowid = ".$fk_operationorder;
+        $resql = $db->query($sql);
+        if(!empty($resql)) {
+            $obj = $db->fetch_object($resql);
+            return $obj->ref;
+        }
+        return '';
     }
 
     /**
@@ -953,6 +983,8 @@ class OperationOrder extends SeedObject
             $result=$this->line->create($user);
             if ($result > 0)
             {
+                $oOHistory = new OperationOrderHistory($this->db);
+                $oOHistory->saveCreationOrDeletion($this->line);
                 // Reorder if child line
                 if (! empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
@@ -1789,6 +1821,16 @@ class OperationOrderDet extends SeedObject
         return $res;
     }
 
+    public function getProductRef() {
+        $sql = "SELECT ref FROM ".MAIN_DB_PREFIX."product WHERE rowid = ".$this->fk_product;
+        $resql = $this->db->query($sql);
+        if(!empty($resql)) {
+            $obj = $this->db->fetch_object($resql);
+            return $obj->ref;
+        }
+        return '';
+    }
+
     function calcPrices(){
 
     	/* Sur spéc
@@ -2052,7 +2094,8 @@ class OperationOrderDet extends SeedObject
 				}
 			}
 		}
-
+        $oOHistory = new OperationOrderHistory($this->db);
+        $oOHistory->saveCreationOrDeletion($this, 'delete');
 		return parent::delete($user, $notrigger);
 	}
 
