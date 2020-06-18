@@ -1400,14 +1400,15 @@ function getOperationOrderUserPlanningSchedule(){
     return $TSchedules;
 }
 
-function getTimeAvailableByDay($day_timestamp){
+function getTimeAvailableByDay($date_timestamp){
 
     global $db, $conf;
 
     $nb_seconds_total = 0;
+    $TDays = array ('Mon' => 'lundi','Tue' => 'mardi','Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
-    $day = date('D', $day_timestamp);
-    var_dump($day);
+    $day = date('D', $date_timestamp);
+    $day = $TDays[$day];
 
     //usergroup paramétré
     $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
@@ -1428,19 +1429,34 @@ function getTimeAvailableByDay($day_timestamp){
         }
         else {
 
-
-
             $res = $userplanning->fetchByObject($usergroup->id, 'usergroup');
 
-
             if($res > 0 && $userplanning->active){
+
+                //matin
+                $start = new DateTime($userplanning->{$day.'_heuredam'});
+                $end = new DateTime($userplanning->{$day.'_heurefam'});
+                $diff = $start->diff($end);
+                $diffStr = $diff->format('%H:%I');
+                $THoursMin = explode(':', $diffStr);
+
+                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+                //après-midi
+                $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                $diff = $start->diff($end);
+                $diffStr = $diff->format('%H:%I');
+                $THoursMin = explode(':', $diffStr);
+
+                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
 
             }
             //config par défaut
             else {
 
                 //semaine
-                if($day == 'Mon' || $day == 'Tue' ||$day == 'Wed' ||$day == 'Thu' ||$day == 'Fri' ||$day == 'Sat')
+                if($day == 'lundi' || $day == 'mardi' ||$day == 'mercredi' ||$day == 'jeudi' ||$day == 'vendredi')
                 {
                     $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START);
                     $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END);
