@@ -301,10 +301,6 @@ class pdf_barcodeimp extends CommonDocGenerator
                 $pdf->MultiCell(0, 3, '');		// Set interline to 3
                 $pdf->SetTextColor(0, 0, 0);
 
-
-                $tab_top = 28+$top_shift;
-                $tab_top_newpage = 28+$top_shift;
-
                 $posy=$this->marge_haute;
                 $posx=$this->page_largeur-$this->marge_droite-100;
                 $pdf->SetXY($this->marge_gauche, $posy);
@@ -320,23 +316,33 @@ class pdf_barcodeimp extends CommonDocGenerator
                     $operationorderbarcode = new OperationOrderBarCode($db);
                     $res =$operationorderbarcode->fetch($id);
 
+                    $pdf->startTransaction();
+
                     $pageposbeforenote = $pagenb;
+                    $posystart = $posy;
                     $pdf->SetXY($this->marge_gauche, $posy);
                     $pdf->MultiCell(100, 3, $operationorderbarcode->label, '', 'C');
                     $pdf->write1DBarcode($operationorderbarcode->code, 'C128', $this->marge_gauche + 100, $posy, 50, $barCodeHeight, '', $style);
                     $posy = $posy + $barCodeHeight + 20;
                     $pageposafternote = $pdf->getPage();
 
-                    if ($pageposafternote > $pageposbeforenote)
+                    $posyend = $pdf->GetY();
+
+                    if ($posyend > $this->page_hauteur - $heightforfooter)
                     {
                         $pdf->rollbackTransaction(true);
 
-                        while ($pagenb < $pageposafternote)
-                        {
-                            $pdf->AddPage();
-                            $pagenb++;
-                        }
+                        $pdf->AddPage();
+                        $pagenb++;
 
+                        $posy=$this->marge_haute;
+                        $pdf->SetXY($this->marge_gauche, $posy);
+                        $pdf->MultiCell(100, 3, $operationorderbarcode->label, '', 'C');
+                        $pdf->write1DBarcode($operationorderbarcode->code, 'C128', $this->marge_gauche + 100, $posy, 50, $barCodeHeight, '', $style);
+                        $posy = $posy + $barCodeHeight + 20;
+
+                    } else {
+                        $pdf->commitTransaction();
                     }
 
                 }
