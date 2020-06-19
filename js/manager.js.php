@@ -89,8 +89,20 @@ class Application
 		}
 		target.addClass('active');
 
+		this.displayInfo();
+
 		this.runCommand();
 
+	}
+
+	displayInfo()
+	{
+		let userInfo = $('#infoUser');
+		let infoOR = $('#infoOR');
+		let infoTask = $('#infoTask');
+
+		userInfo.html(this.state.user.substr(3));
+		infoOR.html(this.state.oOrder.substr(2));
 	}
 
 	// gère les appels ajax à faire selon le state de l'application
@@ -114,6 +126,7 @@ class Application
 			{
 				this.startAction({
 					or_barcode: this.state.oOrder
+					,lig:this.state.lig
 					,prod:this.state.prod
 				});
 			}
@@ -273,11 +286,11 @@ class Application
 
 			if (data.oOrderLines.length) {
 				data.oOrderLines.forEach(function(item) {
-					var tr = '<tr class="oorderline" onclick="javascript:setParam(\'' + item.barcode + '\')" data-barcode="' + item.barcode + '" data-pointable="' + item.pointable + '">';
+					var tr = '<tr class="oorderline" '+ (!item.pointable ? '' : 'onclick="javascript:setParam(\'' + item.barcode + '\')"') +' data-barcode="' + item.barcode + '" data-pointable="' + item.pointable + '">';
 					tr+= '<td>'+item.ref+'</td>';
 					tr+= '<td>'+item.qty+'</td>';
 					tr+= '<td>'+item.action+'</td>';
-					tr+= '<td>'+item.barcode+'</td></tr>';
+					tr+= '<td>'+(!item.pointable ? '' : item.barcode)+'</td></tr>';
 
 					orLines.append(tr);
 				});
@@ -321,8 +334,8 @@ class Application
 					,improd: this.state.action
 				},
 				dataType: 'json'
-			}).done(function (data) {
-				console.log(data);
+			}).done(function (response) {
+				console.log(response);
 			});
 		}
 
@@ -330,14 +343,15 @@ class Application
 		// ne devrait pas se présenter => les non-pointable sont des pièce à sortir et donc à scanner
 		else if (data.pointable == false)
 		{
-			data.action = 'stockMouvement'
-			$.ajax({
-				url: endPoint,
-				data: data,
-				dataType: 'json'
-			}).done(function (data) {
-				console.log(data);
-			});
+			// on fait rien parce qu'on attend un code barre produit équivalent
+			//data.action = 'stockMouvement'
+			//$.ajax({
+			//	url: endPoint,
+			//	data: data,
+			//	dataType: 'json'
+			//}).done(function (response) {
+			//	console.log(response);
+			//});
 		}
 
 		// si on a OR, lig et pointable à true => vérif user + startCompteur
@@ -348,8 +362,8 @@ class Application
 				url: endPoint,
 				data: data,
 				dataType: 'json'
-			}).done(function (data) {
-				console.log(data);
+			}).done(function (response) {
+				console.log(response);
 			});
 		}
 
@@ -361,8 +375,8 @@ class Application
 				url: endPoint,
 				data: data,
 				dataType: 'json'
-			}).done(function (data) {
-				console.log(data);
+			}).done(function (response) {
+				console.log(response);
 			});
 		}
 

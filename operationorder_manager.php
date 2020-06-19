@@ -46,6 +46,16 @@ $hookmanager->initHooks(array('OOmanagercard'));
 		</div>
 	</div>
 
+	<div id="infosBar" class="row">
+		<div class="col-md-6">
+			<label>Utilisateur courant&nbsp;:&nbsp;</label><span id="infoUser"></span><br />
+			<label>OR Courant&nbsp;:&nbsp;</label><span id="infoOR"></span><br />
+		</div>
+		<div class="col-md-6">
+
+		</div>
+	</div>
+
 	<div id="centerBar" class="row">
 		<div class="col-md-6">
 			<table id="orList">
