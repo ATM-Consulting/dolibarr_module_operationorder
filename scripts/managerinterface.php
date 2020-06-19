@@ -182,10 +182,17 @@ if (empty($reshook) && !empty($action))
 		$newCounter->fk_user = $usr->id;
 		$newCounter->entity = $conf->entity;
 
-		$newCounter->save($usr);
-		$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-		$data['msg'] = "Compteur " . substr($improd, 3) . " démarré pour l'utilisateur ".$usr->login;
-		$data['result'] = 1;
+		$retSave = $newCounter->save($usr);
+		if ($retSave > 0)
+		{
+			$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
+			$data['msg'] = "Compteur " . substr($improd, 3) . " démarré pour l'utilisateur ".$usr->login;
+			$data['result'] = 1;
+		}
+		else
+		{
+			$data['errorMsg'].= 'error start counter';
+		}
 
 	}
 
@@ -210,7 +217,62 @@ if (empty($reshook) && !empty($action))
 		$data['result'] = 1;
 	}
 
+	else if ($action == 'startLineCounter')
+	{
+		$orBarcode = GETPOST('or_barcode');
+		$orRef = substr($orBarcode, 2);
 
+		$OR = new OperationOrder($db);
+		$ret = $OR->fetchBy($orRef, 'ref');
+
+		$u = GETPOST('user');
+
+		$usr = new User($db);
+		$usr->fetch('', substr($u, 3));
+
+		$lig = GETPOST('lig');
+		$lineId = substr($lig, 3);
+		$line = new OperationOrderDet($db);
+		$line->fetch($lineId);
+
+		if (!$usr->id)
+		{
+			$data['errorMsg'] = "Invalid user to start counter";
+		}
+		else if ($OR->id != $line->fk_operation_order)
+		{
+			$data['errorMsg'] = "Error : selected line is not from selected OR";
+		}
+		else
+		{
+			// stop le compteur courant de l'utilisateur
+			$counter = new OperationOrderTaskTime($db);
+			$ret = $counter->fetchCourantCounter($usr->id);
+			if ($ret > 0)
+			{
+				$counter->task_datehour_f = dol_now();
+				$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
+				$counter->update($usr);
+				$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
+			}
+
+			$newCounter = new OperationOrderTaskTime($db);
+			$newCounter->label = $line->label;
+			$newCounter->task_datehour_d = dol_now();
+			$newCounter->fk_user = $usr->id;
+			$newCounter->fk_orDet = $line->id;
+			$newCounter->entity = $conf->entity;
+
+			$retSave = $newCounter->save($usr);
+			if ($retSave > 0)
+			{
+				$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
+				$data['msg'] = "Compteur " . $newCounter->label . " démarré pour l'utilisateur ".$usr->login;
+				$data['result'] = 1;
+			}
+		}
+	}
 }
 
 print json_encode($data);
+
