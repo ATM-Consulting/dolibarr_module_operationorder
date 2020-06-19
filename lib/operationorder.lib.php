@@ -57,6 +57,11 @@ function operationorderAdminPrepareHead()
 	$head[$h][2] = 'fullcalendar';
 	$h++;
 
+	$head[$h][0] = dol_buildpath("/operationorder/admin/barcode_setup.php", 1);
+	$head[$h][1] = $langs->trans("BarCode");
+	$head[$h][2] = 'barcode';
+	$h++;
+
 	if (!empty($conf->multicompany->enabled))
 	{
 		$head[$h][0] = dol_buildpath("/operationorder/admin/multicompany_sharing.php", 1);
