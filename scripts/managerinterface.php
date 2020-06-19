@@ -13,6 +13,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
+dol_include_once('/operationorder/class/operationorderbarcode.class.php');
 global $db;
 $hookmanager->initHooks(array('oordermanagerinterface'));
 
@@ -61,8 +62,19 @@ if (empty($reshook) && !empty($action))
 
 	else if ($action == "getActionsList")
 	{
-		// TODO récupérer les actions improd venant du dev de Lena
-		$data['actions'] = array(array('Annulation', 'IMPAnnul'), array('Toilette', 'IMPToilette'), array('Fin de journée', 'IMPFin'));
+		$data['actions'] = array(array('Annulation', 'IMPAnnul'), array('Fin de journée', 'IMPFin'));
+
+		$barcode=new OperationOrderBarCode($db);
+		$TBarCodes = $barcode->fetchAll('', '', array('entity' => $conf->entity));
+		$data['debug'] = $TBarCodes;
+
+		if (!empty($TBarCodes))
+		{
+			foreach ($TBarCodes as $improd) {
+				$data['actions'][] = array($improd->label, $improd->code);
+			}
+		}
+
 		$data['result'] = 1;
 	}
 
@@ -157,7 +169,7 @@ if (empty($reshook) && !empty($action))
 
 	else if ($action == 'startImprod')
 	{
-		$data['debug'] = '';
+//		$data['debug'] = '';
 		$u = GETPOST('user'); // code barre user USR{login}
 		$improd = GETPOST('improd'); // IMP{libelléImprod}
 
@@ -172,12 +184,24 @@ if (empty($reshook) && !empty($action))
 			$counter->task_datehour_f = dol_now();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$counter->update($usr);
-			$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
+//			$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
+		}
+
+		$label = substr($improd, 3);
+		if (is_numeric($label))
+		{
+			$impbarcode = new OperationOrderBarCode($db);
+			$retImp = $impbarcode->fetchBy($improd, 'code');
+			$data['debug'] = $impbarcode->label;
+			if($retImp > 0)
+			{
+				$label = $impbarcode->label;
+			}
 		}
 
 		// start compteur improd
 		$newCounter = new OperationOrderTaskTime($db);
-		$newCounter->label = substr($improd, 3);
+		$newCounter->label = $label;
 		$newCounter->task_datehour_d = dol_now();
 		$newCounter->fk_user = $usr->id;
 		$newCounter->entity = $conf->entity;
@@ -185,8 +209,8 @@ if (empty($reshook) && !empty($action))
 		$retSave = $newCounter->save($usr);
 		if ($retSave > 0)
 		{
-			$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-			$data['msg'] = "Compteur " . substr($improd, 3) . " démarré pour l'utilisateur ".$usr->login;
+//			$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
+			$data['msg'] = "Compteur " . $label . " démarré pour l'utilisateur ".$usr->login;
 			$data['result'] = 1;
 		}
 		else

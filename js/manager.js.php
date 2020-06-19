@@ -101,8 +101,11 @@ class Application
 		let infoOR = $('#infoOR');
 		let infoTask = $('#infoTask');
 
-		userInfo.html(this.state.user.substr(3));
-		infoOR.html(this.state.oOrder.substr(2));
+		if (this.state.user != null)
+			userInfo.html(this.state.user.substr(3));
+
+		if (this.state.oOrder != null)
+			infoOR.html(this.state.oOrder.substr(2));
 	}
 
 	// gère les appels ajax à faire selon le state de l'application
