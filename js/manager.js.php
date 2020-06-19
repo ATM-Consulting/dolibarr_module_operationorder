@@ -60,6 +60,7 @@ class Application
 			,lig:null
 			,action:null
 			,prod:null
+			,courantTask:null
 		}
 
 		$('.active').each(function(){
@@ -103,9 +104,17 @@ class Application
 
 		if (this.state.user != null)
 			userInfo.html(this.state.user.substr(3));
+		else userInfo.html('');
 
 		if (this.state.oOrder != null)
 			infoOR.html(this.state.oOrder.substr(2));
+		else
+			infoOR.html('');
+
+		if (this.state.courantTask != null)
+			infoTask.html(this.state.courantTask);
+		else
+			infoTask.html('');
 	}
 
 	// gère les appels ajax à faire selon le state de l'application
@@ -171,11 +180,6 @@ class Application
 			return;
 		}
 
-		if (this.state.user !== null)
-		{
-			this.getORList(this.state.oOrder);
-		}
-
 		// gestion des actions improd
 		if (this.state.action !== null)
 		{
@@ -193,6 +197,11 @@ class Application
 					action: this.state.action
 					}); // compteur improd
 			}
+		}
+
+		if (this.state.user !== null)
+		{
+			this.getORList(this.state.oOrder, this.state.user);
 		}
 
 		if (this.state.oOrder !== null)
@@ -245,12 +254,13 @@ class Application
 
 	}
 
-	getORList(selectedOr)
+	getORList(selectedOr, curentuser)
 	{
 		$.ajax({
 			url: endPoint,
 			data: {
 				action: 'getORList'
+				,user: curentuser
 			},
 			dataType: 'json'
 		}).done(function (data) {
@@ -269,6 +279,17 @@ class Application
 
 					orList.append(tr);
 				});
+			}
+
+			let infoTask = $('#infoTask');
+
+			if (data.courantTask.length > 0)
+			{
+				infoTask.html(data.courantTask);
+			}
+			else
+			{
+				infoTask.html('');
 			}
 		});
 	}
@@ -304,7 +325,7 @@ class Application
 
 	/* ACTION */
 
-	// TODO appel ajax pour stopper le compteur en cours de l'utilisateur (Fin de journée)
+	// appel ajax pour stopper le compteur en cours de l'utilisateur (Fin de journée)
 	stopUserWork()
 	{
 		$.ajax({
@@ -321,7 +342,7 @@ class Application
 		this.resetState();
 	}
 
-	// TODO démarrage d'un compteur (et stop du précédent s'il existe)
+	// démarrage d'un compteur (et stop du précédent s'il existe)
 	// devra être appelé sur les improd et sur la chaine User->OR->ligne pointable ou OR->produit
 	startAction(data)
 	{

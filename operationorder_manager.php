@@ -47,12 +47,10 @@ $hookmanager->initHooks(array('OOmanagercard'));
 	</div>
 
 	<div id="infosBar" class="row">
-		<div class="col-md-6">
+		<div class="col-md-12">
 			<label>Utilisateur courant&nbsp;:&nbsp;</label><span id="infoUser"></span><br />
 			<label>OR Courant&nbsp;:&nbsp;</label><span id="infoOR"></span><br />
-		</div>
-		<div class="col-md-6">
-
+			<label>Tâche Courante&nbsp;:&nbsp;</label><span id="infoTask"></span><br />
 		</div>
 	</div>
 

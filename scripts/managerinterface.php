@@ -11,6 +11,8 @@ require_once __DIR__ . '/../class/unitstools.class.php';
 require_once __DIR__ . '/../lib/operationorder.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
+require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT . '/product/stock/class/mouvementstock.class.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
@@ -80,6 +82,33 @@ if (empty($reshook) && !empty($action))
 
 	else if ($action == "getORList")
 	{
+		$data['courantTask'] = ''; // tâche courante de l'utilisateur
+
+		$u = GETPOST('user'); // code barre user USR{login}
+		$usr = new User($db);
+		$usr->fetch('', substr($u, 3));
+
+		$counter = new OperationOrderTaskTime($db);
+		$ret = $counter->fetchCourantCounter($usr->id);
+		if ($ret > 0)
+		{
+			$data['courantTask'] = $counter->label;
+			if (!empty($counter->fk_orDet))
+			{
+				$sql = "SELECT oorder.ref FROM ".MAIN_DB_PREFIX."operationorder oorder";
+				$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
+				$sql.= " WHERE ordet.rowid = ".$counter->fk_orDet;
+
+				$resql = $db->query($sql);
+				if ($resql)
+				{
+					$obj = $db->fetch_object($resql);
+					if (!empty($obj->ref)) $data['courantTask'].= ' ('.$obj->ref.')';
+				}
+
+			}
+		}
+
 		$sql = "SELECT DISTINCT ooa.fk_operationorder FROM ".MAIN_DB_PREFIX."operationorderaction ooa";
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
@@ -296,6 +325,83 @@ if (empty($reshook) && !empty($action))
 			}
 		}
 	}
+	else if ($action == 'stockMouvement')
+	{
+		$or_barcode = GETPOST('or_barcode');
+		$lig = GETPOST('lig');
+
+		$prod_barcode = GETPOST('prod');
+		$prod = new Product($db);
+		$ret = $prod->fetch('','','', $prod_barcode);
+//		$data['debug'] = $prod->id;
+		if ($ret > 0)
+		{
+			$orRef = substr($or_barcode, 2);
+
+			$OR = new OperationOrder($db);
+			$ret = $OR->fetchBy($orRef, 'ref');
+			if ($ret > 0)
+			{
+				$OR->fetchLines();
+				if (!empty($OR->lines))
+				{
+					$prodTotalQty = 0;
+					$found = false;
+					foreach ($OR->lines as $line)
+					{
+						if ($line->fk_product == $prod->id) {
+
+							$found = true;
+							$prodTotalQty+=$line->qty;
+//							$data['debug'] = $line;
+						}
+					}
+
+					if ($found)
+					{
+//						$data['debug'] = "product found";
+
+						if (empty($conf->global->STOCK_SUPPORTS_SERVICES) && $prod->type == Product::TYPE_SERVICE)
+						{
+							$data['errorMsg'] = 'Error : product provided is a service and stock doesn\'t supports services';
+						}
+						else
+						{
+							if (empty($prod->fk_default_warehouse)) $data['errorMsg'] = 'Error : no default warehouse for this product';
+							else
+							{
+								// création de mouvement de stock
+								$mvt = new MouvementStock($db);
+								$mvt->origin = $OR;
+
+								$qty = 1;
+
+								if (!empty($conf->global->PRODUCT_USE_UNITS))
+								{
+									if (!empty($prod->fk_unit) && $prod->fk_unit != 1) // pièce
+										$qty = $prodTotalQty;
+								}
+
+								$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+
+							}
+
+						}
+					}
+				}
+			}
+			else
+			{
+				$data['errorMsg'] = 'Can\' fetch OR';
+			}
+		}
+		else
+		{
+			$data['errorMsg'] = 'Can\' fetch product with barcode '.$prod_barcode;
+		}
+
+	}
+
 }
 
 print json_encode($data);

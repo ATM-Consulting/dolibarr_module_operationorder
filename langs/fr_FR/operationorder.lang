@@ -229,3 +229,6 @@ MorningD=Début de matinée
 MorningF=Fin de matinée
 AfternoonD=Début d'après-midi
 AfternoonF=Fin d'après-midi
+
+#manager
+productUsedForOorder=Produit utilisé pour Ordre de réparation %s
