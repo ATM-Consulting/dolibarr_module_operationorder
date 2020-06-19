@@ -209,7 +209,6 @@ class OperationOrder extends SeedObject
     public function create(User &$user, $notrigger = false)
     {
 		global $conf;
-        $this->fk_user_creat = $user->id;
 
 		if (!empty($this->is_clone))
 		{
