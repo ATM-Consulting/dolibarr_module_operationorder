@@ -15,8 +15,19 @@ body {
 	width: 100%;
 }
 
-.user, tr.action, tr.oorder tr.orLine {
+tr.action, tr.oorder, tr.orLine {
 	cursor: pointer;
+}
+
+.user {
+	cursor: pointer;
+	display: inline-block;
+	margin: 0 4px;
+	text-align: center;
+}
+
+.active {
+	background-color: darkcyan;
 }
 
 tr {

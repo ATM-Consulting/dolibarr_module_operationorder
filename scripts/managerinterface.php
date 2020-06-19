@@ -12,6 +12,7 @@ require_once __DIR__ . '/../lib/operationorder.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationordertasktime.class.php');
 global $db;
 $hookmanager->initHooks(array('oordermanagerinterface'));
 
@@ -71,6 +72,8 @@ if (empty($reshook) && !empty($action))
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
 
+		$data['oOrders']=array();
+
 		$resql = $db->query($sql);
 		if (!$resql)
 		{
@@ -122,21 +125,92 @@ if (empty($reshook) && !empty($action))
 		$OR = new OperationOrder($db);
 		$OR->fetchBy($orRef, 'ref');
 		$OR->fetchLines();
-		//$data['oOrderLines'] = $OR->lines;
+
 		if (!empty($OR->lines))
 		{
+			$TPointable = array();
 			foreach ($OR->lines as $line)
 			{
+//				$data['debug'][] = $line->fk_product;
+				if ($line->fk_product && ! array_key_exists(intval($line->fk_product), $TPointable))
+				{
+					$TPointable[$line->fk_product] = false;
+					$line->fetch_product();
+					$data['debug'][$line->fk_product] = $line->product->array_options;
+					if ($line->product->array_options['options_or_scan'] == "1")
+					{
+						$TPointable[$line->fk_product] = true;
+					}
+				}
+
 				$data['oOrderLines'][] = array(
 					'ref' 		=> $line->product_ref
 					,'qty' 		=> $line->qty
-					,'action' 	=> 'on verra plus tard'
+					,'action' 	=> $TPointable[$line->fk_product] ? "Démarrer" : "Sortie de stock"
 					,'barcode' 	=> 'LIG'.$line->id
+					,'pointable'=> $TPointable[$line->fk_product]
 				);
 			}
 		}
 		$data['result'] = 1;
 	}
+
+	else if ($action == 'startImprod')
+	{
+		$data['debug'] = '';
+		$u = GETPOST('user'); // code barre user USR{login}
+		$improd = GETPOST('improd'); // IMP{libelléImprod}
+
+		$usr = new User($db);
+		$usr->fetch('', substr($u, 3));
+
+		// stop le compteur courant de l'utilisateur
+		$counter = new OperationOrderTaskTime($db);
+		$ret = $counter->fetchCourantCounter($usr->id);
+		if ($ret > 0)
+		{
+			$counter->task_datehour_f = dol_now();
+			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
+			$counter->update($usr);
+			$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
+		}
+
+		// start compteur improd
+		$newCounter = new OperationOrderTaskTime($db);
+		$newCounter->label = substr($improd, 3);
+		$newCounter->task_datehour_d = dol_now();
+		$newCounter->fk_user = $usr->id;
+		$newCounter->entity = $conf->entity;
+
+		$newCounter->save($usr);
+		$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
+		$data['msg'] = "Compteur " . substr($improd, 3) . " démarré pour l'utilisateur ".$usr->login;
+		$data['result'] = 1;
+
+	}
+
+	else if ($action == 'stopUserWork')
+	{
+		$u = GETPOST('user'); // code barre user USR{login}
+
+		$usr = new User($db);
+		$usr->fetch('', substr($u, 3));
+
+		// stop le compteur courant de l'utilisateur
+		$counter = new OperationOrderTaskTime($db);
+		$ret = $counter->fetchCourantCounter($usr->id);
+
+		if ($ret > 0)
+		{
+			$counter->task_datehour_f = dol_now();
+			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
+			$counter->update($usr);
+		}
+		$data['msg'] = "Compteur " . $counter->label . " arrété pour l'utilisateur ".$usr->login;
+		$data['result'] = 1;
+	}
+
+
 }
 
 print json_encode($data);
