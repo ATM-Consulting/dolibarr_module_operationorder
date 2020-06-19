@@ -1048,9 +1048,12 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             $action_or = new OperationOrderAction($db);
 
             $action_or->dated = $startTime;
+//            //OR temps forcé ou temps théorique ou rien
+//            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
+//            else $action_or->datef = $startTime + $operationorder->time_planned_t;
             //OR temps forcé ou temps théorique ou rien
-            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
-            else $action_or->datef = $startTime + $operationorder->time_planned_t;
+            if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $endTime, $operationorder->time_planned_f);
+            else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $endTime, $operationorder->time_planned_t);
 
             if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
             {
@@ -1398,4 +1401,85 @@ function getOperationOrderUserPlanningSchedule(){
     }
 
     return $TSchedules;
+}
+
+function calculateEndTimeEventByBusinessHours($startTime, $endTime, $duration){
+
+    $TBusinessHours = getOperationOrderUserPlanningSchedule();
+    $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+
+    $day = date('D', $startTime);
+    $day = $TDays[$day];
+
+    $endSchedule = date('H:i', $endTime + $duration);
+    $startSchedule = date('H:i', $startTime);
+
+    $endDate = date('Y-m-d H:i:s', $endTime + $duration);
+    $startDate= date('Y-m-d H:i:s', $startTime);
+
+
+
+    foreach($TBusinessHours[$day] as $schedule){
+
+
+        //si la date de début est contenue dans un des créneaux de départ
+        if($startSchedule <= $schedule['max'] && $startSchedule >= $schedule['min']){
+
+            //si la date de fin est inférieure au max du créneau, alors la date de fin n'est pas à modifier
+            if($endSchedule <= $schedule['max'])
+            {
+                $endDate = DateTime::createFromFormat('Y-m-d H:i:s', $endDate);
+                $endTimeFinal= $endDate->getTimestamp();
+
+            }
+
+            //si la date de fin est supérieure au max du créneau, alors on doit passer au créneau suivant
+            else {
+
+                $schedule = $schedule['max']
+
+                $timetaken = date('H:i', $schedule['max'] - $startSchedule);
+                var_dump($timetaken);
+                var_dump($schedule['max']);
+                var_dump($startSchedule);
+
+                $timetaken = convertTime2Seconds($timetaken);
+
+                $durationRest = $duration-$timetaken;
+
+                //tant qu'il reste du temps à planifier
+                while($durationRest > 0){
+
+                    //même jour
+                    foreach($TBusinessHours[$day] as $schedule_two){
+
+                        //si dans le même jour il y a un autre créneau plus tard
+                        if($schedule_two['min'] >= $schedule['max']){
+
+                            $endSchedule = $schedule_two['min'] + $durationRest;
+
+                            $timetaken = $schedule_two['max'] - $schedule_two['min'];
+                            $timetaken = convertTime2Seconds($timetaken);
+
+                            $durationRest = $duration-$timetaken;
+                        }
+                    }
+
+                    $durationRest = $duration-$timetaken;
+
+                }
+
+
+                //créneau sur le même jour
+
+
+                //créneau sur le jour suivant
+
+            }
+        }
+    }
+    exit;
+    return $endTimeFinal;
+
+
 }
