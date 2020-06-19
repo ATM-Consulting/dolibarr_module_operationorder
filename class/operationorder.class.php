@@ -342,7 +342,6 @@ class OperationOrder extends SeedObject
      */
     public function update(User &$user, $notrigger = false)
     {
-        $this->fk_user_modif = $user->id;
         $this->time_planned_t = $this->getTimePlannedT();
 
         $res = $this->updateOperationOrderActions();
