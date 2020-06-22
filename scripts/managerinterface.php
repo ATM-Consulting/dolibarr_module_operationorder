@@ -13,6 +13,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/stock/class/mouvementstock.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/modules/barcode/doc/tcpdfbarcode.modules.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
@@ -73,7 +74,7 @@ if (empty($reshook) && !empty($action))
 		if (!empty($TBarCodes))
 		{
 			foreach ($TBarCodes as $improd) {
-				$data['actions'][] = array($improd->label, $improd->code);
+				$data['actions'][] = array($improd->label, $improd->code, displayBarcode($improd->code));
 			}
 		}
 
@@ -134,6 +135,7 @@ if (empty($reshook) && !empty($action))
 						'client' => $oOrder->thirdparty->name
 						,'ref'=>$oOrder->ref
 						,'barcode' => 'OR'.$oOrder->ref
+						,'bars' => displayBarcode('OR'.$oOrder->ref)
 					);
 
 					if ($conf->dolifleet->enabled)
@@ -189,6 +191,7 @@ if (empty($reshook) && !empty($action))
 					,'qty' 		=> $line->qty
 					,'action' 	=> $TPointable[$line->fk_product] ? "Démarrer" : "Sortie de stock"
 					,'barcode' 	=> 'LIG'.$line->id
+					,'bars'		=> $TPointable[$line->fk_product] ? displayBarcode('LIG'.$line->id) : ""
 					,'pointable'=> $TPointable[$line->fk_product]
 				);
 			}
@@ -406,3 +409,18 @@ if (empty($reshook) && !empty($action))
 
 print json_encode($data);
 
+function displayBarcode($code = '')
+{
+	global $db;
+
+	$moduleBarcode = new modTcpdfbarcode($db);
+
+	// Build barcode on disk (not used, this is done to make debug easier)
+	$result = $moduleBarcode->writeBarCode($code, 'C128', 'Y');
+	// Generate on the fly and output barcode with generator
+	$url = DOL_URL_ROOT.'/viewimage.php?modulepart=barcode&amp;generator=tcpdfbarcode&amp;code='.urlencode($code).'&amp;encoding=C128';
+	//print $url;
+	$barcode =  '<img src="'.$url.'" title="'.$code.'" border="0">';
+
+	return $barcode;
+}
