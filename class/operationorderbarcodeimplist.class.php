@@ -38,6 +38,10 @@ class OperationOrderBarCodeImpList extends SeedObject
         $this->init();
 
         $TBarCodeList = array();
+
+        $TBarCodeList['annul'] = 'Annuler';
+        $TBarCodeList['fin'] = "Fin de journée";
+
         $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationorderbarcode WHERE code LIKE '%IMP%' AND entity = '". $conf->entity . "'";
 
         $resql = $db->query($sql);

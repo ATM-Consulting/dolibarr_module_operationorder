@@ -263,7 +263,18 @@ class pdf_barcodeimp extends CommonDocGenerator
                 foreach($object->list as $idbarcode=>$label)
                 {
                     $operationorderbarcode = new OperationOrderBarCode($db);
-                    $res =$operationorderbarcode->fetch($idbarcode);
+                    if ($idbarcode == 'annul' || $idbarcode == 'fin') 
+                    {
+                        $operationorderbarcode->code = 'IMPAnnul';
+                        $operationorderbarcode->label = "Annuler";
+
+                        if ($idbarcode == 'fin')
+                        {
+                            $operationorderbarcode->code = 'IMPFin';
+                            $operationorderbarcode->label = "Fin de journée";
+                        }
+                    }
+                    else $res =$operationorderbarcode->fetch($idbarcode);
 
                     $pdf->startTransaction();
 
