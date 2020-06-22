@@ -124,6 +124,7 @@ ShowOperationOrder=Ordre de réparation
 NewOperationOrder=Création ordre de réparation
 OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
+DateCreationOperationOrder=Date création
 ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 OperationOrderCreateSupplierOrder=Créer commande fournisseur
 CreateSupplierOrder=Créer commande fournisseur

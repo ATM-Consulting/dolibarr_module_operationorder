@@ -225,8 +225,10 @@ $listViewConfig = array(
         ,'fk_soc' => array('search_type' => true, 'table' => 's', 'field' => array('nom','name_alias')) // input text de recherche sur plusieurs champs
         ,'fk_c_operationorder_type' => array('search_type' => true, 'table' => 'ctype', 'field' => array('code','label')) // input text de recherche sur plusieurs champs
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
-		,'status' => array('search_type' => $TStatusSearchList, 'to_translate' => true, 'table' => array('ost'), 'field' => array('code')) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+		//,'status' => array('search_type' => $TStatusSearchList, 'to_translate' => true, 'table' => array('ost'), 'field' => array('code')) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+		,'status' => array('search_type' => 'override', 'to_translate' => true, 'table' => array('ost'), 'field' => array('code')) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
         ,'overshootstatus' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootStatus)
+		,'planned_date' => array('search_type' => 'calendars', 'allow_is_null' => true)
 	)
 	,'translate' => array()
 	,'hide' => array(
@@ -242,6 +244,7 @@ $listViewConfig = array(
 	,'eval'=>array(
         'overshootstatus' => '_getOvershootStatus(\'@rowid@\')'
     )
+	, 'sortfield'=> 'date_creation', 'sortorder' => 'desc'
 );
 
 foreach ($object->fields as $key => $field){
