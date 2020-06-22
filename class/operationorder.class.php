@@ -477,6 +477,25 @@ class OperationOrder extends SeedObject
 
     }
 
+    public function deleteline($lineid) {
+        global $user;
+
+        $this->db->begin();
+        $line = new OperationOrderDet($this->db);
+
+        // For triggers
+        $line->fetch($lineid);
+
+        if($line->delete($user) > 0) {
+            $this->db->commit();
+            return 1;
+        }
+        else {
+            $this->db->rollback();
+            return -1;
+        }
+    }
+
 
     /**
      * @param User $user User object
