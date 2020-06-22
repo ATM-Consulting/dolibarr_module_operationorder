@@ -65,7 +65,10 @@ if(GETPOST('action'))
         $range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
         $range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
 
-        var_dump($range_start);
+        $data = getOperationOrderUserPlanningSchedule();
+
+        print json_encode($data);
+        exit;
 
     }
 	elseif($action=='setOperationOrderlevelHierarchy'){
