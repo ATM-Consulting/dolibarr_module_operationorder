@@ -30,6 +30,8 @@ $(document).ready(function () {
 		$('#masterInput').focus()
 	});
 
+	$('.alert-danger').alert();
+
 });
 
 function setParam(Barcode) {
@@ -38,6 +40,19 @@ function setParam(Barcode) {
 	$('#masterInput').val(Barcode);
 	// soumission du form
 	$('#control').submit();
+}
+
+function setErrorMsg(msg)
+{
+	//alert(msg);
+	let msgDiv = $('<div id="responseMessageError" style="display:none" class="alert alert-danger alert-dismissible show"></div>');
+
+	msgDiv.html(msg + '<button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+		'    <span aria-hidden="true">&times;</span>\n' +
+		'  </button>');
+	msgDiv.fadeIn();
+
+	msgDiv.appendTo('#infosBar .col-md-12');
 }
 
 class Application
@@ -135,7 +150,7 @@ class Application
 
 		if (this.state.prod != null)
 		{
-			if (this.state.oOrder == null) this.setErrorMsg('Veuillez sélectionner un OR avant de sortir une pièce');
+			if (this.state.oOrder == null) setErrorMsg('Veuillez sélectionner un OR avant de sortir une pièce');
 			else
 			{
 				this.startAction({
@@ -150,11 +165,11 @@ class Application
 		{
 			// faire un truc selon la ligne (pointable ou sortie de stock)
 			let line = $('[data-barcode="'+this.state.lig+'"]');
-			if (this.state.oOrder == null) this.setErrorMsg('Veuillez sélectionner un OR avant de faire cette action');
+			if (this.state.oOrder == null) setErrorMsg('Veuillez sélectionner un OR avant de faire cette action');
 
 			else if (line.data('pointable') == true)
 			{
-				if (this.state.user == null) this.setErrorMsg('Veuillez sélectionner un utilisateur avant de faire cette action');
+				if (this.state.user == null) setErrorMsg('Veuillez sélectionner un utilisateur avant de faire cette action');
 				else
 				{
 					// étant donné que c'est un pointable, on doit démarrer un compteur
@@ -188,7 +203,7 @@ class Application
 			// seul annulation n'a pas besoin de user
 			if (this.state.user == null)
 			{
-				this.setErrorMsg('Veuillez sélectionner un utilisateur avant de faire cette action');
+				setErrorMsg('Veuillez sélectionner un utilisateur avant de faire cette action');
 				this.resetState();
 			}
 			else
@@ -224,15 +239,17 @@ class Application
 			},
 			dataType: 'json'
 		}).done(function (data) {
+			let userList = $('#userList')
+			userList.html('');
+
 			if (data.users.length)
 			{
-				let userList = $('#userList')
-				userList.html('');
 				data.users.forEach(function(user) {
 					var barcode = 'USR'+user;
 					userList.append('<div class="user" data-barcode="'+barcode+'" onclick="javascript:setParam(\''+barcode+'\')"><?php print img_object('','user'); ?><br />'+user+'</div>');
 				})
 			}
+			else userList.append('<p>'+data.errorMsg+'<p>');
 		});
 	}
 
@@ -337,8 +354,19 @@ class Application
 				,user: this.state.user
 			},
 			dataType: 'json'
-		}).done(function (data) {
-			console.log(data);
+		}).done(function (response) {
+			//console.log(data);
+			if (response.result == 1 && response.msg != '')
+			{
+				let msgDiv = $('#responseMessageSuccess');
+				msgDiv.html(response.msg);
+				msgDiv.fadeIn();
+				msgDiv.fadeOut(1500);
+			}
+			else if (response.result == 0 && response.errorMsg)
+			{
+				setErrorMsg(response.errorMsg)
+			}
 		});
 
 		this.resetState();
@@ -371,10 +399,7 @@ class Application
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
-					let msgDiv = $('#responseMessageError');
-					msgDiv.html(response.errorMsg);
-					msgDiv.fadeIn();
-					msgDiv.fadeOut(2500);
+					setErrorMsg(response.errorMsg)
 				}
 			});
 		}
@@ -413,10 +438,7 @@ class Application
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
-					let msgDiv = $('#responseMessageError');
-					msgDiv.html(response.errorMsg);
-					msgDiv.fadeIn();
-					msgDiv.fadeOut(2500);
+					setErrorMsg(response.errorMsg)
 				}
 			});
 		}
@@ -440,10 +462,7 @@ class Application
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
-					let msgDiv = $('#responseMessageError');
-					msgDiv.html(response.errorMsg);
-					msgDiv.fadeIn();
-					msgDiv.fadeOut(2500);
+					setErrorMsg(response.errorMsg)
 				}
 			});
 		}
@@ -451,13 +470,6 @@ class Application
 		this.resetState();
 	}
 
-	// TODO trouver un moyen d'afficher l'alerte dans le dom quelque part
-	setErrorMsg(msg)
-	{
-		//alert(msg);
-		let msgDiv = $('#responseMessageError');
-		msgDiv.html(msg);
-		msgDiv.fadeIn();
-		msgDiv.fadeOut(3000);
-	}
+	// trouver un moyen d'afficher l'alerte dans le dom quelque part => done
+
 }

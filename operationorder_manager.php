@@ -54,7 +54,7 @@ $hookmanager->initHooks(array('OOmanagercard'));
 				<label>Tâche Courante&nbsp;:&nbsp;</label><span id="infoTask"></span><br />
 			</p>
 			<div id="responseMessageSuccess" style="display:none" class="alert alert-success"></div>
-			<div id="responseMessageError" style="display:none" class="alert alert-danger"></div>
+			<div id="responseMessageError" style="display:none" class="alert alert-danger alert-dismissible show"></div>
 		</div>
 	</div>
 

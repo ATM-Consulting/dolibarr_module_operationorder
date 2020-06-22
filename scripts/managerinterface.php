@@ -37,6 +37,8 @@ if (empty($reshook) && !empty($action))
 {
 	if ($action == "getUserList")
 	{
+		$data['users'] = array();
+
 		if (empty($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING))
 		{
 			$data['errorMsg'] = $langs->trans('ErrorNoGroupForPlanning');
@@ -51,12 +53,14 @@ if (empty($reshook) && !empty($action))
 				$userList = $userGroup->listUsersForGroup();
 				if (!empty($userList))
 				{
-					$data['users'] = array();
-
 					foreach ($userList as $u)
 					{
 						$data['users'][] = $u->login;
 					}
+				}
+				else
+				{
+					$data['errorMsg'] = $langs->trans('ErrorNoUserInGroupForPlanning');
 				}
 				$data['result'] = 1;
 			}
@@ -180,9 +184,12 @@ if (empty($reshook) && !empty($action))
 		$OR->fetchBy($orRef, 'ref');
 		$OR->fetchLines();
 
+		$data['oOrderLines'] = array();
+
 		if (!empty($OR->lines))
 		{
-			$TPointable = array();
+			$TPointable = $ProdErrors = array();
+
 			foreach ($OR->lines as $line)
 			{
 //				$data['debug'][] = $line->fk_product;
@@ -195,12 +202,24 @@ if (empty($reshook) && !empty($action))
 					{
 						$TPointable[$line->fk_product] = true;
 					}
+
+					$ProdErrors[$line->fk_product] = '';
+
+					if (empty($conf->global->STOCK_SUPPORTS_SERVICES) && $line->product->type == Product::TYPE_SERVICE && !$TPointable[$line->fk_product])
+						$ProdErrors[$line->fk_product].=$langs->trans('ErrorStockMVTService')."<br />";
+
+					if (empty($line->product->barcode))
+						$ProdErrors[$line->fk_product].=$langs->trans('ErrorProductHasNoBarCode')."<br />";
+
+					if (empty($line->product->fk_default_warehouse))
+						$ProdErrors[$line->fk_product].=$langs->trans('ErrorNoDefaultWarehouse')."<br />";
+
 				}
 
 				$data['oOrderLines'][] = array(
 					'ref' 		=> $line->product_ref
 					,'qty' 		=> $line->qty
-					,'action' 	=> $TPointable[$line->fk_product] ? "Démarrer" : "Sortie de stock"
+					,'action' 	=> $TPointable[$line->fk_product] ? "Démarrer" : (empty($ProdErrors[$line->fk_product]) ? "Sortie de stock" : $ProdErrors[$line->fk_product])
 					,'barcode' 	=> 'LIG'.$line->id
 					,'bars'		=> $TPointable[$line->fk_product] ? displayBarcode('LIG'.$line->id) : ""
 					,'pointable'=> $TPointable[$line->fk_product]
@@ -253,7 +272,7 @@ if (empty($reshook) && !empty($action))
 		if ($retSave > 0)
 		{
 //			$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-			$data['msg'] = "Compteur " . $label . " démarré pour l'utilisateur ".$usr->login;
+			$data['msg'] = $langs->trans('MsgCounterStart', $label, $usr->login);;
 			$data['result'] = 1;
 		}
 		else
@@ -278,10 +297,28 @@ if (empty($reshook) && !empty($action))
 		{
 			$counter->task_datehour_f = dol_now();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
-			$counter->update($usr);
+			$retupd = $counter->update($usr);
+
+			if ($retupd > 0)
+			{
+				$data['msg'] = $langs->trans('MsgCounterStop', $counter->label, $usr->login);
+				$data['result'] = 1;
+			}
+			else
+			{
+				$data['errorMsg'] = $langs->trans('ErreurCounterStop', $counter->label, $usr->login);
+			}
 		}
-		$data['msg'] = "Compteur " . $counter->label . " arrété pour l'utilisateur ".$usr->login;
-		$data['result'] = 1;
+		else if ($ret == 0) {
+			$data['msg'] = $langs->trans('noCounterToStop');
+			$data['result'] = 1;
+		}
+		else
+		{
+			$data['errorMsg'] = $langs->trans('ErrorCurrentCounterStop', $usr->login);
+		}
+
+
 	}
 
 	else if ($action == 'startLineCounter')
@@ -334,7 +371,7 @@ if (empty($reshook) && !empty($action))
 			if ($retSave > 0)
 			{
 				$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-				$data['msg'] = "Compteur " . $newCounter->label . " démarré pour l'utilisateur ".$usr->login;
+				$data['msg'] = $langs->trans('MsgCounterStart', $counter->label, $usr->login);
 				$data['result'] = 1;
 			}
 		}
@@ -356,6 +393,22 @@ if (empty($reshook) && !empty($action))
 			$ret = $OR->fetchBy($orRef, 'ref');
 			if ($ret > 0)
 			{
+
+				$alreadyUsed = array();
+				$sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
+				$sql.= " WHERE mvt.origintype = 'operationorder'";
+				$sql.= " AND mvt.fk_origin = ".$OR->id;
+				$sql.= " GROUP BY mvt.fk_product";
+
+				$resql = $db->query($sql);
+				if (!$resql)
+				{
+					while ($obj = $db->fetch_object($resql))
+					{
+						$alreadyUsed[$obj->fk_product] = abs($obj->total);
+					}
+				}
+
 				$OR->fetchLines();
 				if (!empty($OR->lines))
 				{
@@ -396,7 +449,17 @@ if (empty($reshook) && !empty($action))
 										$qty = $prodTotalQty;
 								}
 
-								$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+								$qtyAfterMvt = (float) $alreadyUsed[$prod->id] + (float) $qty;
+								if ($qtyAfterMvt > $prodTotalQty)
+								{
+									$data['errorMsg'] = $langs->trans('ErrorProductqtyExceded');
+								}
+								else
+								{
+									$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+									$data['result'] = 1;
+									$data['msg'] = $langs->trans('StockMouvementGenerated', $prod->ref);
+								}
 
 							}
 
