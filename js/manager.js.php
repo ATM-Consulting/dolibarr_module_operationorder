@@ -249,7 +249,7 @@ class Application
 			if (data.actions.length) {
 				let actionsList = $('#actionList');
 				data.actions.forEach(function (item) {
-					actionsList.append('<tr class="action" onclick="javascript:setParam(\'' + item[1] + '\')"><td>' + item[0] + '</td><td>' + item[1] + '</td></tr>');
+					actionsList.append('<tr class="action" onclick="javascript:setParam(\'' + item[1] + '\')"><td>' + item[0] + '</td><td>' + item[2] + '<br />' + item[1] + '</td></tr>');
 				});
 			}
 		});
