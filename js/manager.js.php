@@ -68,6 +68,8 @@ class Application
 		})
 
 		$('#tableLines tbody').empty();
+
+		this.displayInfo();
 	}
 
 	setstate(str)
@@ -90,9 +92,9 @@ class Application
 		}
 		target.addClass('active');
 
-		this.displayInfo();
-
 		this.runCommand();
+
+		this.displayInfo();
 
 	}
 
@@ -146,7 +148,7 @@ class Application
 
 		if (this.state.lig !== null)
 		{
-			// TODO faire un truc selon la ligne (pointable ou sortie de stock)
+			// faire un truc selon la ligne (pointable ou sortie de stock)
 			let line = $('[data-barcode="'+this.state.lig+'"]');
 			if (this.state.oOrder == null) this.setErrorMsg('Veuillez sélectionner un OR avant de faire cette action');
 
