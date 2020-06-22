@@ -1093,7 +1093,7 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         $error++;
     }
 
-    exit;
+//    exit;
     if(!$error) {
         $db->commit();
         return 1;

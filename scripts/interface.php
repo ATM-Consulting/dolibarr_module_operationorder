@@ -58,6 +58,16 @@ if(GETPOST('action'))
 		print json_encode($data);
 		exit;
 	}
+	elseif($action == 'getBusinessHours'){
+
+        $timeZone = GETPOST('timeZone');
+        $eventsType = GETPOST('eventsType');
+        $range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
+        $range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
+
+        var_dump($range_start);
+
+    }
 	elseif($action=='setOperationOrderlevelHierarchy'){
 		if (! $user->rights->operationorder->write){
 			$data['result'] = -1; // by default if no action result is false
