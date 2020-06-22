@@ -268,9 +268,10 @@ class OperationOrder extends SeedObject
 
 
 
+
 			if (!empty($this->lines))
 			{
-				foreach ($this->lines as $i =>& $line)
+				foreach ($this->lines as $i =>$line)
 				{
 					if(empty($line->fk_parent_line)){
 
@@ -282,7 +283,6 @@ class OperationOrder extends SeedObject
 							$product = new Product($this->db);
 							$res = $product->fetch( $line->fk_product);
 							if($res){
-								$line->price = $product->price;
 								$lineNeedUpdate = true;
 							}
 						}
@@ -293,7 +293,7 @@ class OperationOrder extends SeedObject
 								$line->id,
 								$line->description,
 								$line->qty,
-								$line->price,
+                                $product->price,
 								$line->fk_warehouse,
 								$line->pc,
 								$line->time_planned,
@@ -309,7 +309,6 @@ class OperationOrder extends SeedObject
 								$line->array_options
 							);
 						}
-
 						// Add others products for lines
 						$this->recurciveAddChildLines($line->id, $line->fk_product, $line->qty);
 					}
@@ -1200,7 +1199,6 @@ class OperationOrder extends SeedObject
 			$res = $product->fetch($fk_product);
 			if($res){
 				$arbo = $product->getChildsArbo($product->id, 1);
-
 				if (!empty($arbo))
 				{
 					foreach ($arbo as $productid => $product_info)
