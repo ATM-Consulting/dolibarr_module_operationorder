@@ -39,7 +39,7 @@ if (empty($reshook) && !empty($action))
 	{
 		if (empty($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING))
 		{
-			$data['errorMsg'] = "no usergroup for planning defined";
+			$data['errorMsg'] = $langs->trans('ErrorNoGroupForPlanning');
 
 		}
 		else
@@ -258,7 +258,7 @@ if (empty($reshook) && !empty($action))
 		}
 		else
 		{
-			$data['errorMsg'].= 'error start counter';
+			$data['errorMsg'].= $langs->trans('ErrorCounterStart');
 		}
 
 	}
@@ -304,11 +304,11 @@ if (empty($reshook) && !empty($action))
 
 		if (!$usr->id)
 		{
-			$data['errorMsg'] = "Invalid user to start counter";
+			$data['errorMsg'] = $langs->trans("ErrorCounterInvalidUser");
 		}
 		else if ($OR->id != $line->fk_operation_order)
 		{
-			$data['errorMsg'] = "Error : selected line is not from selected OR";
+			$data['errorMsg'] = $langs->trans("ErreurCounterInvalidLineSelected");
 		}
 		else
 		{
@@ -377,11 +377,11 @@ if (empty($reshook) && !empty($action))
 
 						if (empty($conf->global->STOCK_SUPPORTS_SERVICES) && $prod->type == Product::TYPE_SERVICE)
 						{
-							$data['errorMsg'] = 'Error : product provided is a service and stock doesn\'t supports services';
+							$data['errorMsg'] = $langs->trans('ErrorStockMVTService');
 						}
 						else
 						{
-							if (empty($prod->fk_default_warehouse)) $data['errorMsg'] = 'Error : no default warehouse for this product';
+							if (empty($prod->fk_default_warehouse)) $data['errorMsg'] = $langs->trans('ErrorNoDefaultWarehouse');
 							else
 							{
 								// création de mouvement de stock
@@ -406,12 +406,12 @@ if (empty($reshook) && !empty($action))
 			}
 			else
 			{
-				$data['errorMsg'] = 'Can\' fetch OR';
+				$data['errorMsg'] = $langs->trans('ErrorCantFetchOR');
 			}
 		}
 		else
 		{
-			$data['errorMsg'] = 'Can\' fetch product with barcode '.$prod_barcode;
+			$data['errorMsg'] = $langs->trans('ErrorNoProdWithThisBarcode', $prod_barcode);
 		}
 
 	}

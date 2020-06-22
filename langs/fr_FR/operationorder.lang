@@ -232,3 +232,11 @@ AfternoonF=Fin d'après-midi
 
 #manager
 productUsedForOorder=Produit utilisé pour Ordre de réparation %s
+ErrorNoGroupForPlanning=Aucun groupe d'utilisateur n'est défini pour l'atelier
+ErrorCounterStart=Erreur de démarrage de l'action
+ErrorCounterInvalidUser=Pas d'utilisateur pour démarrer cette tâche, veuillez sélectionner un utilisateur avant de démarrer la tâche
+ErreurCounterInvalidLineSelected=La ligne sélectionnée n'appartient pas à l'OR sélectionné.
+ErrorStockMVTService=Le produit sélectionné est un service. Selon votre configuration, on ne peut pas déstocker des services.
+ErrorNoDefaultWarehouse=Pas d'entrepot par défaut pour se produit. Sortie de stock impossible.
+ErrorCantFetchOR=Impossible de récupérer l'ordre de réparation.
+ErrorNoProdWithThisBarcode=Impossible de trouver un produit avec le code barre : %s

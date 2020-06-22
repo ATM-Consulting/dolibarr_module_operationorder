@@ -48,38 +48,44 @@ $hookmanager->initHooks(array('OOmanagercard'));
 
 	<div id="infosBar" class="row">
 		<div class="col-md-12">
-			<label>Utilisateur courant&nbsp;:&nbsp;</label><span id="infoUser"></span><br />
-			<label>OR Courant&nbsp;:&nbsp;</label><span id="infoOR"></span><br />
-			<label>Tâche Courante&nbsp;:&nbsp;</label><span id="infoTask"></span><br />
+			<p>
+				<label>Utilisateur courant&nbsp;:&nbsp;</label><span id="infoUser"></span><br />
+				<label>OR Courant&nbsp;:&nbsp;</label><span id="infoOR"></span><br />
+				<label>Tâche Courante&nbsp;:&nbsp;</label><span id="infoTask"></span><br />
+			</p>
+			<div id="responseMessageSuccess" style="display:none" class="alert alert-success"></div>
+			<div id="responseMessageError" style="display:none" class="alert alert-danger"></div>
 		</div>
 	</div>
 
 	<div id="centerBar" class="row">
-		<div class="col-md-6">
-			<table id="orList">
-				<thead>
-					<tr class="table-header">
-						<th>Client</th>
-						<th>RefOR</th>
-						<?php if ($conf->dolifleet->enabled){ ?>
-						<th>Immat</th>
-						<?php } ?>
-						<th>Code Barre</th>
-					</tr>
-				</thead>
-				<tbody>
+		<table id="orList">
+			<thead>
+			<tr class="table-header">
+				<th>Client</th>
+				<th>RefOR</th>
+				<?php if ($conf->dolifleet->enabled){ ?>
+					<th>Immat</th>
+				<?php } ?>
+				<th>Code Barre</th>
+			</tr>
+			</thead>
+			<tbody>
 
-				</tbody>
-			</table>
+			</tbody>
+		</table>
+		<table id="actionList">
+			<tr class="table-header">
+				<th>Action</th>
+				<th>Code</th>
+			</tr>
+		</table>
+		<!--<div class="col-md-6">
+
 		</div>
 		<div class="col-md-6">
-			<table id="actionList">
-				<tr class="table-header">
-					<th>Action</th>
-					<th>Code</th>
-				</tr>
-			</table>
-		</div>
+
+		</div>-->
 	</div>
 	<div id="ORLines" class="row">
 		<table id="tableLines">

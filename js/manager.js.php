@@ -361,7 +361,21 @@ class Application
 				},
 				dataType: 'json'
 			}).done(function (response) {
-				console.log(response);
+				//console.log(response);
+				if (response.result == 1 && response.msg != '')
+				{
+					let msgDiv = $('#responseMessageSuccess');
+					msgDiv.html(response.msg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(1500);
+				}
+				else if (response.result == 0 && response.errorMsg)
+				{
+					let msgDiv = $('#responseMessageError');
+					msgDiv.html(response.errorMsg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(2500);
+				}
 			});
 		}
 
@@ -389,7 +403,21 @@ class Application
 				data: data,
 				dataType: 'json'
 			}).done(function (response) {
-				console.log(response);
+				//console.log(response);
+				if (response.result == 1 && response.msg != '')
+				{
+					let msgDiv = $('#responseMessageSuccess');
+					msgDiv.html(response.msg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(1500);
+				}
+				else if (response.result == 0 && response.errorMsg)
+				{
+					let msgDiv = $('#responseMessageError');
+					msgDiv.html(response.errorMsg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(2500);
+				}
 			});
 		}
 
@@ -403,6 +431,20 @@ class Application
 				dataType: 'json'
 			}).done(function (response) {
 				console.log(response);
+				if (response.result == 1 && response.msg != '')
+				{
+					let msgDiv = $('#responseMessageSuccess');
+					msgDiv.html(response.msg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(1500);
+				}
+				else if (response.result == 0 && response.errorMsg)
+				{
+					let msgDiv = $('#responseMessageError');
+					msgDiv.html(response.errorMsg);
+					msgDiv.fadeIn();
+					msgDiv.fadeOut(2500);
+				}
 			});
 		}
 
@@ -412,6 +454,10 @@ class Application
 	// TODO trouver un moyen d'afficher l'alerte dans le dom quelque part
 	setErrorMsg(msg)
 	{
-		alert(msg);
+		//alert(msg);
+		let msgDiv = $('#responseMessageError');
+		msgDiv.html(msg);
+		msgDiv.fadeIn();
+		msgDiv.fadeOut(3000);
 	}
 }
