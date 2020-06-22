@@ -1093,6 +1093,7 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         $error++;
     }
 
+    exit;
     if(!$error) {
         $db->commit();
         return 1;
@@ -1411,16 +1412,17 @@ function calculateEndTimeEventByBusinessHours($startTime, $endTime, $duration){
     $day = date('D', $startTime);
     $day = $TDays[$day];
 
-    $endSchedule = date('H:i', $endTime + $duration);
-    $startSchedule = date('H:i', $startTime);
+    var_dump($duration);
 
-    $endDate = date('Y-m-d H:i:s', $endTime + $duration);
-    $startDate= date('Y-m-d H:i:s', $startTime);
+    $endSchedule = $startTime + $duration;
+    $startSchedule = $startTime;
 
+//    $endDate = date('Y-m-d H:i:s', $endTime + $duration);
+//    $startDate= date('Y-m-d H:i:s', $startTime);
 
+    $TSchedules = getNextSchedules($TBusinessHours, $startTime, $endSchedule);
 
     foreach($TBusinessHours[$day] as $schedule){
-
 
         //si la date de début est contenue dans un des créneaux de départ
         if($startSchedule <= $schedule['max'] && $startSchedule >= $schedule['min']){
@@ -1436,7 +1438,7 @@ function calculateEndTimeEventByBusinessHours($startTime, $endTime, $duration){
             //si la date de fin est supérieure au max du créneau, alors on doit passer au créneau suivant
             else {
 
-                $schedule = $schedule['max']
+//                $schedule = $schedule['max']
 
                 $timetaken = date('H:i', $schedule['max'] - $startSchedule);
                 var_dump($timetaken);
@@ -1478,8 +1480,77 @@ function calculateEndTimeEventByBusinessHours($startTime, $endTime, $duration){
             }
         }
     }
-    exit;
+//    exit;
     return $endTimeFinal;
 
 
+}
+
+function getNextSchedules ($TBusinessHours, $startTime, $endSchedule)
+{
+
+    $TSchedulesFinal = array();
+    $TSchedulesBefore = array();
+
+    $dateStart = new DateTime();
+    $dateStart->setTimestamp($startTime);
+
+    $dateEnd = new DateTime();
+    $dateEnd->setTimestamp($endSchedule);
+
+    $TBusinessHours = sortBusinessHours($TBusinessHours);
+
+    $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+
+    foreach ($TBusinessHours[$TDays[$dateStart->format('D')]] as $day => $schedule)
+    {
+
+        if ($dateStart->format('H:i') <= $schedule['max'] && $dateStart->format('H:i') >= $schedule['min'])
+        {
+
+            if ($dateEnd->format('H:i') <= $schedule['max'])
+            {
+                return $TSchedules;
+            }
+
+            else
+            {
+
+                $currentSchedule = $schedule;
+
+            }
+        }
+    }
+
+
+    if(!empty($currentSchedule)){
+
+        $TBusinessHoursBefore = $TBusinessHours;
+
+        foreach($TBusinessHours as $day => $TSchedules){
+
+
+        }
+
+    }
+    var_dump('ho');
+
+
+}
+
+function sortBusinessHours ($TBusinessHours){
+
+    $TBusinessHours = array('lundi' => $TBusinessHours['lundi'], 'mardi' => $TBusinessHours['mardi'],'mercredi' => $TBusinessHours['mercredi'], 'jeudi' => $TBusinessHours['jeudi'],'vendredi' => $TBusinessHours['vendredi'],'samedi' => $TBusinessHours['samedi'],'dimanche' => $TBusinessHours['dimanche']);
+
+    foreach ($TBusinessHours as &$TSchedules){
+
+        if(!empty($TSchedules)) usort($TSchedules, 'compareHours');
+    }
+
+    return $TBusinessHours;
+}
+
+function compareHours($a, $b){
+
+    return ($a['min'] < $b['min'])?-1:1;
 }
