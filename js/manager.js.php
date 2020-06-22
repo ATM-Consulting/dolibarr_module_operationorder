@@ -277,7 +277,7 @@ class Application
 					tr+= '<td>'+item.client+'</td>';
 					tr+= '<td>'+item.ref+'</td>';
 					if (item.immat !== undefined) tr+= '<td>'+item.immat+'</td>';
-					tr+= '<td>'+item.barcode+'</td></tr>';
+					tr+= '<td>'+item.bars+'<br />'+item.barcode+'</td></tr>';
 
 					orList.append(tr);
 				});
@@ -316,7 +316,7 @@ class Application
 					tr+= '<td>'+item.ref+'</td>';
 					tr+= '<td>'+item.qty+'</td>';
 					tr+= '<td>'+item.action+'</td>';
-					tr+= '<td>'+(!item.pointable ? '' : item.barcode)+'</td></tr>';
+					tr+= '<td>'+(!item.pointable ? '' : item.bars + '<br />' + item.barcode)+'</td></tr>';
 
 					orLines.append(tr);
 				});

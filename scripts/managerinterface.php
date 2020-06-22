@@ -65,7 +65,18 @@ if (empty($reshook) && !empty($action))
 
 	else if ($action == "getActionsList")
 	{
-		$data['actions'] = array(array('Annulation', 'IMPAnnul'), array('Fin de journée', 'IMPFin'));
+		$data['actions'] = array(
+			array(
+				'Annulation',
+				'IMPAnnul',
+				displayBarcode('IMPAnnul')
+			),
+			array(
+				'Fin de journée',
+				'IMPFin',
+				displayBarcode('IMPFin')
+			)
+		);
 
 		$barcode=new OperationOrderBarCode($db);
 		$TBarCodes = $barcode->fetchAll('', '', array('entity' => $conf->entity));
