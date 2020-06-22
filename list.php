@@ -107,6 +107,8 @@ if (!empty($object->isextrafieldmanaged))
 $listViewName = 'operationorder';
 $inputPrefix  = 'Listview_'.$listViewName.'_search_';
 
+$search_overshootMultiStatus = GETPOST('search_status', 'array');
+
 // Search value
 $search_overshootStatus = GETPOST($inputPrefix.'overshootstatus', 'int');
 if(GETPOSTISSET('button_removefilter_x')){
@@ -144,6 +146,11 @@ $sql.=$hookmanager->resPrint;
 
 $sql.= ' WHERE  t.entity IN ('.getEntity('operationorder', 1).')';
 //if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
+
+if (!empty($search_overshootMultiStatus) && count($search_overshootMultiStatus)>0) {
+	$sql.= ' AND ost.code IN (\''.implode('\',\'',$search_overshootMultiStatus).'\')';
+	//var_dump(implode('\',\'',$search_overshootMultiStatus));
+}
 
 if(!empty($search_overshootStatus) && $search_overshootStatus > 0){
 
@@ -191,6 +198,7 @@ $selectArray = array(
 );
 
 $formOvershootStatus = $form->selectarray($inputPrefix.$htmlName , $selectArray, $search_overshootStatus, 1);
+$formOvershootMultiStatus = $form->multiselectarray('search_status' , $TStatusSearchList, $search_overshootMultiStatus);
 
 // List configuration
 $listViewConfig = array(
@@ -225,7 +233,7 @@ $listViewConfig = array(
         ,'fk_soc' => array('search_type' => true, 'table' => 's', 'field' => array('nom','name_alias')) // input text de recherche sur plusieurs champs
         ,'fk_c_operationorder_type' => array('search_type' => true, 'table' => 'ctype', 'field' => array('code','label')) // input text de recherche sur plusieurs champs
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
-		,'status' => array('search_type' => $TStatusSearchList, 'to_translate' => true, 'table' => array('ost'), 'field' => array('code')) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+		,'status' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootMultiStatus) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
         ,'overshootstatus' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootStatus)
 		,'planned_date' => array('search_type' => 'calendars', 'allow_is_null' => true)
 	)
@@ -373,7 +381,6 @@ if ($reshook>0)
 {
 	$listViewConfig = $hookmanager->resArray;
 }
-
 echo $r->render($sql, $listViewConfig);
 
 $parameters=array('sql'=>$sql);
