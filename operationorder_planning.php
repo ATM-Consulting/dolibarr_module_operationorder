@@ -376,15 +376,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                     // La fonction à apeller si la requête aboutie
                     success: function (data) {
 
-                        if(data){
+                        var result = [];
 
-                        }
-                        var result = [
-                            {
-                                daysOfWeek: [1,2,3,4,5],
-                                startTime: fullcalendar_scheduler_businessHours_weekend_start,
-                                endTime: fullcalendar_scheduler_businessHours_week_end,
-                            }];
+                        if(data != 0) {
 
                         <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){?>
 
@@ -394,24 +388,23 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
                                 $.each(dayCurrent, function (index, value) {
 
-                                    //result.push(
-                                    //    daysOfWeek: [<?php //print $key ?>//]
-                                    //
-                                    //)
+                                    result.push({
+                                            daysOfWeek: [<?php print $key ?>],
+                                        startTime: value['min'],
+                                        endTime: value['max'],
+                                    });
 
                                 });
-
-
-
-                                //    daysOfWeek: [<?php //print $key ?>//], // Jour
-                                //
-                                //    startTime: '<?php //print $TSchedules['min']?>//', // début de l'horaire
-                                //    endTime:  '<?php //print $TSchedules['max']?>//', // fin de l'horaire
-                                //},
-                                //foreach ($Tfullcalendar_scheduler_businessHours[$day] as $i=>$TSchedules){?>
                             }
-
                             <?php } ?>
+
+                        } else {
+                            result.push({
+                                daysOfWeek: [1,2,3,4,5],
+                                startTime: fullcalendar_scheduler_businessHours_weekend_start,
+                                endTime: fullcalendar_scheduler_businessHours_week_end,
+                            });
+                        }
 
                         calendar.setOption('businessHours', result);
                     }
