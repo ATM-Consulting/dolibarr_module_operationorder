@@ -115,8 +115,9 @@ if($objecttype == 'user')
     $head = user_prepare_head($object);
     $title = $langs->trans("User");
     dol_fiche_head($head, 'userplanning', $title, -1, 'user');
+	dol_banner_tab($object, 'id', $linkback, 0);
 
-    $userCanModify = $user->rights->operationorder->userplanning->write;
+	$userCanModify = $user->rights->operationorder->userplanning->write;
 
 } elseif ($objecttype == 'usergroup')
 {
@@ -124,6 +125,7 @@ if($objecttype == 'user')
     $head = group_prepare_head($object);
     $title = $langs->trans("Group");
     dol_fiche_head($head, 'usergroupplanning', $title, -1, 'group');
+	dol_banner_tab($object, 'id', $linkback, 0);
 
     $userCanModify = $user->rights->operationorder->usergroupplanning->write;
 }

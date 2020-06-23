@@ -237,7 +237,7 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
 
     $out.= '<script type="text/javascript" >
 					$(document).ready(function(){
-					   
+
 					    $("#' . $id . '").DataTable({
 						"pageLength" : 10,
 						"language": {
@@ -245,7 +245,7 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
 						},
 						responsive: true
 					});
-					   
+
 					});
 			   </script>';
 
@@ -490,6 +490,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	}
 
 	$sql.= ' AND o.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  display_on_planning > 0 ) ';
+	$sql.= ' AND o.entity IN ('.getEntity('operationorder', 1).') ';
 
 	$resql = $db->query($sql);
 

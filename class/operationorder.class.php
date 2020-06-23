@@ -99,6 +99,7 @@ class OperationOrder extends SeedObject
         'time_planned_t' => array ('type' => 'integer', 'label' => 'TimePlannedTheoretical', 'enabled' => 1, 'position' => 1300, 'notnull' => 1, 'visible' => 4, 'default' => 0, 'noteditable' => 1, 'help'=>"HoursMinFormat"),
         'time_planned_f' => array ('type' => 'integer', 'label' => 'TimePlannedForced', 'enabled' => 1, 'position' => 1400, 'notnull' => 0, 'visible' => 1, 'help'=>"HoursMinFormat"),
         'planned_date' => array ('type' => 'datetime', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1),
+		'date_creation' => array ('type' => 'datetime', 'label' => 'DateCreationOperationOrder', 'enabled' => 1, 'position' => 1600, 'notnull' => 1, 'visible' => 4,'noteditable'=>'1'),
     );
 
     public $ref;
@@ -267,9 +268,10 @@ class OperationOrder extends SeedObject
 
 
 
+
 			if (!empty($this->lines))
 			{
-				foreach ($this->lines as $i =>& $line)
+				foreach ($this->lines as $i =>$line)
 				{
 					if(empty($line->fk_parent_line)){
 
@@ -281,7 +283,6 @@ class OperationOrder extends SeedObject
 							$product = new Product($this->db);
 							$res = $product->fetch( $line->fk_product);
 							if($res){
-								$line->price = $product->price;
 								$lineNeedUpdate = true;
 							}
 						}
@@ -292,7 +293,7 @@ class OperationOrder extends SeedObject
 								$line->id,
 								$line->description,
 								$line->qty,
-								$line->price,
+                                $product->price,
 								$line->fk_warehouse,
 								$line->pc,
 								$line->time_planned,
@@ -308,7 +309,6 @@ class OperationOrder extends SeedObject
 								$line->array_options
 							);
 						}
-
 						// Add others products for lines
 						$this->recurciveAddChildLines($line->id, $line->fk_product, $line->qty);
 					}
@@ -474,6 +474,25 @@ class OperationOrder extends SeedObject
     public function clearUniqueFields()
     {
 
+    }
+
+    public function deleteline($lineid) {
+        global $user;
+
+        $this->db->begin();
+        $line = new OperationOrderDet($this->db);
+
+        // For triggers
+        $line->fetch($lineid);
+
+        if($line->delete($user) > 0) {
+            $this->db->commit();
+            return 1;
+        }
+        else {
+            $this->db->rollback();
+            return -1;
+        }
     }
 
 
@@ -1180,7 +1199,6 @@ class OperationOrder extends SeedObject
 			$res = $product->fetch($fk_product);
 			if($res){
 				$arbo = $product->getChildsArbo($product->id, 1);
-
 				if (!empty($arbo))
 				{
 					foreach ($arbo as $productid => $product_info)
@@ -2172,11 +2190,11 @@ class OperationOrderDet extends SeedObject
         $TStatusId = array();
         if(!empty($TStatus)) {
             foreach($TStatus as $status) $TStatusId[] = $status->id;
-            $sql = "SELECT SUM(ood.qty) as qty 
-                    FROM ".MAIN_DB_PREFIX."operationorderdet as ood 
+            $sql = "SELECT SUM(ood.qty) as qty
+                    FROM ".MAIN_DB_PREFIX."operationorderdet as ood
                     LEFT JOIN ".MAIN_DB_PREFIX."operationorder as oo ON (oo.rowid = ood.fk_operation_order)
-                    WHERE ood.fk_product = ".$this->product->id." 
-                    AND oo.entity IN (".getEntity('operationorder').") 
+                    WHERE ood.fk_product = ".$this->product->id."
+                    AND oo.entity IN (".getEntity('operationorder').")
                     AND oo.status IN (".implode(',',$TStatusId).") ";
             if(!empty($date)) $sql .= "AND oo.planned_date < '".date('Y-m-d', $date)."'";
             $resql = $this->db->query($sql);
