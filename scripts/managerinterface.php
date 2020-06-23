@@ -35,7 +35,11 @@ $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action
 
 if (empty($reshook) && !empty($action))
 {
-	if ($action == "getUserList")
+	if ($action == 'logged-status')
+	{
+		$data['msg'] = 'ok';
+	}
+	else if ($action == "getUserList")
 	{
 		$data['users'] = array();
 
@@ -190,14 +194,30 @@ if (empty($reshook) && !empty($action))
 		{
 			$TPointable = $ProdErrors = array();
 
+			$alreadyUsed = array();
+			$sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
+			$sql.= " WHERE mvt.origintype = 'operationorder'";
+			$sql.= " AND mvt.fk_origin = ".$OR->id;
+			$sql.= " GROUP BY mvt.fk_product";
+
+			$resql = $db->query($sql);
+			if ($resql)
+			{
+				while ($obj = $db->fetch_object($resql))
+				{
+					$alreadyUsed[$obj->fk_product] = abs($obj->total);
+				}
+			}
+
 			foreach ($OR->lines as $line)
 			{
 //				$data['debug'][] = $line->fk_product;
+
 				if ($line->fk_product && ! array_key_exists(intval($line->fk_product), $TPointable))
 				{
 					$TPointable[$line->fk_product] = false;
 					$line->fetch_product();
-					$data['debug'][$line->fk_product] = $line->product->array_options;
+
 					if ($line->product->array_options['options_or_scan'] == "1")
 					{
 						$TPointable[$line->fk_product] = true;
@@ -216,9 +236,25 @@ if (empty($reshook) && !empty($action))
 
 				}
 
+				$used = 0;
+				if (isset($alreadyUsed[$line->fk_product]))
+				{
+					if ($alreadyUsed[$line->fk_product] > $line->qty)
+					{
+						$used = $line->qty;
+						$alreadyUsed[$line->fk_product] -= $line->qty;
+					}
+					else
+					{
+						$used = $alreadyUsed[$line->fk_product];
+						unset($alreadyUsed[$line->fk_product]);
+					}
+				}
+
 				$data['oOrderLines'][] = array(
 					'ref' 		=> $line->product_ref
 					,'qty' 		=> $line->qty
+					,'qtyUsed'	=> $used
 					,'action' 	=> $TPointable[$line->fk_product] ? "Démarrer" : (empty($ProdErrors[$line->fk_product]) ? "Sortie de stock" : $ProdErrors[$line->fk_product])
 					,'barcode' 	=> 'LIG'.$line->id
 					,'bars'		=> $TPointable[$line->fk_product] ? displayBarcode('LIG'.$line->id) : ""
@@ -401,7 +437,7 @@ if (empty($reshook) && !empty($action))
 				$sql.= " GROUP BY mvt.fk_product";
 
 				$resql = $db->query($sql);
-				if (!$resql)
+				if ($resql)
 				{
 					while ($obj = $db->fetch_object($resql))
 					{

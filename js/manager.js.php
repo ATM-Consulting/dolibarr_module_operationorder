@@ -55,6 +55,33 @@ function setErrorMsg(msg)
 	msgDiv.appendTo('#infosBar .col-md-12');
 }
 
+checkLoginStatus();
+
+function checkLoginStatus() {
+
+	$.ajax({
+		url: endPoint,
+		dataType: "json",
+		crossDomain: true,
+		data: {
+			action:'logged-status'
+		}
+	})
+		.then(function (data){
+
+			if(data.msg!='ok') {
+				document.location.href = document.location.href; // reload car la session est expirée
+			}
+			else {
+				setTimeout(function() {
+					checkLoginStatus();
+				}, 30000);
+			}
+
+		});
+
+}
+
 class Application
 {
 
@@ -323,7 +350,7 @@ class Application
 			},
 			dataType: 'json'
 		}).done(function (data) {
-			console.log(data);
+			//console.log(data);
 			let orLines = $('#tableLines tbody');
 			orLines.empty();
 
@@ -331,7 +358,7 @@ class Application
 				data.oOrderLines.forEach(function(item) {
 					var tr = '<tr class="oorderline" '+ (!item.pointable ? '' : 'onclick="javascript:setParam(\'' + item.barcode + '\')"') +' data-barcode="' + item.barcode + '" data-pointable="' + item.pointable + '">';
 					tr+= '<td>'+item.ref+'</td>';
-					tr+= '<td>'+item.qty+'</td>';
+					tr+= '<td>'+( item.qtyUsed != 0 ? item.qtyUsed + " / " : "" )+item.qty+'</td>';
 					tr+= '<td>'+item.action+'</td>';
 					tr+= '<td>'+(!item.pointable ? '' : item.bars + '<br />' + item.barcode)+'</td></tr>';
 
