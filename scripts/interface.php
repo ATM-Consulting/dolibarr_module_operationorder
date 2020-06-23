@@ -60,12 +60,10 @@ if(GETPOST('action'))
 	}
 	elseif($action == 'getBusinessHours'){
 
-        $timeZone = GETPOST('timeZone');
-        $eventsType = GETPOST('eventsType');
-        $range_start = OO_parseFullCalendarDateTime(GETPOST('start'), $timeZone);
-        $range_end = OO_parseFullCalendarDateTime(GETPOST('end'), $timeZone);
+        $beginOfWeek = GETPOST('beginOfWeek');
+        $endOfWeek = GETPOST('endOfWeek');
 
-        $data = getOperationOrderUserPlanningSchedule();
+        $data = getOperationOrderUserPlanningSchedule($beginOfWeek,  $endOfWeek);
 
         print json_encode($data);
         exit;

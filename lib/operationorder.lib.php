@@ -27,6 +27,8 @@
  */
 
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
+dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+
 
 function operationorderAdminPrepareHead()
 {
@@ -1249,7 +1251,7 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
  * @return array si planning existe, 0 si inexistant, -1 si erreur
  */
 
-function getOperationOrderUserPlanningSchedule(){
+function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek = 0){
 
     require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
 
@@ -1257,7 +1259,54 @@ function getOperationOrderUserPlanningSchedule(){
 
     $TSchedules = array();
     $TSchedulesByUser = array();
+    $TDaysOff = array();
     $TDays = array('lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche');
+    $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+
+
+    //Gestion des jours fériés de la semaine
+    $dateStart = new DateTime();
+    $dateStart->setTimestamp($startTimeWeek);
+
+    $dateEnd = new DateTime();
+    $dateEnd->setTimestamp($endTimeWeek);
+
+    //Dates de la semaine
+    $TDates = array();
+
+    $date_start_details = date_parse($dateStart->format('Y-m-d'));
+    $date_end_details = date_parse($dateEnd->format('Y-m-d'));
+
+    $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
+    $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
+
+    $jourOff = new OperationOrderJoursOff($db);
+
+    for ($i = $debut_date; $i < $fin_date; $i += 86400)
+    {
+        $TDates[] = $i;
+    }
+
+    //recherche des jours fériés dans la semaine
+    foreach ($TDates as $date){
+
+        $currentDate = date('Y-m-d H:i:s', $date);
+
+        $res = $jourOff->isOff($currentDate);
+
+        if($res){
+            $TDaysOff[] = $TDaysConvert[date('D', $date)];
+        }
+
+    }
+
+    //suppression des jours fériés dans les jours à traiter
+    foreach($TDays as $day){
+
+        if(in_array($day, $TDaysOff)){
+            unset($TDays[array_search($day, $TDays)]);
+        }
+    }
 
     //usergroup paramétré
     $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
@@ -1386,19 +1435,6 @@ function getOperationOrderUserPlanningSchedule(){
 
         }
 
-//        //userplanning en fonction du groupe d'utilisateurs
-//        if (empty($TSchedules))
-//        {
-//            $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
-//
-//            if ($res > 0 && $userplanning->active > 0)
-//            {
-//                foreach ($userplanning->fields as $key => $value)
-//                {
-//                    $TSchedules[$key] = $userplanning->$key;
-//                }
-//            }
-//        }
     }
 
     return $TSchedules;
