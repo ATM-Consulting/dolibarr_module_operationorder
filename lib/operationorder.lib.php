@@ -28,6 +28,8 @@
 
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+dol_include_once('/absence/class/absence.class.php');
+
 
 
 function operationorderAdminPrepareHead()
@@ -1287,6 +1289,8 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $TDates[] = $i;
     }
 
+    $dateEnd->setTimestamp(end($TDates));
+
     //recherche des jours fériés dans la semaine
     foreach ($TDates as $date){
 
@@ -1342,6 +1346,42 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
             }
 
+
+            //On récupère toutes les absences de l'utilisateur pour la semaine
+            $PDOdb=new TPDOdb;
+            $absence = new TRH_Absence($db);
+
+            $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, $dateStart->format('Y-m-d'), $dateEnd->format('Y-m-d'));
+            $TAbsences = array();
+
+            foreach ($TPlanning as $t_current => $TAbsence)
+            {
+
+                foreach($TAbsence as $fk_user => $TRH_absenceDay)
+                {
+
+                    foreach($TRH_absenceDay as $absence){
+
+                        $absenceDateTimestamp = strtotime($absence->date);
+                        $dayabsence = date('D', $absenceDateTimestamp);
+
+                        if(!empty($absence) && $absence->ddMoment == 'matin' && $absence->ddMoment == 'apresmidi') {
+
+                            $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
+                            $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
+
+                        } elseif(!empty($absence && $absence->ddMoment == 'matin' && $absence->ddMoment == 'matin')){
+
+                            $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
+
+                        } elseif(!empty($absence && $absence->ddMoment == 'apresmidi' && $absence->ddMoment == 'apresmidi')) {
+                            $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
+                        }
+                    }
+                }
+
+            }
+
             foreach ($TDays as $day)
             {
                 $i = 0;
@@ -1354,10 +1394,11 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                     && empty($userplanning->{$day.'_heurefpm'}))
                         continue;
 
-                    if(empty($userplanning->{$day.'_heuredam'})) $userplanning->{$day.'_heuredam'} = '00:00';
-                    if(empty($userplanning->{$day.'_heurefam'})) $userplanning->{$day.'_heurefam'} = '00:00';
-                    if(empty($userplanning->{$day.'_heuredpm'})) $userplanning->{$day.'_heuredpm'} = '00:00';
-                    if(empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heurefpm'} = '00:00';
+
+                    if(empty($userplanning->{$day.'_heuredam'}) || !empty(in_array($day.'_am', $TAbsences))) $userplanning->{$day.'_heuredam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefam'}) || !empty(in_array($day.'_am', $TAbsences))) $userplanning->{$day.'_heurefam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heuredpm'}) || !empty(in_array($day.'_pm', $TAbsences))) $userplanning->{$day.'_heuredpm'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefpm'}) || !empty(in_array($day.'_pm', $TAbsences))) $userplanning->{$day.'_heurefpm'} = '00:00';
 
                     if (empty($TSchedules[$day]))
                     {
