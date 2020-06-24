@@ -1483,20 +1483,46 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
 function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWeek, $endOfWeek){
 
-    var_dump($beginOfWeek); exit;
+    var_dump($beginOfWeek);
+    var_dump($endOfWeek);
 
-    $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
+
+    $date = new DateTime();
+    $date->setTimestamp($endOfWeek);
+
+    $date2 = new DateTime();
+    $date2->setTimestamp($beginOfWeek);
 
     $endTime = $startTime + $duration;
+    $i = 0;
 
-    $TNextSchedules = getNextSchedules($TBusinessHours, $startTime, $endTime);
+    while($duration > 0)
+    {
+       if(empty($i)) $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
+       else {
 
-    if(!empty($TNextSchedules)) {
-        foreach($TNextSchedules as $day => $TNextSchedule) {
-            //TODO il faut ajouter au endTime la durée pour aller au prochain créneau quand c'est nécessaire
-            //On soustrait la durée du créneau à $duration si la durée du créneau est inférieure à duration
-            //Sinon on ajoute  au endTime $duration
+           $beginOfWeek = $endOfWeek;
+           $endOfWeek = $beginOfWeek + 24 * 60 * 60 * 7;
+
+           $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
+
+       }
+
+
+        $TNextSchedules = getNextSchedules($TBusinessHours, $startTime, $endTime);
+
+        if (!empty($TNextSchedules))
+        {
+            foreach ($TNextSchedules as $day => $TNextSchedule)
+            {
+                //TODO il faut ajouter au endTime la durée pour aller au prochain créneau quand c'est nécessaire
+                //On soustrait la durée du créneau à $duration si la durée du créneau est inférieure à duration
+                //Sinon on ajoute  au endTime $duration
+            }
         }
+
+        $i++;
+
     }
 
     return $endTime;
