@@ -2067,12 +2067,12 @@ class OperationOrderDet extends SeedObject
 	 *
 	 * @param int $fk_parent_line object
 	 * @param bool $nested 0 = return simple array of lines , 1 = return recusive table of object need recursive nested
+	 * @param bool $flat 0 = return nested array , 1 = return flat array
+	 * @param array $TNested
 	 * @return array array of object
 	 * @throws Exception
 	 */
-	public function fetch_all_children_lines($fk_parent_line = 0, $nested = false) {
-
-		$TNested = array();
+	public function fetch_all_children_lines($fk_parent_line = 0, $nested = false, $flat = false, &$TNested = array()) {
 
 		$sql = "SELECT";
 		$sql .= " line.rowid,";
@@ -2103,10 +2103,16 @@ class OperationOrderDet extends SeedObject
 				$line->fetch($obj->rowid);
 
 				if($nested){
-					$TNested[$i] = array(
-						'object' => $line,
-						'children' => $this->fetch_all_children_lines($obj->rowid, true)
-					);
+				    if(!$flat) {
+                        $TNested[$i] = array(
+                            'object' => $line,
+                            'children' => $this->fetch_all_children_lines($obj->rowid, true)
+                        );
+                    } else {
+				        $TNested[$obj->rowid] = $line;
+                        $this->fetch_all_children_lines($obj->rowid, true, true, $TNested);
+                    }
+
 				}
 				else{
 					$TNested[$i] = $line;
