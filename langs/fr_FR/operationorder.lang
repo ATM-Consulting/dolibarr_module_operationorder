@@ -23,6 +23,10 @@ OPODER_STATUS_ON_PLANNED=Statut à utiliser lors de la planification d'un ordre 
 OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING=Groupe d'utilisateurs à prendre en compte pour le planning OR
 OPODER_DISPLAY_STOCK_ON_PLANNING=Afficher une alerte sur les évènements du planning en fonction des stocks physiques/virtuels
 OPODER_DISPLAY_STOCK_ON_PLANNING_help=Prenant en compte les commandes fournisseurs associés à l’ordre de réparation et leurs dates de livraison prévues
+BarCodeImpSetup=Paramétrage code-barres des tâches improductives
+BarCodeAdded=Code-barres ajouté
+BarCodeDeleted=Code-barres supprimé
+AddBarCode=Ajouter un code-barres
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -120,6 +124,7 @@ ShowOperationOrder=Ordre de réparation
 NewOperationOrder=Création ordre de réparation
 OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
+DateCreationOperationOrder=Date création
 ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 OperationOrderCreateSupplierOrder=Créer commande fournisseur
 CreateSupplierOrder=Créer commande fournisseur
@@ -198,6 +203,8 @@ Multicompany=Options du module multi sociétés
 PdfCustomOrderTitle=Ordre de réparation
 OperationOrderDate=Date
 PDFolafDescription=Modèle standard des ordres de réparations
+PdfBarcodeImpTitle=PDF Code-barres Improductifs
+GenerateFile=Générer le fichier
 
 # Planning
 LeftMenuOperationOrderPlanning=Planification
