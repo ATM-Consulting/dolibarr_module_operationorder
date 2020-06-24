@@ -152,6 +152,13 @@ $listViewConfig = array(
         'fk_operationorderdet' => '_getProdNomURL(\'@fk_operationorderdet@\')',
         'fk_user_creat' => '_getUserNomURL(\'@fk_user_creat@\')'
     )
+    ,'eval'=>array(
+        'fk_operationorder' => '_getOONomURL(\'@fk_operationorder@\')',
+        'fk_operationorderdet' => '_getProdNomURL(\'@fk_operationorderdet@\')',
+        'fk_user_creat' => '_getUserNomURL(\'@fk_user_creat@\')'
+    )
+    ,'sortfield'=>'rowid'
+    ,'sortorder'=>'DESC'
 );
 
 foreach ($object->fields as $key => $field){

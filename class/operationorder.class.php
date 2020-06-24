@@ -1945,7 +1945,7 @@ class OperationOrderDet extends SeedObject
 				$out.= $warehouse->getNomUrl(1);
 			}
 		}
-		elseif ($key == 'time_planned')
+		elseif ($key == 'time_planned' || $key == 'time_spent')
 		{
 			if (!empty($this->time_planned)){
 				if(!function_exists('convertSecondToTime')){
@@ -2105,6 +2105,7 @@ class OperationOrderDet extends SeedObject
 				/**
 				 * @var $line OperationOrderDet
 				 */
+				if(!empty($this->parent))$line->parent = $this->parent;
 				$res = $line->delete($user, $notrigger);
 				if($res < 0){
 					return -2;

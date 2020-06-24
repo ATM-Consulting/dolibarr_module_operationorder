@@ -104,7 +104,7 @@ class OperationOrderHistory extends SeedObject
         return $TRes;
     }
 
-    public function compareAndSaveDiff($oldcopy, $object) {
+    public function compareAndSaveDiff($oldcopy, &$object) {
         global $langs, $user;
         if(strpos($object->element, 'det') !== false) $this->title = $langs->transnoentitiesnoconv('OOLineUpdate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
         else $this->title = $langs->transnoentitiesnoconv('OOUpdate', $object->ref);
@@ -147,20 +147,23 @@ class OperationOrderHistory extends SeedObject
             }
             $this->save($user);
         }
+        $object->oldcopy = $object;
     }
 
-    public function saveCreationOrDeletion($object, $type = 'create') {
+    public function saveCreationOrDeletion(&$object, $type = 'create') {
         global $langs, $user;
         if(strpos($object->element, 'det') !== false) {
+            if(!empty($object->parent->ref)) $parentref = $object->parent->ref;
+            else $parentref = OperationOrder::getStaticRef($object->fk_operation_order);
             if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOLineCreate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
-            else $this->title = $langs->transnoentitiesnoconv('OOLineDelete', OperationOrder::getStaticRef($object->fk_operation_order).'('.$object->fk_operation_order.')', $object->getProductRef());
+            else $this->title = $langs->transnoentitiesnoconv('OOLineDelete', $parentref, $object->getProductRef());
             $this->description = $langs->transnoentitiesnoconv($object->fields['qty']['label']). ' : '.$object->showOutputFieldQuick('qty');
             $this->fk_operationorder = $object->fk_operation_order;
             $this->fk_operationorderdet = $object->id;
         }
         else {
             if($type == 'create') $this->title = $langs->transnoentitiesnoconv('OOCreate', $object->ref);
-            else $this->title = $langs->transnoentitiesnoconv('OODelete', $object->ref . '('.$object->id.')');
+            else $this->title = $langs->transnoentitiesnoconv('OODelete', $object->ref);
 
             $this->description = $langs->transnoentitiesnoconv($object->fields['fk_soc']['label']). ' : '.$object->showOutputFieldQuick('fk_soc');
             if(!empty($object->array_options)) {
@@ -178,6 +181,7 @@ class OperationOrderHistory extends SeedObject
             $this->fk_operationorder = $object->id;
         }
         $this->save($user);
+        $object->oldcopy = $object;
     }
 
 
