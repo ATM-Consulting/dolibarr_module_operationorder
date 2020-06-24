@@ -1365,16 +1365,16 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                         $absenceDateTimestamp = strtotime($absence->date);
                         $dayabsence = date('D', $absenceDateTimestamp);
 
-                        if(!empty($absence) && $absence->ddMoment == 'matin' && $absence->ddMoment == 'apresmidi') {
+                        if(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi') {
 
                             $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
                             $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
 
-                        } elseif(!empty($absence && $absence->ddMoment == 'matin' && $absence->ddMoment == 'matin')){
+                        } elseif(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin'){
 
                             $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
 
-                        } elseif(!empty($absence && $absence->ddMoment == 'apresmidi' && $absence->ddMoment == 'apresmidi')) {
+                        } elseif(!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi') {
                             $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
                         }
                     }
