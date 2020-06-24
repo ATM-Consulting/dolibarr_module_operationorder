@@ -138,9 +138,10 @@ if($action == 'addbarcodeimp'){
     }
 } elseif($action == 'generatedocument') {
 
+	$userCodes = GETPOST('usercodes', 'int');
     $barcodeImpList = new OperationOrderBarCodeImpList($db);
 
-    $res = $barcodeImpList->generateDocument('', $langs);
+    $res = $barcodeImpList->generateDocument('', $langs, $userCodes);
 
     if($res > 0){
         setEventMessage('FileGenerated');
@@ -234,6 +235,7 @@ print '<input type="hidden" name="action" value="generatedocument">' . "\n";
 
 print '<div class="right">';
 print '<button type="submit" class="button" >'.$langs->transnoentities('GenerateFile').'</button>';
+print '<a href="'.$_SERVER['PHP_SELF'].'?action=generatedocument&usercodes=1" class="button">'.$langs->transnoentities('GenerateFile'). ' ' . $langs->trans('User').'</a>';
 print '</div>';
 
 print '</form>';

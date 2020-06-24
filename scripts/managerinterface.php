@@ -281,7 +281,16 @@ if (empty($reshook) && !empty($action))
 		{
 			$counter->task_datehour_f = dol_now();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
-			$counter->update($usr);
+			$ret = $counter->update($usr);
+			if ($ret > 0 && $counter->fk_orDet > 0)
+			{
+				// mise à jour du temps passé sur la ligne pointable
+				$ordet = new OperationOrderDet($db);
+				$ordet->fetch($counter->fk_orDet);
+
+				$ordet->time_spent += $counter->task_duration;
+				$ordet->update($usr);
+			}
 //			$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
 		}
 
@@ -337,6 +346,15 @@ if (empty($reshook) && !empty($action))
 
 			if ($retupd > 0)
 			{
+				if ($counter->fk_orDet > 0)
+				{
+					// mise à jour du temps passé sur la ligne pointable
+					$ordet = new OperationOrderDet($db);
+					$ordet->fetch($counter->fk_orDet);
+
+					$ordet->time_spent += $counter->task_duration;
+					$ordet->update($usr);
+				}
 				$data['msg'] = $langs->trans('MsgCounterStop', $counter->label, $usr->login);
 				$data['result'] = 1;
 			}
@@ -392,7 +410,18 @@ if (empty($reshook) && !empty($action))
 			{
 				$counter->task_datehour_f = dol_now();
 				$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
-				$counter->update($usr);
+				$ret = $counter->update($usr);
+
+				if ($ret > 0 && $counter->fk_orDet > 0)
+				{
+					// mise à jour du temps passé sur la ligne pointable
+					$ordet = new OperationOrderDet($db);
+					$ordet->fetch($counter->fk_orDet);
+
+					$ordet->time_spent += $counter->task_duration;
+					$ordet->update($usr);
+				}
+
 				$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
 			}
 

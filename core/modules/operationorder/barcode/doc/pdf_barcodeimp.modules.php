@@ -193,6 +193,7 @@ class pdf_barcodeimp extends CommonDocGenerator
 
             $dir = $conf->operationorder->multidir_output[$object->entity];
             $file = $dir . "/barcodeimp_list.pdf";
+			if ($hidedetails) $file = $dir . "/barcodeusr_list.pdf";
 
             if (! file_exists($dir))
             {
@@ -260,21 +261,50 @@ class pdf_barcodeimp extends CommonDocGenerator
                     'fontsize'=>4
                 );
 
+                if ($hidedetails)
+				{
+					$object->list = array();
+
+					require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
+					$userGroup = new UserGroup($this->db);
+					$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
+					if ($retgroup > 0)
+					{
+						$userList = $userGroup->listUsersForGroup();
+						if (!empty($userList))
+						{
+							foreach ($userList as $u)
+							{
+								$object->list['USR'.$u->login] = $u->getFullname($langs);
+							}
+						}
+					}
+				}
+
                 foreach($object->list as $idbarcode=>$label)
                 {
-                    $operationorderbarcode = new OperationOrderBarCode($db);
-                    if ($idbarcode == 'annul' || $idbarcode == 'fin') 
-                    {
-                        $operationorderbarcode->code = 'IMPAnnul';
-                        $operationorderbarcode->label = "Annuler";
+					if (! $hidedetails)
+					{
+						$operationorderbarcode = new OperationOrderBarCode($db);
+						if ($idbarcode == 'annul' || $idbarcode == 'fin')
+						{
+							$operationorderbarcode->code = 'IMPAnnul';
+							$operationorderbarcode->label = "Annuler";
 
-                        if ($idbarcode == 'fin')
-                        {
-                            $operationorderbarcode->code = 'IMPFin';
-                            $operationorderbarcode->label = "Fin de journée";
-                        }
-                    }
-                    else $res =$operationorderbarcode->fetch($idbarcode);
+							if ($idbarcode == 'fin')
+							{
+								$operationorderbarcode->code = 'IMPFin';
+								$operationorderbarcode->label = "Fin de journée";
+							}
+						}
+						else $res =$operationorderbarcode->fetch($idbarcode);
+					}
+					else
+					{
+						$operationorderbarcode = new stdClass;
+						$operationorderbarcode->code = $idbarcode;
+						$operationorderbarcode->label = $label;
+					}
 
                     $pdf->startTransaction();
 
