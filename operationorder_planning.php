@@ -42,6 +42,8 @@ $action = GETPOST('action');
 $id_operationorder = GETPOST('operationorder');
 $startTime = GETPOST('startTime');
 $endTime = GETPOST('endTime');
+$beginOfWeek = GETPOST('beginOfWeek');
+$endOfWeek = GETPOST('endOfWeek');
 $allDay = GETPOST('allDay');
 
 $title = $langs->trans("OperationOrderPlanning");
@@ -62,7 +64,7 @@ if($action == "createOperationOrderAction"){
 
     global $langs;
 
-    $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder);
+    $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder, $beginOfWeek, $endOfWeek);
 
     if($res < 0){
         setEventMessage($langs->trans('ErrorORActionCreation'), 'errors');
@@ -208,6 +210,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                         let startTimestamp = Math.floor(selectionInfo.start.getTime() / 1000);
                         let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
 
+                        var beginOfWeek = Math.floor(calendar.view.activeStart.getTime() / 1000);
+                        var endOfWeek = Math.floor(calendar.view.activeEnd.getTime() / 1000);
+
                         $.ajax({
                             url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getTableDialogPlanable',
                             method: 'POST',
@@ -215,6 +220,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                                 'url': window.location.href,
                                 'startTime': startTimestamp,
                                 'endTime': endTimestamp,
+                                'beginOfWeek': beginOfWeek,
+                                'endOfWeek': endOfWeek,
                                 'allDay': selectionInfo.allDay
                             },
                             dataType: 'json',

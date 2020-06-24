@@ -1030,7 +1030,7 @@ function getTHoraire()
 	return $THoraire;
 }
 
-function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
+function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder, $beginOfWeek, $endOfWeek){
 
     global $langs, $db, $user, $conf;
 
@@ -1056,8 +1056,8 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
 //            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
 //            else $action_or->datef = $startTime + $operationorder->time_planned_t;
             //OR temps forcé ou temps théorique ou rien
-            if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f);
-            else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t);
+            if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f, $beginOfWeek, $endOfWeek);
+            else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t, $beginOfWeek, $endOfWeek);
 
             if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
             {
@@ -1481,9 +1481,11 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     return $TSchedules;
 }
 
-function calculateEndTimeEventByBusinessHours($startTime, $duration){
+function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWeek, $endOfWeek){
 
-    $TBusinessHours = getOperationOrderUserPlanningSchedule();
+    var_dump($beginOfWeek); exit;
+
+    $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
 
     $endTime = $startTime + $duration;
 
