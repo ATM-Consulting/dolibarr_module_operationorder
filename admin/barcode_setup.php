@@ -34,6 +34,7 @@ dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
 dol_include_once('/operationorder/class/operationorderbarcodeimplist.class.php');
+require_once DOL_DOCUMENT_ROOT.'/core/modules/barcode/doc/tcpdfbarcode.modules.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 
 
@@ -51,12 +52,25 @@ if (! $user->admin && empty($user->rights->operationorder->status->write)) {
 
 //object
 $object=new OperationOrderBarCode($db);
-$TBarCodes = $object->fetchAll('', '', array('entity' => $conf->entity));
+$obj = new stdClass;
+$obj->label = "Annuler";
+$obj->code = "IMPAnnul";
+$TBarCodes[] = $obj;
+
+$obj = new stdClass;
+$obj->label = "Fin de journée";
+$obj->code = "IMPFin";
+$TBarCodes[] = $obj;
+$TBarCodes = array_merge($TBarCodes, $object->fetchAll('', '', array('entity' => $conf->entity)));
+//$TBarCodes = $object->fetchAll('', '', array('entity' => $conf->entity));
+//echo '<pre>'; var_dump($TBarCodes);
 
 // Parameters
 $action = GETPOST('action', 'alpha');
 $label_barcode = GETPOST('imp_label', 'alpha');
 $id_barcode = GETPOST('barcodeid', 'alpha');
+
+$moduleBarcode = new modTcpdfbarcode($db);
 
 /*
  * Actions
@@ -124,9 +138,10 @@ if($action == 'addbarcodeimp'){
     }
 } elseif($action == 'generatedocument') {
 
+	$userCodes = GETPOST('usercodes', 'int');
     $barcodeImpList = new OperationOrderBarCodeImpList($db);
 
-    $res = $barcodeImpList->generateDocument('', $langs);
+    $res = $barcodeImpList->generateDocument('', $langs, $userCodes);
 
     if($res > 0){
         setEventMessage('FileGenerated');
@@ -180,9 +195,16 @@ foreach($TBarCodes as $barcode){
 
         print '<tr id = "barcode_'.$barcode->id.'">';
         print '<td class="center barcode_label">'.$barcode->label.'</td>';
-        print '<td class="center barcode_code">'.$barcode->code.'</td>';
+
+        // Build barcode on disk (not used, this is done to make debug easier)
+        $result = $moduleBarcode->writeBarCode($barcode->code, 'C128', 'Y');
+        // Generate on the fly and output barcode with generator
+        $url = DOL_URL_ROOT.'/viewimage.php?modulepart=barcode&amp;generator=tcpdfbarcode&amp;code='.urlencode($barcode->code).'&amp;encoding=C128';
+        //print $url;
+        $code =  '<img src="'.$url.'" title="'.$barcode->code.'" border="0">';
+        print '<td class="center barcode_code">'.$code.'<br />'.$barcode->code.'</td>';
         print '<td class="center delete_action"><a href="'.$_SERVER["PHP_SELF"].'?action=ask_deletebarcode&barcodeid='.$barcode->id.'">';
-		print img_delete();
+		print ($barcode->code == 'IMPAnnul' || $barcode->code == 'IMPFin' ? '' : img_delete()) ;
 		print '</a></td>';
         print '</tr>';
     }
@@ -213,6 +235,7 @@ print '<input type="hidden" name="action" value="generatedocument">' . "\n";
 
 print '<div class="right">';
 print '<button type="submit" class="button" >'.$langs->transnoentities('GenerateFile').'</button>';
+print '<a href="'.$_SERVER['PHP_SELF'].'?action=generatedocument&usercodes=1" class="button">'.$langs->transnoentities('GenerateFile'). ' ' . $langs->trans('User').'</a>';
 print '</div>';
 
 print '</form>';
