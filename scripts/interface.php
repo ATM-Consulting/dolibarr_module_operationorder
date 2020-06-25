@@ -59,10 +59,18 @@ if(GETPOST('action'))
 	}
 	elseif($action == 'getBusinessHours'){
 
+        $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+
         $beginOfWeek = GETPOST('beginOfWeek');
         $endOfWeek = GETPOST('endOfWeek');
 
         $data = getOperationOrderUserPlanningSchedule($beginOfWeek,  $endOfWeek);
+
+        foreach($data as $date=>$TSchedules){
+
+            $data[$TDaysConvert[date('D', $date)]] = $TSchedules;
+            unset($data[$date]);
+        }
 
         print json_encode($data);
         exit;

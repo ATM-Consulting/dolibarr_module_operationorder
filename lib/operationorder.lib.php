@@ -1271,7 +1271,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
 
-    //Gestion des jours fériés de la semaine
     $dateStart = new DateTime();
     $dateStart->setTimestamp($startTimeWeek);
 
@@ -1304,16 +1303,16 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $res = $jourOff->isOff($currentDate);
 
         if($res){
-            $TDaysOff[] = $TDaysConvert[date('D', $date)];
+            $TDaysOff[] = $date;
         }
 
     }
 
     //suppression des jours fériés dans les jours à traiter
-    foreach($TDays as $day){
+    foreach($TDates as $date){
 
-        if(in_array($day, $TDaysOff)){
-            unset($TDays[array_search($day, $TDays)]);
+        if(in_array($date, $TDaysOff)){
+            unset($TDates[array_search($date, $TDates)]);
         }
     }
 
@@ -1372,24 +1371,31 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
                         if(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi') {
 
-                            $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
-                            $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
+                            $TAbsences[] = $absenceDateTimestamp.'_am';
+                            $TAbsences[] = $absenceDateTimestamp.'_pm';
 
                         } elseif(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin'){
 
-                            $TAbsences[] = $TDaysConvert[$dayabsence].'_am';
+                            $TAbsences[] = $absenceDateTimestamp.'_am';
 
                         } elseif(!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi') {
-                            $TAbsences[] = $TDaysConvert[$dayabsence].'_pm';
+                            $TAbsences[] = $absenceDateTimestamp.'_pm';
                         }
                     }
                 }
 
             }
 
-            foreach ($TDays as $day)
+            foreach ($TDates as $date)
             {
                 $i = 0;
+
+                $datetime = new DateTime();
+                $datetime->setTimestamp($date);
+
+                $day = $datetime->format('D');
+
+                $day = $TDaysConvert[$day];
 
                 foreach ($TSchedulesByUser as $userplanning)
                 {
@@ -1400,25 +1406,25 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                         continue;
 
 
-                    if(empty($userplanning->{$day.'_heuredam'}) || !empty(in_array($day.'_am', $TAbsences))) $userplanning->{$day.'_heuredam'} = '00:00';
-                    if(empty($userplanning->{$day.'_heurefam'}) || !empty(in_array($day.'_am', $TAbsences))) $userplanning->{$day.'_heurefam'} = '00:00';
-                    if(empty($userplanning->{$day.'_heuredpm'}) || !empty(in_array($day.'_pm', $TAbsences))) $userplanning->{$day.'_heuredpm'} = '00:00';
-                    if(empty($userplanning->{$day.'_heurefpm'}) || !empty(in_array($day.'_pm', $TAbsences))) $userplanning->{$day.'_heurefpm'} = '00:00';
+                    if(empty($userplanning->{$day.'_heuredam'}) || !empty(in_array($date.'_am', $TAbsences))) $userplanning->{$day.'_heuredam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefam'}) || !empty(in_array($date.'_am', $TAbsences))) $userplanning->{$day.'_heurefam'} = '00:00';
+                    if(empty($userplanning->{$day.'_heuredpm'}) || !empty(in_array($date.'_pm', $TAbsences))) $userplanning->{$day.'_heuredpm'} = '00:00';
+                    if(empty($userplanning->{$day.'_heurefpm'}) || !empty(in_array($date.'_pm', $TAbsences))) $userplanning->{$day.'_heurefpm'} = '00:00';
 
-                    if (empty($TSchedules[$day]))
+                    if (empty($TSchedules[$date]))
                     {
-                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredam'};
-                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefam'};
+                        $TSchedules[$date][$i]['min'] = $userplanning->{$day.'_heuredam'};
+                        $TSchedules[$date][$i]['max'] = $userplanning->{$day.'_heurefam'};
                         $i++;
-                        $TSchedules[$day][$i]['min'] = $userplanning->{$day.'_heuredpm'};
-                        $TSchedules[$day][$i]['max'] = $userplanning->{$day.'_heurefpm'};
+                        $TSchedules[$date][$i]['min'] = $userplanning->{$day.'_heuredpm'};
+                        $TSchedules[$date][$i]['max'] = $userplanning->{$day.'_heurefpm'};
                     }
                     else
                     {
                         $scheduletoaddam = true;
                         $scheduletoaddpm = true;
 
-                        foreach($TSchedules[$day] as $schedule){
+                        foreach($TSchedules[$date] as $schedule){
 
                             //si l'heure de début est inférieure au minimum et que l'heure de fin est contenue dans le créneau, alors on usurpe le minimum
                             if($userplanning->{$day.'_heuredam'} < $schedule['min'] && ($userplanning->{$day.'_heurefam'} <= $schedule['max'] && $userplanning->{$day.'_heurefam'} >= $schedule['min'])){
@@ -1468,10 +1474,10 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                         }
 
                         if($scheduletoaddam) {
-                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredam'}, 'max' => $userplanning->{$day.'_heurefam'});
+                            $TSchedules[$date][] = array('min' => $userplanning->{$day.'_heuredam'}, 'max' => $userplanning->{$day.'_heurefam'});
                         }
                         elseif($scheduletoaddpm) {
-                            $TSchedules[$day][] = array('min' => $userplanning->{$day.'_heuredpm'}, 'max' => $userplanning->{$day.'_heurefpm'});
+                            $TSchedules[$date][] = array('min' => $userplanning->{$day.'_heuredpm'}, 'max' => $userplanning->{$day.'_heurefpm'});
                         }
                     }
 
@@ -1487,10 +1493,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 }
 
 function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWeek, $endOfWeek){
-
-    var_dump($beginOfWeek);
-    var_dump($endOfWeek);
-
 
     $date = new DateTime();
     $date->setTimestamp($endOfWeek);
@@ -1513,8 +1515,8 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
 
        }
 
+       $TNextSchedules = getNextSchedules($TBusinessHours, $startTime, $endTime);
 
-        $TNextSchedules = getNextSchedules($TBusinessHours, $startTime, $endTime);
 
         if (!empty($TNextSchedules))
         {
@@ -1581,7 +1583,7 @@ function getNextSchedules ($TBusinessHours, $startTime, $endSchedule)
                         $isNext = true;
                         $TSchedulesBefore[$day][] = $schedule;
                     }
-                    if($isNext) $TSchedulesFinal[$day][] = $schedule;
+                    if($isNext) return $schedule;
                     else $TSchedulesBefore[$day][] = $schedule;
                 }
             }
