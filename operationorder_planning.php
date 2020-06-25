@@ -197,6 +197,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 					$(info.el).attr('title', info.event.extendedProps.msg);
 					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
 					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
+					$(info.el).attr('data-ope_percent', info.event.extendedProps.ope_percent);
 
 
 					$(info.el).tooltip({
@@ -218,6 +219,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
 					let eventTitle = $(info.el).find('.fc-title')[0];
 					$(eventTitle).html($(eventTitle).text());
+					let progressColor = 'green';
+					if ($(info.el).attr('data-ope_percent') > 100) progressColor = 'red';
+					$(info.el).append('<div style="position: absolute;bottom: 0;height:5px;width:100%;background-color:lightgrey;"><div style="height:100%;width:'+$(info.el).attr('data-ope_percent')+'%;background-color:'+progressColor+';max-width:100%">&nbsp;</div>&nbsp;</div>')
 				},
 				eventSources: eventSources_parameters,
 				loading: function(bool) {
