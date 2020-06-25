@@ -1057,19 +1057,17 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             $action_or = new OperationOrderAction($db);
 
             $action_or->dated = $startTime;
+
 //            //OR temps forcé ou temps théorique ou rien
 //            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
 //            else $action_or->datef = $startTime + $operationorder->time_planned_t;
             //OR temps forcé ou temps théorique ou rien
             if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f, $beginOfWeek, $endOfWeek);
             else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t, $beginOfWeek, $endOfWeek);
-exit;
-            if (!empty($operationorder->time_planned_t) || !empty($operationorder->time_planned_f))
-            {
-                if (!empty($operationorder->time_planned_f)) $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_f));
-                else $TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($operationorder->time_planned_t));
-                $action_or->datef = $TRes['total']['dateEnd'];
-            }
+
+                        $test = new DateTime();
+            var_dump($test->setTimestamp($action_or->datef));
+
 
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
@@ -1503,8 +1501,6 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
     $endTime = $startTime + $duration;
     $i = 0;
 
-
-    $currentTime = $startTime;
     $durationRest = $duration;
 
     $TNextSchedules = getNextSchedules($beginOfWeek, $endOfWeek, $startTime);
@@ -1512,18 +1508,6 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
 
     while($durationRest > 0)
     {
-
-//        if(empty($i)) $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
-//        else {
-//
-//            $beginOfWeek = $endOfWeek;
-//            $endOfWeek = $beginOfWeek + 24 * 60 * 60 * 7;
-//
-//            $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
-//
-//        }
-
-
         //suivant le créneau suivant on traite les infos
         $dateDScheduleTimeStamp = strToTime($TNextSchedules[$i]['min']);
         $dateDSchedule = new DateTime();
@@ -1533,16 +1517,17 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
         $dateFSchedule = new DateTime();
         $dateFSchedule->setTimestamp($dateFScheduleTimeStamp);
 
+        if($i == 0){
+            $dateDSchedule->setTimestamp($startTime);
+        }
+
         //temps du créneau
         $time = $dateDSchedule->diff($dateFSchedule);
         $time = convertTime2Seconds($time->h, $time->i);
 
-var_dump($durationRest);
         //si il ne reste pas de temps d'événement on calcule la fin du créneau
         if(($durationRest - $time) <= 0){
-
-            //définition de endtime $endtime = $TNextSchedule['date'] + [heures jusqu'au début du créneau concerné] + $durationRest
-
+            $endTime = $dateDScheduleTimeStamp + $durationRest;
             $durationRest = 0;
         } else {
             $durationRest = $durationRest - $time;
@@ -1550,6 +1535,10 @@ var_dump($durationRest);
 
         $i++;
     }
+
+    $date = new DateTime();
+    $date->setTimestamp($endTime);
+    $date = $date->format('Y-m-d H:i:s');
 
     return $endTime;
 
