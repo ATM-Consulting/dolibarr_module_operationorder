@@ -186,7 +186,6 @@ if (empty($reshook))
         case 'update_extras':
 
             $object->oldcopy = dol_clone($object);
-
             // Fill array 'array_options' with data from update form
             $ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute', 'none'));
             if ($ret < 0) $error++;
@@ -204,6 +203,8 @@ if (empty($reshook))
             if ($error) $action = 'edit_extras';
             else
             {
+                $oOHistory = new OperationOrderHistory($object->db);
+                $oOHistory->compareAndSaveDiff($object->oldcopy, $object);
                 header('Location: '.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$object->id);
                 exit;
             }

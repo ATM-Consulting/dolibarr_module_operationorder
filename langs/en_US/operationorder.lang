@@ -5,3 +5,18 @@ ATMAbout = This module has been developed by <a href="http://www.atm-consulting.
 
 OperationOrderSetup = OperationOrder module setup
 OperationOrderAbout = About OperationOrder
+
+ErrorNoGroupForPlanning=No usergroup for planning defined
+ErrorCounterStart=Error start counter
+ErrorCurrentCounterStop=Error while stopping counter for user %s
+ErrorCounterStop=Error while stopping counter %s for user %s
+MsgCounterStop=Counter %s stopped for user %s
+MsgCounterStart=Counter %s launched for user %s
+noCounterToStop=There's no counter to stop
+ErrorCounterInvalidUser=Invalid user to start counter
+ErreurCounterInvalidLineSelected=Error : selected line is not from selected OR
+ErrorStockMVTService=Error : product provided is a service and stock doesn't supports services
+ErrorNoDefaultWarehouse=Error : no default warehouse for this product
+ErrorCantFetchOR=Can't fetch OR
+ErrorNoProdWithThisBarcode=Can't fetch product with barcode : %s
+ErrorProductHasNoBarCode=The product has no BarCode
