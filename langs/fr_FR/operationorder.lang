@@ -37,6 +37,7 @@ LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
 LeftMenuOperationOrderStatusList=Liste
 OperationOrderInfo=Suivi
+LeftMenuOperationOrderManager=Atelier
 
 # EVEN ACTION COM CONF
 OperationOrderStatusChange=Changement de status d'un ordre de réparation
@@ -229,3 +230,24 @@ MorningD=Début de matinée
 MorningF=Fin de matinée
 AfternoonD=Début d'après-midi
 AfternoonF=Fin d'après-midi
+
+#manager
+operationorder_manager_read=Accéder au manager d'atelier
+productUsedForOorder=Produit utilisé pour Ordre de réparation %s
+ErrorNoGroupForPlanning=Aucun groupe d'utilisateur n'est défini pour l'atelier
+ErrorNoUserInGroupForPlanning=Aucun utilisateur présent dans le groupe atelier sur cette entité
+ErrorCounterStart=Erreur de démarrage de l'action
+ErrorCurrentCounterStop=Erreur durant l'arrêt du compteur pour l'utilisateur %s
+ErrorCounterStop=Erreur durant l'arrêt du compteur %s pour l'utilisateur %s
+MsgCounterStop=Compteur %s arrété pour l'utilisateur %s
+MsgCounterStart=Compteur %s démarré pour l'utilisateur %s
+noCounterToStop=Aucun compteur à arréter.
+ErrorCounterInvalidUser=Pas d'utilisateur pour démarrer cette tâche, veuillez sélectionner un utilisateur avant de démarrer la tâche
+ErreurCounterInvalidLineSelected=La ligne sélectionnée n'appartient pas à l'OR sélectionné.
+ErrorStockMVTService=Le produit sélectionné est un service. Selon votre configuration, on ne peut pas déstocker des services.
+ErrorNoDefaultWarehouse=Pas d'entrepot par défaut pour se produit. Sortie de stock impossible.
+ErrorCantFetchOR=Impossible de récupérer l'ordre de réparation.
+ErrorNoProdWithThisBarcode=Impossible de trouver un produit avec le code barre : %s
+ErrorProductHasNoBarCode=Le produit n'a pas de code Barre enregistré
+ErrorProductqtyExceded=La quantité total dans l'OR pour se produit a été atteinte. Aucun mouvement de stock généré.
+StockMouvementGenerated=Mouvement de stock effectué pour le produit %s
