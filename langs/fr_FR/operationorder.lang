@@ -32,6 +32,7 @@ AddBarCode=Ajouter un code-barres
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
+LeftMenuOperationOrderListHistory=Historique
 OperationOrderTopMenu=Réparations
 LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
@@ -230,7 +231,15 @@ MorningD=Début de matinée
 MorningF=Fin de matinée
 AfternoonD=Début d'après-midi
 AfternoonF=Fin d'après-midi
+OOUpdate = Modification de l'ordre de réparation %s
+OOLineUpdate = Modification de ligne dans l'ordre de réparation %s, produit %s
+OODelete = Suppression de l'ordre de réparation %s
+OOLineDelete = Suppression de ligne dans l'ordre de réparation %s, produit %s
+OOCreate = Création de l'ordre de réparation %s
+OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
 
+
+OperationOrderHistoryList=Historique
 #manager
 operationorder_manager_read=Accéder au manager d'atelier
 productUsedForOorder=Produit utilisé pour Ordre de réparation %s
