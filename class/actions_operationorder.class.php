@@ -203,5 +203,39 @@ class ActionsOperationOrder
         }
     }
 
+	/**
+	 * @param bool   $parameters
+	 * @param        $object
+	 * @param string $action
+	 * @return int
+	 */
+	public function moreHtmlRef($parameters=false, &$object, &$action='')
+	{
+		global $conf;
+		global $mc;
+
+		// if global sharings is enabled
+		if (! empty($conf->global->MULTICOMPANY_SHARINGS_ENABLED))
+		{
+			if (! empty($conf->operationorder->enabled) && ! empty($conf->global->MULTICOMPANY_OPERATIONORDER_SHARING_ENABLED) && ! empty($mc->sharings['operationorder'])) {
+				dol_include_once('/multicompany/class/actions_multicompany.class.php');
+				$actMulticomp= new ActionsMulticompany($this->db);
+				$actMulticomp->getInfo($object->entity);
+
+				if ($object->element == 'operationorder') {
+
+						$this->resprints = "\n" . '<!-- BEGIN operationOrder moreHtmlRef -->' . "\n";
+
+						$this->resprints .= '<div class="refidno modify-entity multicompany-entity-container">';
+						$this->resprints .= '<span class="fa fa-globe"></span><span class="multiselect-selected-title-text">' . $actMulticomp->label . '</span>';
+						$this->resprints .= '</div>';
+
+						$this->resprints .= "\n" . '<!-- END operationOrder moreHtmlRef -->' . "\n";
+				}
+			}
+		}
+		return 0;
+	}
+
 
 }
