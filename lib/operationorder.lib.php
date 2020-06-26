@@ -1058,16 +1058,9 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
 
             $action_or->dated = $startTime;
 
-//            //OR temps forcé ou temps théorique ou rien
-//            if($operationorder->time_planned_f) $action_or->datef = $startTime + $operationorder->time_planned_f;
-//            else $action_or->datef = $startTime + $operationorder->time_planned_t;
             //OR temps forcé ou temps théorique ou rien
             if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f, $beginOfWeek, $endOfWeek);
             else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t, $beginOfWeek, $endOfWeek);
-
-                        $test = new DateTime();
-            var_dump($test->setTimestamp($action_or->datef));
-
 
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
@@ -1521,28 +1514,29 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
             $dateDSchedule->setTimestamp($startTime);
         }
 
+
         //temps du créneau
-        $time = $dateDSchedule->diff($dateFSchedule);
-        $time = convertTime2Seconds($time->h, $time->i);
+        $timeSchedule = $dateDSchedule->diff($dateFSchedule);
+        $timeSchedule = convertTime2Seconds($timeSchedule->h, $timeSchedule->i);
+
 
         //si il ne reste pas de temps d'événement on calcule la fin du créneau
-        if(($durationRest - $time) <= 0){
-            $endTime = $dateDScheduleTimeStamp + $durationRest;
+        if(($durationRest - $timeSchedule) <= 0){
+
+            $dateDSchedule = $dateDSchedule->format('H:i');
+            $dateDSchedule = explode(':', $dateDSchedule);
+            $timeDSchedule = convertTime2Seconds($dateDSchedule[0], $dateDSchedule[1]);
+            $endTime = $TNextSchedules[$i]['date'] + $timeDSchedule + $durationRest;
             $durationRest = 0;
+
         } else {
-            $durationRest = $durationRest - $time;
+            $durationRest = $durationRest - $timeSchedule;
         }
 
         $i++;
     }
 
-    $date = new DateTime();
-    $date->setTimestamp($endTime);
-    $date = $date->format('Y-m-d H:i:s');
-
     return $endTime;
-
-
 }
 
 function getNextSchedules ($beginOfWeek, $endOfWeek, $startTime)
@@ -1556,7 +1550,6 @@ function getNextSchedules ($beginOfWeek, $endOfWeek, $startTime)
     while($toadd <= 3)
     {
         $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
-
 
         $TBusinessHours = sortBusinessHours($TBusinessHours);
 
