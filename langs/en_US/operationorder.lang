@@ -20,3 +20,18 @@ ErrorNoDefaultWarehouse=Error : no default warehouse for this product
 ErrorCantFetchOR=Can't fetch OR
 ErrorNoProdWithThisBarcode=Can't fetch product with barcode : %s
 ErrorProductHasNoBarCode=The product has no BarCode
+
+
+# SETUP
+ParamLabel = Parameter Label
+ParamDesc = A description if required
+ParamHelp = The content of the help
+
+OperationOrderExtrafieldPage = Additional repair order attributes
+OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING = User group to be taken into account for OR planning
+
+OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE = Limit vendor orders from repair order lines to services
+OPODER_SUPPLIER_ORDER_AUTO_VALIDATE = Automatically validate supplier orders made from repair order lines
+OPODER_STATUS_ON_PLANNED = Status to be used when planning a repair order
+OPODER_DISPLAY_STOCK_ON_PLANNING = Display an alert on schedule events based on physical/virtual stocks
+OPODER_DISPLAY_STOCK_ON_PLANNING_help = Taking into account the supplier orders associated with the repair order and their expected delivery dates

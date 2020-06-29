@@ -583,6 +583,12 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
 
 			$event->msg.= implode('<br/>',$T);
+			if ($operationOrder->getTimePlannedT() > 0)
+			{
+				$event->ope_planned = $operationOrder->getTimePlannedT();
+				$event->ope_spent = $operationOrder->getTimeSpent();
+				$event->ope_percent = round(($event->ope_spent / $event->ope_planned )*100);
+			}
 
 			$parameters= array(
 				'sqlObj' => $obj,

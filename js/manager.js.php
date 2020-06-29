@@ -177,7 +177,11 @@ class Application
 
 		if (this.state.prod != null)
 		{
-			if (this.state.oOrder == null) setErrorMsg('Veuillez sélectionner un OR avant de sortir une pièce');
+			if (this.state.oOrder == null)
+			{
+				setErrorMsg('Veuillez sélectionner un OR avant de sortir une pièce');
+				this.resetState();
+			}
 			else
 			{
 				this.startAction({

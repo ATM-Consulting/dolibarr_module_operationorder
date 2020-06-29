@@ -147,7 +147,7 @@ class OperationOrderHistory extends SeedObject
             }
             $this->save($user);
         }
-        $object->oldcopy = $object;
+        $object->oldcopy->time_planned_t = $object->time_planned_t;
     }
 
     public function saveCreationOrDeletion(&$object, $type = 'create') {
