@@ -1568,6 +1568,23 @@ class OperationOrder extends SeedObject
         return $total_time;
     }
 
+    public function getTimeSpent(){
+
+        $total_time = 0;
+
+        $this->fetchLines();
+
+        if(!empty($this->lines))
+        {
+            foreach ($this->lines as $line)
+            {
+                $total_time += $line->time_spent;
+            }
+        }
+
+        return $total_time;
+    }
+
     public function deleteORAction(){
 
         $resql = $this->db->query("DELETE FROM ".MAIN_DB_PREFIX."operationorderaction WHERE fk_operationorder = '".$this->id."'");

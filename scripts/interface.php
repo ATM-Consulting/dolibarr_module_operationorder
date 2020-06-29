@@ -324,9 +324,6 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                     $time_planned = $endTime - $startTime;
 
-					$TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($time_planned));
-					$endTime = strtotime($TRes['total']['dateEnd']);
-
 					if ($endTime != $action_or->datef){
 
                         $action_or->datef = $endTime;
