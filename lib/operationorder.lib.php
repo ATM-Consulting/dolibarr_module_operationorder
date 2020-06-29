@@ -1567,18 +1567,23 @@ function getNextSchedules ($startTime)
         {
             $currentDate = new DateTime();
             $currentDate->setTimestamp($date);
-            $currentDate = $currentDate->format('Y-m-d');
+            $currentDateFormat = $currentDate->format('Y-m-d');
 
             $startDate = new DateTime();
             $startDate->setTimestamp($startTime);
-            $startDate = $startDate->format('Y-m-d');
+            $startDateFormat = $startDate->format('Y-m-d');
 
-            if ($startDate == $currentDate) $toadd++;
+            if ($startDateFormat == $currentDateFormat) $toadd++;
 
             if ($toadd)
             {
                 foreach ($TSchedules as $schedule)
                 {
+
+                    if(empty($i) && $startDate->format('H:i') > $schedule['min']){
+                        continue;
+                    };
+
                     if ($schedule['min'] != "00:00" && $schedule['max'] != "00:00")
                     {
                         $TSchedulesFinal[$i]['date'] = $date;
