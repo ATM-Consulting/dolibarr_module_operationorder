@@ -322,7 +322,7 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                 if($res){
 
-                    $time_planned = $endTime - $startTime;
+                    $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
 
 					if ($endTime != $action_or->datef){
 

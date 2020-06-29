@@ -817,39 +817,6 @@ function OO_colorAdjustBrightness($hex, $steps)
 	return $return;
 }
 
-/**
- * fonction retournant un tableau des operationsActions à générer
- * en fonction de la date de départ
- * et de la durée théorique ou forcée de l'OR
- * @param string $dateStart date de départ
- * @param string $TimeSpending durée théorique ou forcée de l'OR format 00:00
- *
- * @return array exemple avec appel getOperationOrderActionsArray("2020-05-29 15:00:00", "03:20") :
- * array(
- * 		'2020-05-29' => array (
- * 			'dateStart' => "2020-05-29 15:00:00"
- * 			'dateEnd'	=> "2020-05-29 17:00:00"
- * 			'timeSpent'	=> 7200 (en secondes)
- * 		)
- * 		'2020-04-13' => array (
- * 			'dateStart' => "2020-06-02 08:00:00"
- * 			'dateEnd'	=> "2020-06-02 09:20:00"
- * 			'timeSpent'	=> 4800 (en secondes)
- * 		)
- * 		'total' => array (
- * 			'dateStart' => "2020-05-29 15:00:00"
- * 			'dateEnd'	=> "2020-06-02 09:20:00"
- * 			'timeSpent'	=> 12000 (en secondes)
- * 			'timeSpentHours'	=> "03:20"
- * 			'excluded' 	=> array(
- * 				"2020-05-30" => "week end"
- * 				"2020-05-31" => "week end"
- * 				"2020-06-01" => "férié"
- * 			)
- * 		)
- * );
- */
-
 function getTHoraire()
 {
 	global $conf;
@@ -1544,5 +1511,53 @@ function getWeekRange($datetime){
 
     return $TDays;
 
+}
+
+function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
+
+    //créneau actuel + créneaux suivants
+    $TNextSchedules = getNextSchedules($startTime);
+
+    $time_planned = 0;  //temps plannifié
+    $i=0;
+    $lastSchedule = false;
+
+    while(!$lastSchedule){
+
+        //date début créneau en cours
+        $TScheduleD = explode(':', $TNextSchedules[$i]['min']);
+        if(!empty($i)) $dateDScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleD[0], $TScheduleD[1]);
+        else $dateDScheduleTimeStamp = $startTime;
+        $dateDSchedule = new DateTime();
+        $dateDSchedule->setTimestamp($dateDScheduleTimeStamp);
+
+        //date fin créneau en cours
+        $TScheduleF = explode(':', $TNextSchedules[$i]['max']);
+        $dateFScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleF[0], $TScheduleF[1]);
+        $dateFSchedule = new DateTime();
+        $dateFSchedule->setTimestamp($dateFScheduleTimeStamp);
+
+        //temps du créneau
+        if($endTime > $dateFScheduleTimeStamp) {
+            $timeSchedule = $dateDSchedule->diff($dateFSchedule);
+        } else{
+            $lastSchedule = true;       //dernier créneau à traiter
+
+            $endTimeDateFormat = new DateTime();
+            $endTimeDateFormat->setTimestamp($endTime);
+
+            $timeSchedule = $dateDSchedule->diff($endTimeDateFormat);
+        }
+
+        //convertis temps du créneau en secondes
+        $timeSchedule = convertTime2Seconds($timeSchedule->h, $timeSchedule->i);
+
+        //ajout du temps du créneau sur le temps plannifié
+        $time_planned += $timeSchedule;
+
+        $i++;
+    }
+
+    return $time_planned;
 }
 
