@@ -1357,30 +1357,15 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
     {
 
         //suivant le créneau suivant on traite les infos
-        $dateDScheduleTimeStamp = strToTime($TNextSchedules[$i]['min']);
+        $TScheduleD = explode(':', $TNextSchedules[$i]['min']);
+        if(!empty($i)) $dateDScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleD[0], $TScheduleD[1]);
         $dateDSchedule = new DateTime();
         $dateDSchedule->setTimestamp($dateDScheduleTimeStamp);
 
-        $dateFScheduleTimeStamp = strToTime($TNextSchedules[$i]['max']);
+        $TScheduleF = explode(':', $TNextSchedules[$i]['max']);
+        $dateFScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleF[0], $TScheduleF[1]);
         $dateFSchedule = new DateTime();
         $dateFSchedule->setTimestamp($dateFScheduleTimeStamp);
-
-
-        if($i == 0){
-
-            $today = new DateTime();
-            $today = $today->setTimestamp(dol_now());
-
-            $test = new DateTime();
-            $test->setTimestamp($startTime);
-
-
-            $today->setTime($test->format('H'), $test->format('i'), $test->format('s'));
-
-
-            $dateDSchedule = $today;
-
-        }
 
         //temps du créneau
         $timeSchedule = $dateDSchedule->diff($dateFSchedule);
