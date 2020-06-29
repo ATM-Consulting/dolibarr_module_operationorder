@@ -1568,23 +1568,6 @@ class OperationOrder extends SeedObject
         return $total_time;
     }
 
-    public function getTimeSpent(){
-
-        $total_time = 0;
-
-        $this->fetchLines();
-
-        if(!empty($this->lines))
-        {
-            foreach ($this->lines as $line)
-            {
-                $total_time += $line->time_spent;
-            }
-        }
-
-        return $total_time;
-    }
-
     public function deleteORAction(){
 
         $resql = $this->db->query("DELETE FROM ".MAIN_DB_PREFIX."operationorderaction WHERE fk_operationorder = '".$this->id."'");
@@ -1606,8 +1589,8 @@ class OperationOrder extends SeedObject
 
             //update operationorderaction
             $operationorderaction->dated = $this->planned_date;
-//            if(!empty($this->time_planned_f)) calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_f);
-//            else $operationorderaction->datef = calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_t);
+            if(!empty($this->time_planned_f)) calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_f);
+            else $operationorderaction->datef = calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_t);
 
             $res = $operationorderaction->save($user);
 
