@@ -516,7 +516,7 @@ if (empty($reshook) && !empty($action))
 								}
 
 								$qtyAfterMvt = (float) $alreadyUsed[$prod->id] + (float) $qty;
-								if ($qtyAfterMvt > $prodTotalQty)
+								if ($qtyAfterMvt > $prodTotalQty && !empty($conf->global->OPODER_CANT_EXCEED_SENT_QTY))
 								{
 									$data['errorMsg'] = $langs->trans('ErrorProductqtyExceded');
 								}
