@@ -531,6 +531,48 @@ if (empty($reshook) && !empty($action))
 
 						}
 					}
+					else
+					{
+						// le produit n'existe pas, on le crée si la conf est activée
+						if (!empty($conf->global->OPODER_ADD_PRODUCT_IN_OR_IF_MISSING))
+						{
+							if ($prod->fk_default_warehouse <= 0) $prod->fk_default_warehouse = 0;
+
+							if (empty($prod->fk_default_warehouse)) $data['errorMsg'] = $langs->trans('ErrorCannotAddProductNoDefaultWarehouse', $prod->ref, $OR->ref);
+							else
+							{
+								$ret = $OR->addline('',1, $prod->price, $prod->fk_default_warehouse, 1, 0, 0, $prod->id);
+								if ($ret > 0)
+								{
+									// une fois le produit ajouté, on fait la sortie de stock
+									$data['msg'] = $langs->trans('ProductAddedToOR', $prod->ref, $OR->ref);
+
+									$mvt = new MouvementStock($db);
+									$mvt->origin = $OR;
+
+									$qty = 1;
+
+									if (!empty($conf->global->PRODUCT_USE_UNITS))
+									{
+										if (!empty($prod->fk_unit) && $prod->fk_unit != 1) // pièce
+											$qty = $prodTotalQty;
+									}
+
+									$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+									$data['result'] = 1;
+									$data['msg'].= '<br />'.$langs->trans('StockMouvementGenerated', $prod->ref);
+								}
+								else
+								{
+									$data['errorMsg'] = $langs->trans('ErrorAddProductInOR', $prod->ref, $OR->ref);
+								}
+							}
+						}
+						else
+						{
+							$data['errorMsg'] = $langs->trans('ErrorProductMissingInOR', $prod->ref, $OR->ref);
+						}
+					}
 				}
 			}
 			else

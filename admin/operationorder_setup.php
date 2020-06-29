@@ -231,6 +231,8 @@ setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLA
 
 setup_print_on_off('OPODER_CANT_EXCEED_SENT_QTY', false, '', 'OPODER_CANT_EXCEED_SENT_QTY_help');
 
+setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
+
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
 
