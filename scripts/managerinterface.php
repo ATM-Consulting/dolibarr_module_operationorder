@@ -209,6 +209,15 @@ if (empty($reshook) && !empty($action))
 				}
 			}
 
+			// récupération de la dernière ligne de chaque produit pour affichage sortie de stock
+			foreach ($OR->lines as $line)
+			{
+				if ($line->fk_product)
+				{
+					$TLastLines[$line->fk_product] = $line->id;
+				}
+			}
+
 			foreach ($OR->lines as $line)
 			{
 //				$data['debug'][] = $line->fk_product;
@@ -242,8 +251,16 @@ if (empty($reshook) && !empty($action))
 				{
 					if ($alreadyUsed[$line->fk_product] > $line->qty)
 					{
-						$used = $line->qty;
-						$alreadyUsed[$line->fk_product] -= $line->qty;
+						if ($TLastLines[$line->fk_product] != $line->id)
+						{
+							$used = $line->qty;
+							$alreadyUsed[$line->fk_product] -= $line->qty;
+						}
+						else
+						{
+							$used = $alreadyUsed[$line->fk_product];
+							unset($alreadyUsed[$line->fk_product]);
+						}
 					}
 					else
 					{
