@@ -1035,7 +1035,7 @@ function getTHoraire()
 	return $THoraire;
 }
 
-function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder, $beginOfWeek, $endOfWeek){
+function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
 
     global $langs, $db, $user, $conf;
 
@@ -1059,8 +1059,8 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             $action_or->dated = $startTime;
 
             //OR temps forcé ou temps théorique ou rien
-            if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f, $beginOfWeek, $endOfWeek);
-            else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t, $beginOfWeek, $endOfWeek);
+            if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f);
+            else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t);
 
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
@@ -1483,24 +1483,19 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     return $TSchedules;
 }
 
-function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWeek, $endOfWeek){
-
-    $date = new DateTime();
-    $date->setTimestamp($endOfWeek);
-
-    $date2 = new DateTime();
-    $date2->setTimestamp($beginOfWeek);
+function calculateEndTimeEventByBusinessHours($startTime, $duration){
 
     $endTime = $startTime + $duration;
+
     $i = 0;
 
     $durationRest = $duration;
 
-    $TNextSchedules = getNextSchedules($beginOfWeek, $endOfWeek, $startTime);
-
+    $TNextSchedules = getNextSchedules($startTime);
 
     while($durationRest > 0)
     {
+
         //suivant le créneau suivant on traite les infos
         $dateDScheduleTimeStamp = strToTime($TNextSchedules[$i]['min']);
         $dateDSchedule = new DateTime();
@@ -1510,15 +1505,26 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
         $dateFSchedule = new DateTime();
         $dateFSchedule->setTimestamp($dateFScheduleTimeStamp);
 
-        if($i == 0){
-            $dateDSchedule->setTimestamp($startTime);
-        }
 
+        if($i == 0){
+
+            $today = new DateTime();
+            $today = $today->setTimestamp(dol_now());
+
+            $test = new DateTime();
+            $test->setTimestamp($startTime);
+
+
+            $today->setTime($test->format('H'), $test->format('i'), $test->format('s'));
+
+
+            $dateDSchedule = $today;
+
+        }
 
         //temps du créneau
         $timeSchedule = $dateDSchedule->diff($dateFSchedule);
         $timeSchedule = convertTime2Seconds($timeSchedule->h, $timeSchedule->i);
-
 
         //si il ne reste pas de temps d'événement on calcule la fin du créneau
         if(($durationRest - $timeSchedule) <= 0){
@@ -1539,13 +1545,17 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration, $beginOfWee
     return $endTime;
 }
 
-function getNextSchedules ($beginOfWeek, $endOfWeek, $startTime)
+function getNextSchedules ($startTime)
 {
 
     $TSchedulesFinal = array();
 
     $toadd = 0;
     $i = 0;
+
+    $TWeekDates = getWeekRange($startTime);
+    $beginOfWeek = $TWeekDates[0];
+    $endOfWeek =  end($TWeekDates);
 
     while($toadd <= 3)
     {
@@ -1577,7 +1587,6 @@ function getNextSchedules ($beginOfWeek, $endOfWeek, $startTime)
                         $i++;
                     }
                 }
-
             }
         }
 
@@ -1607,5 +1616,35 @@ function sortBusinessHours ($TBusinessHours){
 function compareHours($a, $b){
 
     return ($a['min'] < $b['min'])?-1:1;
+}
+
+function getWeekRange($datetime){
+
+    $date = new DateTime();
+    $date = $date->setTimestamp($datetime);
+    $i = 0;
+    $TDays = array();
+
+    $firstDayOfWeek = dol_get_first_day_week($date->format('d'), $date->format('m'), $date->format('Y'));
+    $TDays[] = mktime(0, 0, 0, $firstDayOfWeek['first_month'] , $firstDayOfWeek['first_day'], $firstDayOfWeek['first_year']);
+    $nextDay = dol_get_next_day($firstDayOfWeek['first_day'], $firstDayOfWeek['first_month'], $firstDayOfWeek['first_year']);
+
+    while($i < 7){
+
+        $TDays[] = mktime(0, 0, 0, $nextDay['month'] , $nextDay['day'], $nextDay['year']);
+
+        $nextDay = dol_get_next_day($nextDay['day'], $nextDay['month'], $nextDay['year']);
+
+        $i++;
+    }
+
+
+    foreach($TDays as $day){
+        $test = new DateTime();
+        $test = $test->setTimestamp($day);
+    }
+
+    return $TDays;
+
 }
 
