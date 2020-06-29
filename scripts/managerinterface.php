@@ -222,6 +222,7 @@ if (empty($reshook) && !empty($action))
 					{
 						$TPointable[$line->fk_product] = true;
 					}
+					else if ($line->product->type == Product::TYPE_SERVICE) continue;
 
 					$ProdErrors[$line->fk_product] = '';
 
