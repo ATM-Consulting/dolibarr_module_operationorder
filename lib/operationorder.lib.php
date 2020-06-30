@@ -1105,7 +1105,7 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
 }
 
 /**
- * Renvoie le planning utilisateur / groupe utilisateur à appliquer si il existe en fonction de l'utilisateur et de l'entité
+ * Renvoie le planning utilisateur / groupe utilisateur à appliquer si il existe en fonction de l'utilisateur et de l'entité (alias BusinessHours)
  * @return array si planning existe, 0 si inexistant, -1 si erreur
  */
 
@@ -1118,7 +1118,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     $TSchedules = array();
     $TSchedulesByUser = array();
     $TDaysOff = array();
-    $TDays = array('lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche');
     $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
 
@@ -1128,16 +1127,16 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     $dateEnd = new DateTime();
     $dateEnd->setTimestamp($endTimeWeek);
 
-    //Dates de la semaine
+    //Dates de la semaine en cours
     $TDates = array();
+
+    $jourOff = new OperationOrderJoursOff($db);
 
     $date_start_details = date_parse($dateStart->format('Y-m-d'));
     $date_end_details = date_parse($dateEnd->format('Y-m-d'));
 
     $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
     $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
-
-    $jourOff = new OperationOrderJoursOff($db);
 
     for ($i = $debut_date; $i < $fin_date; $i += 86400)
     {
@@ -1177,7 +1176,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     {
         $usergroup = new UserGroup($db);
         $res = $usergroup->fetch($fk_groupuser);
-        $TUsers = $usergroup->listUsersForGroup(); //TODO Verif par entité
+        $TUsers = $usergroup->listUsersForGroup();
 
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
@@ -1343,26 +1342,36 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     return $TSchedules;
 }
 
+/**
+ * Calcule la date de fin d'un événement OR en fonction du début de l'événement, de sa durée et des BusinessHours
+ * @param timestamp $startTime
+ * @param string (seconds) $duration
+ * @return timestamp $endTime
+ */
 function calculateEndTimeEventByBusinessHours($startTime, $duration){
 
+
+    //fin de l'événement
     $endTime = $startTime + $duration;
 
     $i = 0;
 
     $durationRest = $duration;
 
+    //créneaux suivants
     $TNextSchedules = getNextSchedules($startTime);
 
+    //tant qu'il reste du temps pas traité
     while($durationRest > 0)
     {
-
-        //suivant le créneau suivant on traite les infos
+        //date de début du créneau
         $TScheduleD = explode(':', $TNextSchedules[$i]['min']);
         if(!empty($i)) $dateDScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleD[0], $TScheduleD[1]);
         else $dateDScheduleTimeStamp = $startTime;
         $dateDSchedule = new DateTime();
         $dateDSchedule->setTimestamp($dateDScheduleTimeStamp);
 
+        //date de fin du créneau
         $TScheduleF = explode(':', $TNextSchedules[$i]['max']);
         $dateFScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleF[0], $TScheduleF[1]);
         $dateFSchedule = new DateTime();
@@ -1391,17 +1400,22 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
     return $endTime;
 }
 
+/**
+ * Renvoie tous les créneaux qui suivent l'horaire donné sur trois semaines
+ * @param timestamp $startTime
+ * @return array $TSchedulesFinal
+ */
 function getNextSchedules ($startTime)
 {
 
     $TSchedulesFinal = array();
 
-    $toadd = 0;
+    $toadd = 0;             //compteur du nombre de semaine de créneauxà ajouter
     $i = 0;
 
-    $TWeekDates = getWeekRange($startTime);
-    $beginOfWeek = $TWeekDates[0];
-    $endOfWeek =  end($TWeekDates);
+    $TWeekDates = getWeekRange($startTime);     //dates de la semaine en cours
+    $beginOfWeek = $TWeekDates[0];              //début de la semaine
+    $endOfWeek =  end($TWeekDates);         //fin de la semaine
 
     while($toadd <= 3)
     {
@@ -1421,6 +1435,7 @@ function getNextSchedules ($startTime)
 
             if ($startDateFormat == $currentDateFormat) $toadd++;
 
+            //dès qu'on tombe sur le créneau en cours, on commence à ajouter dans le tableau $TSchedulesFinal
             if ($toadd)
             {
                 foreach ($TSchedules as $schedule)
@@ -1445,6 +1460,7 @@ function getNextSchedules ($startTime)
 
         $toadd++;
 
+        //on passe à la semaine suivante
         $beginOfWeek = $endOfWeek;
         $endOfWeek = $beginOfWeek + 24 * 60 * 60 * 7;
     }
@@ -1453,6 +1469,11 @@ function getNextSchedules ($startTime)
 
 }
 
+/**
+ * Trie le tableau BusinessHours
+ * @param array $TBusinessHours
+ * @return array $TBusinessHours
+ */
 function sortBusinessHours ($TBusinessHours){
 
 
@@ -1471,36 +1492,42 @@ function compareHours($a, $b){
     return ($a['min'] < $b['min'])?-1:1;
 }
 
+
+/**
+ * Renvoie les dates d'une semaine (du lundi au dimanche) qui contient la date donnée
+ * @param timestamp $datetime
+ * @return array $TDates
+ */
 function getWeekRange($datetime){
 
     $date = new DateTime();
     $date = $date->setTimestamp($datetime);
     $i = 0;
-    $TDays = array();
+    $TDates = array();
 
     $firstDayOfWeek = dol_get_first_day_week($date->format('d'), $date->format('m'), $date->format('Y'));
-    $TDays[] = mktime(0, 0, 0, $firstDayOfWeek['first_month'] , $firstDayOfWeek['first_day'], $firstDayOfWeek['first_year']);
+    $TDates[] = mktime(0, 0, 0, $firstDayOfWeek['first_month'] , $firstDayOfWeek['first_day'], $firstDayOfWeek['first_year']);
     $nextDay = dol_get_next_day($firstDayOfWeek['first_day'], $firstDayOfWeek['first_month'], $firstDayOfWeek['first_year']);
 
     while($i < 7){
 
-        $TDays[] = mktime(0, 0, 0, $nextDay['month'] , $nextDay['day'], $nextDay['year']);
+        $TDates[] = mktime(0, 0, 0, $nextDay['month'] , $nextDay['day'], $nextDay['year']);
 
         $nextDay = dol_get_next_day($nextDay['day'], $nextDay['month'], $nextDay['year']);
 
         $i++;
     }
 
-
-    foreach($TDays as $day){
-        $test = new DateTime();
-        $test = $test->setTimestamp($day);
-    }
-
-    return $TDays;
+    return $TDates;
 
 }
 
+/**
+ * Renvoie le temps plannifié d'un événement OR en fonction de sa date de début, de sa date de fin et des businessHours
+ * @param timestamp $startTime
+ * @param timestamp $endTime
+ * @return string (seconds) $time_planned
+ */
 function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
 
     //créneau actuel + créneaux suivants
