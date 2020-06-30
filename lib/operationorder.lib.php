@@ -1359,6 +1359,7 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
         //suivant le créneau suivant on traite les infos
         $TScheduleD = explode(':', $TNextSchedules[$i]['min']);
         if(!empty($i)) $dateDScheduleTimeStamp = $TNextSchedules[$i]['date'] + convertTime2Seconds($TScheduleD[0], $TScheduleD[1]);
+        else $dateDScheduleTimeStamp = $startTime;
         $dateDSchedule = new DateTime();
         $dateDSchedule->setTimestamp($dateDScheduleTimeStamp);
 
@@ -1424,10 +1425,12 @@ function getNextSchedules ($startTime)
             {
                 foreach ($TSchedules as $schedule)
                 {
+                    $TScheduleMin = explode(':', $schedule['min']);
+                    $dateMin = $date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
 
-                    if(empty($i) && $startDate->format('H:i') > $schedule['min']){
+                    if(empty($i) && $startDate->getTimestamp() < $dateMin){
                         continue;
-                    };
+                    }
 
                     if ($schedule['min'] != "00:00" && $schedule['max'] != "00:00")
                     {
