@@ -392,7 +392,7 @@ class Application
 				let msgDiv = $('#responseMessageSuccess');
 				msgDiv.html(response.msg);
 				msgDiv.fadeIn();
-				msgDiv.fadeOut(1500);
+				msgDiv.fadeOut(3000);
 			}
 			else if (response.result == 0 && response.errorMsg)
 			{
@@ -426,7 +426,7 @@ class Application
 					let msgDiv = $('#responseMessageSuccess');
 					msgDiv.html(response.msg);
 					msgDiv.fadeIn();
-					msgDiv.fadeOut(1500);
+					msgDiv.fadeOut(3000);
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
@@ -465,7 +465,7 @@ class Application
 					let msgDiv = $('#responseMessageSuccess');
 					msgDiv.html(response.msg);
 					msgDiv.fadeIn();
-					msgDiv.fadeOut(1500);
+					msgDiv.fadeOut(3000);
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
@@ -489,7 +489,7 @@ class Application
 					let msgDiv = $('#responseMessageSuccess');
 					msgDiv.html(response.msg);
 					msgDiv.fadeIn();
-					msgDiv.fadeOut(1500);
+					msgDiv.fadeOut(3000);
 				}
 				else if (response.result == 0 && response.errorMsg)
 				{
@@ -500,7 +500,5 @@ class Application
 
 		this.resetState();
 	}
-
-	// trouver un moyen d'afficher l'alerte dans le dom quelque part => done
 
 }

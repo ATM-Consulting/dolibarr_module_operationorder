@@ -128,4 +128,28 @@ class OperationOrderTaskTime extends SeedObject
 		else return -1;
 	}
 
+	/**
+	 * function pour vérifier si d'autres compteurs sont en cours
+	 * => on ne change pas le statut d'un OR s'il y a encore quelqu'un qui travaille dessus
+	 *
+	 * @param int $ordet_id l'id d'une ligne de l'OR à vérifier
+	 *
+	 * @return int
+	 */
+	public function remainingCountersForOR($ordet_id)
+	{
+		$sql = "SELECT COUNT(c.rowid) as nb";
+		$sql.= " FROM ".MAIN_DB_PREFIX."operationordertasktime c";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet ood ON ood.rowid = c.fk_orDet";
+		$sql.= " WHERE c.task_datehour_f IS NULL AND c.fk_orDet =".$ordet_id;
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			$obj = $this->db->fetch_object($resql);
+			return (int) $obj->nb;
+		}
+		else return -1;
+	}
+
 }
