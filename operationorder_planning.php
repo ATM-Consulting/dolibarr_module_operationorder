@@ -130,7 +130,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				header: {
 					left: 'prev,next today',
 					center: 'title',
-					right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+					right: 'timeGridWeek'
 				},
 				editable: false, // next step add rights and allow edition
 				selectable: userCanCreateEvent,
@@ -316,13 +316,12 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
             setBusinessHours();
 
 
-            $(document).on("click", function() {
+            $(document).on('click','.fc-button-group',function() {
                 setBusinessHours();
             });
 
 			function setBusinessHours(){
 
-                var currentDate = calendar.getDate();
                 var beginOfWeek = Math.floor(calendar.view.activeStart.getTime() / 1000);
                 var endOfWeek = Math.floor(calendar.view.activeEnd.getTime() / 1000);
 
