@@ -1191,6 +1191,38 @@ else
 	}
 }
 
+?>
+<script type="text/javascript">
+	$(document).on('change', '#qty', function () {
+		//Getting values
+		let qty = $(this).val();
+		let time_plannedhour = $("#field_time_planned").find('input[name="time_plannedhour"]').val();
+		let time_plannedmin = $("#field_time_planned").find('input[name="time_plannedmin"]').val();
+		let hoursToAdd = 0;
+
+		//Parsing
+		if (isNaN(qty)) qty = 0;
+		else qty = parseFloat(qty);
+		if (isNaN(time_plannedhour)) time_plannedhour = 0;
+		else time_plannedhour = parseInt(time_plannedhour);
+		if (isNaN(time_plannedmin)) time_plannedmin = 0;
+		else time_plannedmin = parseInt(time_plannedmin);
+
+		//Je récupère la valeur pour une quantité valant 1 en convertissant en minutes
+		if((time_plannedhour > 0 || time_plannedmin > 0) && qty > 1) time_plannedmin = ((time_plannedhour * 60) + time_plannedmin) / (qty-1);
+		else time_plannedmin = ((time_plannedhour * 60) + time_plannedmin) / (qty-1);
+		console.log(time_plannedhour);
+		let newTime_plannedmin = qty * time_plannedmin;
+		if (newTime_plannedmin >= 60) {
+			hoursToAdd = Math.floor(newTime_plannedmin / 60);
+			newTime_plannedmin = newTime_plannedmin % 60;
+		}
+
+		$("#field_time_planned").find('input[name="time_plannedhour"]').val(hoursToAdd);
+		$("#field_time_planned").find('input[name="time_plannedmin"]').val(newTime_plannedmin);
+	});
+</script>
+<?php
 
 llxFooter();
 $db->close();
