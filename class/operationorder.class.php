@@ -1606,7 +1606,7 @@ class OperationOrder extends SeedObject
 
             //update operationorderaction
             $operationorderaction->dated = $this->planned_date;
-            if(!empty($this->time_planned_f)) calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_f);
+            if(!empty($this->time_planned_f)) $operationorderaction->datef = calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_f);
             else $operationorderaction->datef = calculateEndTimeEventByBusinessHours($operationorderaction->dated, $this->time_planned_t);
 
             $res = $operationorderaction->save($user);
