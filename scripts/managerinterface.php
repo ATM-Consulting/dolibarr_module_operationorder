@@ -470,6 +470,8 @@ if (empty($reshook) && !empty($action))
 				$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
 			}
 
+			$remaining = $counter->remainingCountersForOR($line->id);
+
 			$newCounter = new OperationOrderTaskTime($db);
 			$newCounter->label = $line->label;
 			$newCounter->task_datehour_d = dol_now();
@@ -481,12 +483,11 @@ if (empty($reshook) && !empty($action))
 			if ($retSave > 0)
 			{
 				// s'il y a déjà des compteurs en court sur l'OR, on a déjà changé le statut
-				$remaining = $counter->remainingCountersForOR($line->id);
-
 				// changement de statut de l'OR de la ligne
 				if (!empty($conf->global->OPORDER_CHANGE_OR_STATUS_ON_START) && !empty($conf->global->OPODER_STATUS_ON_START) && !$remaining)
 				{
 					list($changeReturn, $message) = changeORStatus($line->fk_operation_order, $conf->global->OPODER_STATUS_ON_START);
+					$data['debug'] = $changeReturn . ' | ' . $message;
 					if ($changeReturn) $data['msg'].=$message;
 					else $data['errorMsg'].=$message;
 				}
