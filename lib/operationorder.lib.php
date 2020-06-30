@@ -1406,7 +1406,6 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
  */
 function getNextSchedules ($startTime)
 {
-
     $TSchedulesFinal = array();
 
     $toadd = 0;             //compteur du nombre de semaine de créneauxà ajouter
@@ -1440,18 +1439,22 @@ function getNextSchedules ($startTime)
                 foreach ($TSchedules as $schedule)
                 {
                     $TScheduleMin = explode(':', $schedule['min']);
-                    $dateMin = $date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
+                    $timestampMin = $date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
 
-                    if(empty($i) && $startDate->getTimestamp() < $dateMin){
+                    $TScheduleMax = explode(':', $schedule['max']);
+                    $timestampMax = $date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
+
+                    if(empty($i) && (($startDate->getTimestamp() < $timestampMin) || ($startDate->getTimestamp() > $timestampMax))){
                         continue;
-                    }
-
-                    if ($schedule['min'] != "00:00" && $schedule['max'] != "00:00")
+                    } else
                     {
-                        $TSchedulesFinal[$i]['date'] = $date;
-                        $TSchedulesFinal[$i]['min'] = $schedule['min'];
-                        $TSchedulesFinal[$i]['max'] = $schedule['max'];
-                        $i++;
+                        if ($schedule['min'] != "00:00" && $schedule['max'] != "00:00")
+                        {
+                            $TSchedulesFinal[$i]['date'] = $date;
+                            $TSchedulesFinal[$i]['min'] = $schedule['min'];
+                            $TSchedulesFinal[$i]['max'] = $schedule['max'];
+                            $i++;
+                        }
                     }
                 }
             }
