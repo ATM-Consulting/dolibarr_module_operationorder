@@ -91,24 +91,6 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
 		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '24:00'; ?>";
 
-		//définition des horaires pour le comportement pas défaut
-		fullcalendar_scheduler_businessHours_week_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
-		fullcalendar_scheduler_businessHours_week_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
-
-        fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
-        fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
-
-        //définition des horaires en fonction du planning utilisateur/groupe
-<!--        --><?php
-//        foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
-//
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] )) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>//";
-//
-//        <?php //} ?>
-
 		// fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
 		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
 
@@ -270,20 +252,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				    $('.operationOrderTooltip').hide();
                 },
                 eventDrop: function(eventDropInfo) {
-				    let startDay = eventDropInfo.event._instance.range.start.getDay();
-				    let endDay = eventDropInfo.event._instance.range.start.getDay();
-				    let startHour = eventDropInfo.event._instance.range.start.getHours()+(eventDropInfo.event._instance.range.start.getTimezoneOffset()/60);
-                    if(startHour < 0) startHour += 24;
-				    let startMin = eventDropInfo.event._instance.range.start.getMinutes();
-				    let endHour = eventDropInfo.event._instance.range.end.getHours()+(eventDropInfo.event._instance.range.end.getTimezoneOffset()/60);
-				    if(endHour < 0) endHour += 24;
-				    let endMin = eventDropInfo.event._instance.range.end.getMinutes();
-                    let ThourminStart = fullcalendar_scheduler_businessHours_week_start.split(':');
-                    let Thourminend = fullcalendar_scheduler_businessHours_week_end.split(':');
-				    if(!eventDropInfo.event.allDay && startHour >= ThourminStart[0]
-						&& ((endHour < Thourminend[0]) || (endHour == Thourminend[0] && endMin == 0))
-						&& (fullcalendar_scheduler_businessHours_days.indexOf(startDay) >= 0 && fullcalendar_scheduler_businessHours_days.indexOf(endDay) >= 0))
-				    { //Si on est pas sur un jour entier et qu'on est sur des heures de travail
+				    if(!eventDropInfo.event.allDay)
+				    { //Si on est pas sur un jour entier
                         $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
                         let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
                         let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);

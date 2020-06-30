@@ -281,7 +281,9 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
         $db->begin();
         $action_or = new OperationOrderAction($db);
         $res = $action_or->fetch($fk_action);
-        if ($res > 0)
+        $canDrop = verifyScheduleInBusinessHours($startTime, $endTime);
+
+        if ($res > 0 && $canDrop)
         {
             $action_or->dated = $startTime;
             $action_or->datef = $endTime;

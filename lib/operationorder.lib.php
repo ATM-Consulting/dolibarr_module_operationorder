@@ -1576,3 +1576,35 @@ function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
     return $time_planned;
 }
 
+/**
+ * Vérifie si le créneau donné est compris dans un créneau de businessHours
+ * @param timestamp $startTime
+ * @param timestamp $endTime
+ * @return boolean
+ */
+function verifyScheduleInBusinessHours($startTime, $endTime){
+
+    $TWeekDates = getWeekRange($startTime);     //dates de la semaine en cours
+    $beginOfWeek = $TWeekDates[0];              //début de la semaine
+    $endOfWeek =  end($TWeekDates);         //fin de la semaine
+
+    $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
+    $TBusinessHours = sortBusinessHours($TBusinessHours);
+
+    foreach ($TBusinessHours as $date=>$TSchedule){
+
+        foreach ($TSchedule as $schedule){
+            $TScheduleMin = explode(':', $schedule['min']);
+            $TScheduleMax = explode(':', $schedule['max']);
+
+            if($startTime >= ($date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1])) && $endTime <= ($date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]))){
+                return true;
+            }
+
+        }
+    }
+
+    return false;
+
+}
+
