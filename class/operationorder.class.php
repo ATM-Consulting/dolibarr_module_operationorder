@@ -2041,15 +2041,20 @@ class OperationOrderDet extends SeedObject
 
 									// La fonction à apeller si la requête aboutie
 									success: function (data) {
+									$("#unitaire_timehour").remove();
+									$("#unitaire_timemin").remove();
 										// Loading data
 										console.log(data);
 										if(data.result > 0 ){
 										   // ok case
 										   $("#' . $keyprefix . 'fk_warehouse' . $keysuffix . '").val(data.fk_default_warehouse).change();
 										   $("#' . $keyprefix . 'price' . $keysuffix . '").val(data.price);
-
 										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").val(data.time_plannedhour);
+										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timehour\' value=\'"+data.time_plannedhour+"\' />");
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val(data.time_plannedmin);
+										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timemin\' value=\'"+data.time_plannedmin+"\' />");
+
+
 										}
 										else{
 										   // nothing to do ?

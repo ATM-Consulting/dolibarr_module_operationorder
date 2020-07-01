@@ -509,6 +509,15 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 			$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
 			$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
 			$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
+			if(empty($line->product)) $line->fetch_product();
+			if(!empty($line->product->duration_value)) {
+				$line->product->duration_value = floatval($line->product->duration_value);
+				$remainder = fmod($line->product->duration_value , 1);
+				$minutes = 60 * $remainder;
+				$hours = (int) $line->product->duration_value;
+				$outForm .= '<input type="hidden" id="unitaire_timehour" value="'.$hours.'">' . "\n";
+				$outForm .= '<input type="hidden" id="unitaire_timemin" value="'.$minutes.'">' . "\n";
+			}
 		}else{
 			$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
 		}

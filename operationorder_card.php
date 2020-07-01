@@ -1193,13 +1193,15 @@ else
 
 ?>
 <script type="text/javascript">
+	$('.inputhour').css('width', '100px');
+	$('.inputminute').css('width', '100px');
+
 	$(document).on('change', '#qty', function () {
 		//Getting values
 		let qty = $(this).val();
-		let time_plannedhour = $("#field_time_planned").find('input[name="time_plannedhour"]').val();
-		let time_plannedmin = $("#field_time_planned").find('input[name="time_plannedmin"]').val();
+		let time_plannedhour = $(this).closest('form').find("#unitaire_timehour").val();
+		let time_plannedmin = $(this).closest('form').find("#unitaire_timemin").val();
 		let hoursToAdd = 0;
-
 		//Parsing
 		if (isNaN(qty)) qty = 0;
 		else qty = parseFloat(qty);
@@ -1208,10 +1210,9 @@ else
 		if (isNaN(time_plannedmin)) time_plannedmin = 0;
 		else time_plannedmin = parseInt(time_plannedmin);
 
-		//Je récupère la valeur pour une quantité valant 1 en convertissant en minutes
-		if((time_plannedhour > 0 || time_plannedmin > 0) && qty > 1) time_plannedmin = ((time_plannedhour * 60) + time_plannedmin) / (qty-1);
-		else time_plannedmin = ((time_plannedhour * 60) + time_plannedmin) / (qty-1);
-		console.log(time_plannedhour);
+		//Je convertis le tout en minutes
+		time_plannedmin = ((time_plannedhour * 60) + time_plannedmin);
+
 		let newTime_plannedmin = qty * time_plannedmin;
 		if (newTime_plannedmin >= 60) {
 			hoursToAdd = Math.floor(newTime_plannedmin / 60);
@@ -1219,7 +1220,7 @@ else
 		}
 
 		$("#field_time_planned").find('input[name="time_plannedhour"]').val(hoursToAdd);
-		$("#field_time_planned").find('input[name="time_plannedmin"]').val(newTime_plannedmin);
+		$("#field_time_planned").find('input[name="time_plannedmin"]').val(Math.round(newTime_plannedmin));
 	});
 </script>
 <?php
