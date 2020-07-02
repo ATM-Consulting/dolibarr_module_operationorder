@@ -1779,9 +1779,67 @@ function getTimeAvailableByDate($date_timestamp){
     return $nb_seconds_total;
 }
 
-function getTimePlannedByDate($day_timestamp){
+function getTimePlannedByDate($date_timestamp){
 
-    //TODO : calcul
-    return 4;
+    global $db;
+
+    $error = 0;
+    $nb_seconds_total = 0;
+
+
+    $dated = date('Y-m-d', $date_timestamp);
+    $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
+
+    $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' AND datef <= '".$datef."'";
+    $resql = $db->query($sql);
+
+    if($resql){
+
+        while($obj = $db->fetch_object($resql)){
+
+            $or_action = new OperationOrderAction($db);
+            $res =$or_action->fetch($obj->id);
+
+            $TNextSchedules = getNextSchedules($or_action->dated);
+
+            foreach($TNextSchedules as $key=>$schedule)
+            {
+
+                if ($schedule['date'] != $date_timestamp)
+                {
+                    unset($TNextSchedules[$key]);
+                }
+            }
+
+            foreach($TNextSchedules as $schedule){
+
+                    $TScheduleMin = explode(':', $schedule['min']);
+                    $dateMinTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
+
+                    $TScheduleMax = explode(':', $schedule['max']);
+                    $dateMaxTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
+
+                    if($or_action->dated  > $dateMinTimestamp && $or_action->datef  >= $dateMaxTimestamp){
+                        $nb_seconds_total += $dateMaxTimestamp - $or_action->dated;
+                    } elseif($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp){
+                        $nb_seconds_total += $or_action->datef - $dateMinTimestamp;
+                    } elseif($or_action->dated  > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp) {
+                        $nb_seconds_total += $or_action->datef - $or_action->dated;
+                    } else {
+                        $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
+                    }
+
+                    if($or_action->datef <= $dateMaxTimestamp) {
+                        break;
+                    }
+            }
+        }
+
+    } else {
+        $error++;
+    }
+
+    if(!$error) return $nb_seconds_total;
+    else return -1;
 }
 
