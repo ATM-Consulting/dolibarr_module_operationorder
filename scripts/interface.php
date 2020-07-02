@@ -683,7 +683,7 @@ function _getJourFull($start = 0, $end = 0){
 
     global $db;
 
-    $TDays = array();
+    $TDates = array();
     $TRes = array();
 
     $date_start_details = date_parse($start->format('Y-m-d'));
@@ -694,19 +694,19 @@ function _getJourFull($start = 0, $end = 0){
 
     for ($i = $debut_date; $i < $fin_date; $i += 86400)
     {
-        $TDays[] = $i;
+        $TDates[] = $i;
     }
 
-    foreach($TDays as $day){
+    foreach($TDates as $date){
 
-        $res_TimeAvailable = getTimeAvailableByDay($day);
-        $res_TimePlanned = getTimePlannedByDay($day);
+        $res_TimeAvailable = getTimeAvailableByDate($date);
+        $res_TimePlanned = getTimePlannedByDate($date);
 
         if($res_TimeAvailable - $res_TimePlanned <= 0){
             $event = new fullCalendarEvent();
 
             $event->title = "Full";
-            $event->start	= date('c', $day);
+            $event->start	= date('c', $date);
             // $event->end	= date('c', $dayOff->date);
             $event->allDay  = true; // will make the time show
             $event->msg = '';

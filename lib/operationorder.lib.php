@@ -1621,7 +1621,7 @@ function verifyScheduleInBusinessHours($startTime, $endTime){
 
 }
 
-function getTimeAvailableByDay($date_timestamp){
+function getTimeAvailableByDate($date_timestamp){
 
     global $db, $conf;
 
@@ -1638,31 +1638,86 @@ function getTimeAvailableByDay($date_timestamp){
     $res = $usergroup->fetch($fk_groupuser);
     $TUsers = $usergroup->listUsersForGroup();
 
+    //jourOff
+    $jourOff = new OperationOrderJoursOff($db);
+    $currentDate = date('Y-m-d H:i:s', $date_timestamp);
+    $res = $jourOff->isOff($currentDate);
+    if($res) return 0;
+
     foreach ($TUsers as $user)
     {
+        $absencefullday = false;
+        $absenceam = false;
+        $absencepm = false;
 
         $userplanning = new OperationOrderUserPlanning($db);
         $res = $userplanning->fetchByObject($user->id, 'user');
 
         if($res > 0 && $userplanning->active){
 
-            //matin
-            $start = new DateTime($userplanning->{$day.'_heuredam'});
-            $end = new DateTime($userplanning->{$day.'_heurefam'});
-            $diff = $start->diff($end);
-            $diffStr = $diff->format('%H:%I');
-            $THoursMin = explode(':', $diffStr);
+            //absence
+            if($conf->absence->enabled)
+            {
+                $PDOdb = new TPDOdb;
+                $absence = new TRH_Absence($db);
 
-            $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, date('Y-m-d', $date_timestamp), date('Y-m-d', $date_timestamp));
 
-            //après-midi
-            $start = new DateTime($userplanning->{$day.'_heuredpm'});
-            $end = new DateTime($userplanning->{$day.'_heurefpm'});
-            $diff = $start->diff($end);
-            $diffStr = $diff->format('%H:%I');
-            $THoursMin = explode(':', $diffStr);
+                foreach ($TPlanning as $t_current => $TAbsence)
+                {
 
-            $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    foreach ($TAbsence as $fk_user => $TRH_absenceDay)
+                    {
+
+                        foreach ($TRH_absenceDay as $absence)
+                        {
+                            if (!($absence->isPresence))
+                            {
+                                if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                                {
+
+                                    $absencefullday = true;
+
+                                }
+                                elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
+                                {
+
+                                    $absenceam = true;
+
+                                }
+                                elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
+                                {
+                                    $absencepm = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(!$absencefullday && !$absenceam)
+            {
+                //matin
+                $start = new DateTime($userplanning->{$day.'_heuredam'});
+                $end = new DateTime($userplanning->{$day.'_heurefam'});
+                $diff = $start->diff($end);
+                $diffStr = $diff->format('%H:%I');
+                $THoursMin = explode(':', $diffStr);
+
+                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+            }
+
+            if(!$absencefullday && !$absencepm)
+            {
+                //après-midi
+                $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                $diff = $start->diff($end);
+                $diffStr = $diff->format('%H:%I');
+                $THoursMin = explode(':', $diffStr);
+
+                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+            }
 
         }
         else {
@@ -1724,7 +1779,7 @@ function getTimeAvailableByDay($date_timestamp){
     return $nb_seconds_total;
 }
 
-function getTimePlannedByDay($day_timestamp){
+function getTimePlannedByDate($day_timestamp){
 
     //TODO : calcul
     return 4;
