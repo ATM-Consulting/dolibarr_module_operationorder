@@ -22,7 +22,6 @@ $data['result'] = 0; // by default if no action result is false
 $data['errorMsg'] = ''; // default message for errors
 $data['msg'] = '';
 
-
 // do action from GETPOST ...
 if(GETPOST('action'))
 {
@@ -58,6 +57,25 @@ if(GETPOST('action'))
 		print json_encode($data);
 		exit;
 	}
+	elseif($action == 'getBusinessHours'){
+
+        $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+
+        $beginOfWeek = GETPOST('beginOfWeek');
+        $endOfWeek = GETPOST('endOfWeek');
+
+        $data = getOperationOrderUserPlanningSchedule($beginOfWeek,  $endOfWeek);
+
+        foreach($data as $date=>$TSchedules){
+
+            $data[$TDaysConvert[date('D', $date)]] = $TSchedules;
+            unset($data[$date]);
+        }
+
+        print json_encode($data);
+        exit;
+
+    }
 	elseif($action=='setOperationOrderlevelHierarchy'){
 		if (! $user->rights->operationorder->write){
 			$data['result'] = -1; // by default if no action result is false
@@ -150,7 +168,7 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
-	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url']);
+	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 }
 
@@ -158,7 +176,7 @@ echo json_encode($data);
 
 
 
-function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action') {
+function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action', $beginOfWeek=0, $endOfWeek=0) {
     global $db, $langs, $hookmanager;
 
     $TPlanableOO = OperationOrder::getPlannableOperationOrder();
@@ -201,7 +219,7 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
 
         //ref OR
         $url = DOL_URL_ROOT . "/custom/operationorder/operationorder_planning.php";
-        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="'.$url.'?action=createOperationOrderAction&operationorder='.$operationOrder->id.'&startTime='.$startTime.'&endTime='.$endTime.'">'.$operationOrder->ref.'</a></td>';
+        $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="'.$url.'?action=createOperationOrderAction&operationorder='.$operationOrder->id.'&startTime='.$startTime.'&endTime='.$endTime.'&endOfWeek='.$endOfWeek.'&beginOfWeek='.$beginOfWeek.'">'.$operationOrder->ref.'</a></td>';
 
         //ref client
         //TODO : ajout lien vers planning page avec action pour ajouter l'événement
@@ -263,7 +281,9 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
         $db->begin();
         $action_or = new OperationOrderAction($db);
         $res = $action_or->fetch($fk_action);
-        if ($res > 0)
+        $canDrop = verifyScheduleInBusinessHours($startTime, $endTime);
+
+        if ($res > 0 && $canDrop)
         {
             $action_or->dated = $startTime;
             $action_or->datef = $endTime;
@@ -304,10 +324,7 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                 if($res){
 
-                    $time_planned = $endTime - $startTime;
-
-					$TRes = getOperationOrderActionsArray(date("Y-m-d H:i:s", $action_or->dated), convertSecondToTime($time_planned));
-					$endTime = strtotime($TRes['total']['dateEnd']);
+                    $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
 
 					if ($endTime != $action_or->datef){
 
