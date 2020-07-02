@@ -1218,7 +1218,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
                         foreach ($TRH_absenceDay as $absence)
                         {
-                            if($absence->isPresence)
+                            if(!($absence->isPresence))
                             {
                                 $absenceDateTimestamp = strtotime($absence->date);
 
