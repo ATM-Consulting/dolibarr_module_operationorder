@@ -1785,7 +1785,7 @@ function getTimeAvailableByDate($date_timestamp){
 }
 
 /**
- * Retourne le temps événement OR planifié total d'une journée
+ * Retourne le temps événement OR planifié total d'une journée (tiens compte du temps théorique)
  * @param timestamp $date_timestamp
  * @return int (seconds)
  */
@@ -1812,7 +1812,18 @@ function getTimePlannedByDate($date_timestamp){
             $res =$or_action->fetch($obj->id);
 
             //si on trouve l'OR associé à cet événement
-            if($res >= 0)
+            if($res < 0) $error ++;
+
+
+            if(!$error)
+            {
+                $operationOrder = new OperationOrder($db);
+                $res = $operationOrder->fetch($or_action->fk_operationorder);
+
+                if ($res < 0) $error++;
+            }
+
+            if(!$error)
             {
                 //on récupère tous le créneau actuel et ceux qui suivent le début de l'événement OR
                 $TNextSchedules = getNextSchedules($or_action->dated);
@@ -1851,14 +1862,19 @@ function getTimePlannedByDate($date_timestamp){
                         $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
                     }
 
+                    //si le nombre total de seconde est supérieur à la durée théorique de l'or, alors on arrête de compter et on compte la durée théorique
+                    if($nb_seconds_total > $operationOrder->time_planned_t){
+                        var_dump('hey');
+                        $nb_seconds_total = $operationOrder->time_planned_t;
+                        break;
+                    }
+
                     //si l'événement finit avant ou à la fin du créneau, alors on arrête de compter
                     if ($or_action->datef <= $dateMaxTimestamp)
                     {
                         break;
                     }
                 }
-            } else {
-                $error++;
             }
         }
 
