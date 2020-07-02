@@ -23,18 +23,33 @@ OPODER_STATUS_ON_PLANNED=Statut à utiliser lors de la planification d'un ordre 
 OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING=Groupe d'utilisateurs à prendre en compte pour le planning OR
 OPODER_DISPLAY_STOCK_ON_PLANNING=Afficher une alerte sur les évènements du planning en fonction des stocks physiques/virtuels
 OPODER_DISPLAY_STOCK_ON_PLANNING_help=Prenant en compte les commandes fournisseurs associés à l’ordre de réparation et leurs dates de livraison prévues
+OPODER_CANT_EXCEED_SENT_QTY=Sur l'écran "Atelier" ne pas pouvoir excéder les quantités présentes dans l'ordre de réparation
+OPODER_CANT_EXCEED_SENT_QTY_help=Si activé, il est impossible de sortir du stock une quantité supérieure à ce qui est présent dans l'OR pour chaque produit
+OPODER_ADD_PRODUCT_IN_OR_IF_MISSING=Sur l'écran "Atelier", si on scanne un produit absent de l'OR, ajouter ce produit à l'OR
+BarCodeImpSetup=Paramétrage code-barres des tâches improductives
+BarCodeAdded=Code-barres ajouté
+BarCodeDeleted=Code-barres supprimé
+AddBarCode=Ajouter un code-barres
+OPORDER_CHANGE_OR_STATUS_ON_START=Au démarrage d'une tâche, changer le statut de l'ordre de réparation associé
+OPODER_STATUS_ON_START=Statut à utiliser lors de la réalisation de tâches sur l'OR
+OPODER_STATUS_ON_START_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "planifié" => statut à utiliser "en cours à l'atelier"
+OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l'ordre de réparation associé (si aucune autre tâche n'est en court)
+OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
+OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
 LeftMenuOperationOrderList=Liste
+LeftMenuOperationOrderListHistory=Historique
 OperationOrderTopMenu=Réparations
 LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
 LeftMenuOperationOrderStatusList=Liste
 OperationOrderInfo=Suivi
+LeftMenuOperationOrderManager=Atelier
 
-# EVEN ACTION COM CONF
+# EVENT ACTION COM CONF
 OperationOrderStatusChange=Changement de status d'un ordre de réparation
 OperationOrderStatusChangeDesc=permet l'historisation des changements de status des ordres de réparation
 
@@ -120,6 +135,7 @@ ShowOperationOrder=Ordre de réparation
 NewOperationOrder=Création ordre de réparation
 OperationOrderCard=Fiche ordre de réparation
 DateOperationOrder=Date ordre de réparation
+DateCreationOperationOrder=Date création
 ErrorsOccuredDuringLineChildrenInsert=Une erreur c'est produite lors de l'ajout des lignes enfants
 OperationOrderCreateSupplierOrder=Créer commande fournisseur
 CreateSupplierOrder=Créer commande fournisseur
@@ -198,6 +214,8 @@ Multicompany=Options du module multi sociétés
 PdfCustomOrderTitle=Ordre de réparation
 OperationOrderDate=Date
 PDFolafDescription=Modèle standard des ordres de réparations
+PdfBarcodeImpTitle=PDF Code-barres Improductifs
+GenerateFile=Générer le fichier
 
 # Planning
 LeftMenuOperationOrderPlanning=Planification
@@ -222,3 +240,39 @@ MorningD=Début de matinée
 MorningF=Fin de matinée
 AfternoonD=Début d'après-midi
 AfternoonF=Fin d'après-midi
+OOUpdate = Modification de l'ordre de réparation %s
+OOLineUpdate = Modification de ligne dans l'ordre de réparation %s, produit %s
+OODelete = Suppression de l'ordre de réparation %s
+OOLineDelete = Suppression de ligne dans l'ordre de réparation %s, produit %s
+OOCreate = Création de l'ordre de réparation %s
+OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
+
+
+OperationOrderHistoryList=Historique
+#manager
+operationorder_manager_read=Accéder au manager d'atelier
+productUsedForOorder=Produit utilisé pour Ordre de réparation %s
+ErrorNoGroupForPlanning=Aucun groupe d'utilisateur n'est défini pour l'atelier
+ErrorNoUserInGroupForPlanning=Aucun utilisateur présent dans le groupe atelier sur cette entité
+ErrorCounterStart=Erreur de démarrage de l'action
+ErrorCurrentCounterStop=Erreur durant l'arrêt du compteur pour l'utilisateur %s
+ErrorCounterStop=Erreur durant l'arrêt du compteur %s pour l'utilisateur %s
+MsgCounterStop=Compteur %s arrété pour l'utilisateur %s
+MsgCounterStart=Compteur %s démarré pour l'utilisateur %s
+noCounterToStop=Aucun compteur à arréter.
+ErrorCounterInvalidUser=Pas d'utilisateur pour démarrer cette tâche, veuillez sélectionner un utilisateur avant de démarrer la tâche
+ErreurCounterInvalidLineSelected=La ligne sélectionnée n'appartient pas à l'OR sélectionné.
+ErrorStockMVTService=Le produit sélectionné est un service. Selon votre configuration, on ne peut pas déstocker des services.
+ErrorNoDefaultWarehouse=Pas d'entrepot par défaut pour se produit. Sortie de stock impossible.
+ErrorCantFetchOR=Impossible de récupérer l'ordre de réparation.
+ErrorNoProdWithThisBarcode=Impossible de trouver un produit avec le code barre : %s
+ErrorProductHasNoBarCode=Le produit n'a pas de code Barre enregistré
+ErrorProductqtyExceded=La quantité total dans l'OR pour se produit a été atteinte. Aucun mouvement de stock généré.
+StockMouvementGenerated=Mouvement de stock effectué pour le produit %s
+ErrorCannotAddProductNoDefaultWarehouse=Impossible d'ajouter le produit %s à l'Ordre de réparation %s : pas de stock par défaut pour ce produit.
+ErrorProductMissingInOR=Le produit %s n'est pas présent dans l'ordre de réparation %s. Pas de sortie de stock.
+ProductAddedToOR=Le produit %s a été ajouté à l'ordre de réparation %s.
+ErrorAddProductInOR=Une erreur s'est produite pendant l'ajout du produit %s à l'ordre de réparation %s.
+
+ORRef=Ref OR
+

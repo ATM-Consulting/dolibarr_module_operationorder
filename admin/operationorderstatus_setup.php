@@ -128,6 +128,18 @@ $confkey = 'OPODER_STATUS_ON_PLANNED';
 $inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
 _printFormPart($confkey, $inputHtml);
 
+_printOnOff('OPORDER_CHANGE_OR_STATUS_ON_START');
+
+$confkey = 'OPODER_STATUS_ON_START';
+$inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
+_printFormPart($confkey, $inputHtml, false, "", $confkey."_help");
+
+_printOnOff('OPORDER_CHANGE_OR_STATUS_ON_STOP');
+
+$confkey = 'OPODER_STATUS_ON_STOP';
+$inputHtml = $form->selectarray('value'.$inputCount, $TstatusAvailable, $conf->global->{$confkey}, 0, 0, 0, '', 0, 0, 0, '', '', 1);
+_printFormPart($confkey, $inputHtml, false, "", $confkey."_help");
+
 
 
 print '</table>';

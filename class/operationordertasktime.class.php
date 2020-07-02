@@ -32,7 +32,7 @@ class OperationOrderTaskTime extends SeedObject
     public $fields=array(
         'label' => array('type'=>'string', 'label'=>'Label', 'enabled'=>1, 'position'=>10, 'notnull'=>1, 'visible'=>1),
         'task_datehour_d' => array('type'=>'datetime', 'label'=>'DateD', 'enabled'=>1, 'position'=>170, 'notnull'=>1, 'visible'=>1),
-        'task_datehour_f' => array('type'=>'datetime)', 'label'=>'DateF', 'enabled'=>1, 'position'=>180, 'notnull'=>0, 'visible'=>1),
+        'task_datehour_f' => array('type'=>'datetime', 'label'=>'DateF', 'enabled'=>1, 'position'=>180, 'notnull'=>0, 'visible'=>1),
         'task_duration' => array('type'=>'int', 'label'=>'Duration', 'enabled'=>1, 'position'=>190, 'notnull'=>0, 'visible'=>1),
         'fk_user' => array('type'=>'int', 'label'=>'User', 'enabled'=>1, 'position'=>200, 'notnull'=>1, 'visible'=>1),
         'fk_orDet' => array('type'=>'int', 'label'=>'ORDet', 'enabled'=>1, 'position'=>210, 'notnull'=>1, 'visible'=>1),
@@ -58,6 +58,7 @@ class OperationOrderTaskTime extends SeedObject
         parent::__construct($db);
 
         $this->init();
+        $this->task_datehour_f = null;
 
         $this->entity = $conf->entity;
     }
@@ -93,5 +94,62 @@ class OperationOrderTaskTime extends SeedObject
     {
         return parent::delete($user, $notrigger);
     }
+
+	/**
+	 * @param int $user_id ID du user dont on veut le compteur courant
+	 * @return int
+	 */
+    public function fetchCourantCounter($user_id)
+	{
+		global $conf;
+
+		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX.$this->table_element;
+		$sql.= " WHERE fk_user = ".$user_id;
+		$sql.= " AND task_datehour_f IS NULL";
+		$sql.= " AND entity = " . $conf->entity;
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			if ($this->db->num_rows($resql))
+			{
+				$obj = $this->db->fetch_object($resql);
+
+				$this->fetch($obj->rowid);
+
+				if ($this->id)
+				{
+					return $this->id;
+				}
+				else return -2;
+			}
+			else return 0;
+		}
+		else return -1;
+	}
+
+	/**
+	 * function pour vérifier si d'autres compteurs sont en cours
+	 * => on ne change pas le statut d'un OR s'il y a encore quelqu'un qui travaille dessus
+	 *
+	 * @param int $ordet_id l'id d'une ligne de l'OR à vérifier
+	 *
+	 * @return int
+	 */
+	public function remainingCountersForOR($ordet_id)
+	{
+		$sql = "SELECT COUNT(c.rowid) as nb";
+		$sql.= " FROM ".MAIN_DB_PREFIX."operationordertasktime c";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet ood ON ood.rowid = c.fk_orDet";
+		$sql.= " WHERE c.task_datehour_f IS NULL AND c.fk_orDet =".$ordet_id;
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			$obj = $this->db->fetch_object($resql);
+			return (int) $obj->nb;
+		}
+		else return -1;
+	}
 
 }

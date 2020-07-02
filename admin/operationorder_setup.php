@@ -231,12 +231,14 @@ setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_GROUPUSER_D
 
 setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLAY_STOCK_ON_PLANNING_help');
 
+setup_print_on_off('OPODER_CANT_EXCEED_SENT_QTY', false, '', 'OPODER_CANT_EXCEED_SENT_QTY_help');
 
 $confKey = 'OPODER_USERSCAPACITY_PERCENTAGEALERT';
 $formother = new FormOther($db);
 $customInputHtml = $formother->select_percent($conf->global->OPODER_USERSCAPACITY_PERCENTAGEALERT, 'OPODER_USERSCAPACITY_PERCENTAGEALERT');
 setup_print_input_form_part($confKey, $langs->trans('OPODER_USERSCAPACITY_PERCENTAGEALERT'), '', array(), $customInputHtml);
 
+setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));

@@ -94,6 +94,7 @@ dol_include_once('/operationorder/class/operationorderaction.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
 dol_include_once('/operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
+dol_include_once('/operationorder/class/operationorderbarcode.class.php');
 
 $o=new OperationOrder($db);
 $o->init_db_by_vars();
@@ -125,5 +126,10 @@ $o->init_db_by_vars();
 $o=new OperationOrderTaskTime($db);
 $o->init_db_by_vars();
 
+$o=new OperationOrderHistory($db);
+$o->init_db_by_vars();
+
+$o=new OperationOrderBarCode($db);
+$o->init_db_by_vars();
 // Multientity patch
 $db->query("UPDATE ".MAIN_DB_PREFIX."operationorder_status SET entity = '1' WHERE entity = 0;");

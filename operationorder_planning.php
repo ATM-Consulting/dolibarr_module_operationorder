@@ -30,8 +30,10 @@ $TIncludeJS = array(
     '/operationorder/vendor/fullcalendar-4.4.0/packages/core/locales-all.js',
     '/operationorder/vendor/fullcalendar-4.4.0/packages/daygrid/main.js',
     '/operationorder/vendor/fullcalendar-4.4.0/packages/interaction/main.js',
-    '/operationorder/vendor/fullcalendar-4.4.0/packages/timegrid/main.js'
+    '/operationorder/vendor/fullcalendar-4.4.0/packages/timegrid/main.js',
+    '/operationorder/vendor/fullcalendar-4.4.0/packages/moment/main.js'
 );
+
 $langs->loadLangs(array('operationorder@operationorder'));
 
 $hookmanager->initHooks(array('operationorderplanning'));
@@ -40,6 +42,8 @@ $action = GETPOST('action');
 $id_operationorder = GETPOST('operationorder');
 $startTime = GETPOST('startTime');
 $endTime = GETPOST('endTime');
+$beginOfWeek = GETPOST('beginOfWeek');
+$endOfWeek = GETPOST('endOfWeek');
 $allDay = GETPOST('allDay');
 
 $title = $langs->trans("OperationOrderPlanning");
@@ -77,6 +81,7 @@ $Tfullcalendar_scheduler_businessHours = getOperationOrderUserPlanningSchedule()
 $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', '3'=>'mercredi', '4'=>'jeudi', '5' => 'vendredi', '6'=>'samedi', '7'=>'dimanche')
 
 ?>
+
     <script>
 
 		operationOrderInterfaceUrl = "<?php print dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getPlannedOperationOrder";
@@ -85,24 +90,6 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 		fullcalendarscheduler_aspectRatio = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO) ? $conf->global->FULLCALENDARSCHEDULER_ASPECT_RATIO : '1.6'; ?>";
 		fullcalendarscheduler_minTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MIN_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MIN_TIME : '00:00'; ?>";
 		fullcalendarscheduler_maxTime = "<?php print !empty($conf->global->FULLCALENDARSCHEDULER_MAX_TIME) ? $conf->global->FULLCALENDARSCHEDULER_MAX_TIME : '24:00'; ?>";
-
-		//définition des horaires pour le comportement pas défaut
-		fullcalendar_scheduler_businessHours_week_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START : '08:00'); ?>";
-		fullcalendar_scheduler_businessHours_week_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END : '18:00'); ?>";
-
-        fullcalendar_scheduler_businessHours_weekend_start = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START : '10:00'); ?>";
-        fullcalendar_scheduler_businessHours_weekend_end = "<?php print (!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END) ? $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END : '16:00'); ?>";
-
-        //définition des horaires en fonction du planning utilisateur/groupe
-<!--        --><?php
-//        foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){ ?>
-//
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredam'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//am_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefam'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefam'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_start = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'])) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heuredpm'] : print '00:00'; ?>//";
-//        fullcalendar_scheduler_businessHours_<?php //print $day ?>//pm_end = "<?php //(!empty($Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] )) ? print $Tfullcalendar_scheduler_businessHours[$day.'_heurefpm'] : print '00:00'; ?>//";
-//
-//        <?php //} ?>
 
 		// fullcalendar_scheduler_businessHours_days = [1, 2, 3, 4, 5];
 		userCanCreateEvent = <?php print $userCanCreateEvent; ?>;
@@ -152,7 +139,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				header: {
 					left: 'prev,next today',
 					center: 'title',
-					right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+					right: 'timeGridWeek'
 				},
 				editable: false, // next step add rights and allow edition
 				selectable: userCanCreateEvent,
@@ -164,38 +151,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				locale: fullcalendarscheduler_initialLangCode,
 				eventLimit: true, // allow "more" link when too many events
                 editable:true,
-                businessHours: [
-
-                    //si nous possédons des horaires, on les applique
-                    <?php if(!empty($Tfullcalendar_scheduler_businessHours)) { ?>
-                    <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){?>
-                    <?php
-                    if(!empty($Tfullcalendar_scheduler_businessHours[$day])) {
-                    foreach ($Tfullcalendar_scheduler_businessHours[$day] as $i=>$TSchedules){?>
-
-                    {
-                        daysOfWeek: [<?php print $key ?>], // Jour
-
-                        startTime: '<?php print $TSchedules['min']?>', // début de l'horaire
-                        endTime:  '<?php print $TSchedules['max']?>', // fin de l'horaire
-                    },
-
-                    <?php } ?>
-                    <?php } ?>
-                    <?php } ?>
-
-                    //sinon on applique la comportement par défaut
-                    <?php } else { ?>
-                    {
-                        daysOfWeek: [1,2,3,4,5],
-
-                        startTime: fullcalendar_scheduler_businessHours_weekend_start,
-                        endTime: fullcalendar_scheduler_businessHours_week_end,
-                    }
-
-                    <?php } ?>
-
-                ],
+                businessHours: [],
                 // eventConstraint:'businessHours',
                 selectConstraint:'businessHours',
 				eventDestroy: function(info) {
@@ -206,6 +162,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 					$(info.el).attr('title', info.event.extendedProps.msg);
 					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
 					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
+					$(info.el).attr('data-ope_percent', info.event.extendedProps.ope_percent);
 
 
 					$(info.el).tooltip({
@@ -227,6 +184,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 
 					let eventTitle = $(info.el).find('.fc-title')[0];
 					$(eventTitle).html($(eventTitle).text());
+					let progressColor = 'green';
+					if ($(info.el).attr('data-ope_percent') > 100) progressColor = 'red';
+					$(info.el).append('<div style="position: absolute;bottom: 0;height:5px;width:100%;background-color:lightgrey;"><div style="height:100%;width:'+$(info.el).attr('data-ope_percent')+'%;background-color:'+progressColor+';max-width:100%">&nbsp;</div>&nbsp;</div>')
 				},
 				eventSources: eventSources_parameters,
 				loading: function(bool) {
@@ -245,6 +205,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                         let startTimestamp = Math.floor(selectionInfo.start.getTime() / 1000);
                         let endTimestamp = Math.floor(selectionInfo.end.getTime() / 1000);
 
+                        var beginOfWeek = Math.floor(calendar.view.activeStart.getTime() / 1000);
+                        var endOfWeek = Math.floor(calendar.view.activeEnd.getTime() / 1000);
+
                         $.ajax({
                             url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getTableDialogPlanable',
                             method: 'POST',
@@ -252,6 +215,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                                 'url': window.location.href,
                                 'startTime': startTimestamp,
                                 'endTime': endTimestamp,
+                                'beginOfWeek': beginOfWeek,
+                                'endOfWeek': endOfWeek,
                                 'allDay': selectionInfo.allDay
                             },
                             dataType: 'json',
@@ -296,20 +261,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				    $('.operationOrderTooltip').hide();
                 },
                 eventDrop: function(eventDropInfo) {
-				    let startDay = eventDropInfo.event._instance.range.start.getDay();
-				    let endDay = eventDropInfo.event._instance.range.start.getDay();
-				    let startHour = eventDropInfo.event._instance.range.start.getHours()+(eventDropInfo.event._instance.range.start.getTimezoneOffset()/60);
-                    if(startHour < 0) startHour += 24;
-				    let startMin = eventDropInfo.event._instance.range.start.getMinutes();
-				    let endHour = eventDropInfo.event._instance.range.end.getHours()+(eventDropInfo.event._instance.range.end.getTimezoneOffset()/60);
-				    if(endHour < 0) endHour += 24;
-				    let endMin = eventDropInfo.event._instance.range.end.getMinutes();
-                    let ThourminStart = fullcalendar_scheduler_businessHours_week_start.split(':');
-                    let Thourminend = fullcalendar_scheduler_businessHours_week_end.split(':');
-				    if(!eventDropInfo.event.allDay && startHour >= ThourminStart[0]
-						&& ((endHour < Thourminend[0]) || (endHour == Thourminend[0] && endMin == 0))
-						&& (fullcalendar_scheduler_businessHours_days.indexOf(startDay) >= 0 && fullcalendar_scheduler_businessHours_days.indexOf(endDay) >= 0))
-				    { //Si on est pas sur un jour entier et qu'on est sur des heures de travail
+				    if(!eventDropInfo.event.allDay)
+				    { //Si on est pas sur un jour entier
                         $('.operationOrderTooltip').hide(); // Parfois la tooltip ne se cache pas correctement
                         let endTms = Math.round((eventDropInfo.event._instance.range.end.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
                         let startTms = Math.round((eventDropInfo.event._instance.range.start.getTime()+(eventDropInfo.event._instance.range.start.getTimezoneOffset() * 60000)) / 1000);
@@ -368,6 +321,65 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
             function getFullCalendarHeight(){
 				return  $( window ).height() - $("#id-right").offset().top - 30;
 			}
+
+            setBusinessHours();
+
+
+            $(document).on('click','.fc-button-group',function() {
+                setBusinessHours();
+            });
+
+			function setBusinessHours(){
+
+                var beginOfWeek = Math.floor(calendar.view.activeStart.getTime() / 1000);
+                var endOfWeek = Math.floor(calendar.view.activeEnd.getTime() / 1000);
+
+                $.ajax({
+                    url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getBusinessHours',
+                    method: 'POST',
+                    data: {
+                        'url' : window.location.href,
+                        'beginOfWeek' : beginOfWeek,
+                        'endOfWeek' : endOfWeek
+                    },
+                    dataType: 'json',
+                    // La fonction à apeller si la requête aboutie
+                    success: function (data) {
+
+                        var result = [];
+
+                        if(data != 0) {
+
+                        <?php foreach ($Tfullcalendar_scheduler_businessHours_days as $key=>$day){?>
+
+                            if(data['<?php print $day?>']) {
+
+                                var dayCurrent = data['<?php print $day?>'];
+
+                                $.each(dayCurrent, function (index, value) {
+
+                                    result.push({
+                                            daysOfWeek: [<?php print $key ?>],
+                                        startTime: value['min'],
+                                        endTime: value['max'],
+                                    });
+
+                                });
+                            }
+                            <?php } ?>
+
+                        } else {
+                            result.push({
+                                daysOfWeek: [1,2,3,4,5],
+                                startTime: fullcalendar_scheduler_businessHours_weekend_start,
+                                endTime: fullcalendar_scheduler_businessHours_week_end,
+                            });
+                        }
+
+                        calendar.setOption('businessHours', result);
+                    }
+                });
+            }
 
         });
     </script>
