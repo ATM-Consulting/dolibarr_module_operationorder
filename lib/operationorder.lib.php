@@ -1201,38 +1201,48 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
 
             //On récupère toutes les absences de l'utilisateur pour la semaine
-            $PDOdb=new TPDOdb;
-            $absence = new TRH_Absence($db);
-
-            $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, $dateStart->format('Y-m-d'), $dateEnd->format('Y-m-d'));
             $TAbsences = array();
 
-            foreach ($TPlanning as $t_current => $TAbsence)
+            if($conf->absence->enabled)
             {
+                $PDOdb = new TPDOdb;
+                $absence = new TRH_Absence($db);
 
-                foreach($TAbsence as $fk_user => $TRH_absenceDay)
+                $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, $dateStart->format('Y-m-d'), $dateEnd->format('Y-m-d'));
+
+                foreach ($TPlanning as $t_current => $TAbsence)
                 {
 
-                    foreach($TRH_absenceDay as $absence){
+                    foreach ($TAbsence as $fk_user => $TRH_absenceDay)
+                    {
 
-                        $absenceDateTimestamp = strtotime($absence->date);
-                        $dayabsence = date('D', $absenceDateTimestamp);
+                        foreach ($TRH_absenceDay as $absence)
+                        {
 
-                        if(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi') {
+                            $absenceDateTimestamp = strtotime($absence->date);
+                            $dayabsence = date('D', $absenceDateTimestamp);
 
-                            $TAbsences[] = $absenceDateTimestamp.'_am';
-                            $TAbsences[] = $absenceDateTimestamp.'_pm';
+                            if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                            {
 
-                        } elseif(!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin'){
+                                $TAbsences[] = $absenceDateTimestamp.'_am';
+                                $TAbsences[] = $absenceDateTimestamp.'_pm';
 
-                            $TAbsences[] = $absenceDateTimestamp.'_am';
+                            }
+                            elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
+                            {
 
-                        } elseif(!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi') {
-                            $TAbsences[] = $absenceDateTimestamp.'_pm';
+                                $TAbsences[] = $absenceDateTimestamp.'_am';
+
+                            }
+                            elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
+                            {
+                                $TAbsences[] = $absenceDateTimestamp.'_pm';
+                            }
                         }
                     }
-                }
 
+                }
             }
 
             foreach ($TDates as $date)
