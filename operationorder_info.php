@@ -126,6 +126,13 @@ print '<div class="underbanner clearboth"></div>';
 print '<br>';
 
 print '<table width="100%"><tr><td>';
+// config pour la function d'en dessous
+$object->user_creation_id = $object->fk_user_creat;
+$object->user_modification_id = $object->fk_user_modif;
+$object->date_modification = $object->tms;
+
+$object->date_cloture = null;
+
 dol_print_object_info($object);
 print '</td></tr></table>';
 
