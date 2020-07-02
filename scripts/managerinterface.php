@@ -192,7 +192,7 @@ if (empty($reshook) && !empty($action))
 
 		if (!empty($OR->lines))
 		{
-			$TPointable = $ProdErrors = array();
+			$TPointable = $ProdErrors = $TLastLines = array();
 
 			$alreadyUsed = array();
 			$sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
@@ -308,6 +308,15 @@ if (empty($reshook) && !empty($action))
 
 				$ordet->time_spent += $counter->task_duration;
 				$ordet->update($usr);
+
+				$remaining = $counter->remainingCountersForOR($ordet->id);
+				// changement de statut de l'OR de la ligne
+				if (!empty($conf->global->OPORDER_CHANGE_OR_STATUS_ON_STOP) && !empty($conf->global->OPODER_STATUS_ON_STOP) && !$remaining)
+				{
+					list($changeReturn, $message) = changeORStatus($ordet->fk_operation_order, $conf->global->OPODER_STATUS_ON_STOP);
+					if ($changeReturn) $data['msg'].=$message;
+					else $data['errorMsg'].=$message;
+				}
 			}
 //			$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
 		}
@@ -335,7 +344,7 @@ if (empty($reshook) && !empty($action))
 		if ($retSave > 0)
 		{
 //			$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-			$data['msg'] = $langs->trans('MsgCounterStart', $label, $usr->login);;
+			$data['msg'].= $langs->trans('MsgCounterStart', $label, $usr->login);
 			$data['result'] = 1;
 		}
 		else
@@ -372,8 +381,17 @@ if (empty($reshook) && !empty($action))
 
 					$ordet->time_spent += $counter->task_duration;
 					$ordet->update($usr);
+
+					$remaining = $counter->remainingCountersForOR($ordet->id);
+					// changement de statut de l'OR de la ligne
+					if (!empty($conf->global->OPORDER_CHANGE_OR_STATUS_ON_STOP) && !empty($conf->global->OPODER_STATUS_ON_STOP) && !$remaining)
+					{
+						list($changeReturn, $message) = changeORStatus($ordet->fk_operation_order, $conf->global->OPODER_STATUS_ON_STOP);
+						if ($changeReturn) $data['msg'].=$message;
+						else $data['errorMsg'].=$message;
+					}
 				}
-				$data['msg'] = $langs->trans('MsgCounterStop', $counter->label, $usr->login);
+				$data['msg'].= $langs->trans('MsgCounterStop', $counter->label, $usr->login);
 				$data['result'] = 1;
 			}
 			else
@@ -382,7 +400,7 @@ if (empty($reshook) && !empty($action))
 			}
 		}
 		else if ($ret == 0) {
-			$data['msg'] = $langs->trans('noCounterToStop');
+			$data['msg'].= $langs->trans('noCounterToStop');
 			$data['result'] = 1;
 		}
 		else
@@ -438,10 +456,21 @@ if (empty($reshook) && !empty($action))
 
 					$ordet->time_spent += $counter->task_duration;
 					$ordet->update($usr);
+
+					$remaining = $counter->remainingCountersForOR($ordet->id);
+					// changement de statut de l'OR de la ligne
+					if (!empty($conf->global->OPORDER_CHANGE_OR_STATUS_ON_STOP) && !empty($conf->global->OPODER_STATUS_ON_STOP) && !$remaining)
+					{
+						list($changeReturn, $message) = changeORStatus($ordet->fk_operation_order, $conf->global->OPODER_STATUS_ON_STOP);
+						if ($changeReturn) $data['msg'].=$message;
+						else $data['errorMsg'].=$message;
+					}
 				}
 
 				$data['debug'].= 'stop counter '.$counter->label.' '.$counter->id;
 			}
+
+			$remaining = $counter->remainingCountersForOR($line->id);
 
 			$newCounter = new OperationOrderTaskTime($db);
 			$newCounter->label = $line->label;
@@ -453,8 +482,18 @@ if (empty($reshook) && !empty($action))
 			$retSave = $newCounter->save($usr);
 			if ($retSave > 0)
 			{
+				// s'il y a déjà des compteurs en court sur l'OR, on a déjà changé le statut
+				// changement de statut de l'OR de la ligne
+				if (!empty($conf->global->OPORDER_CHANGE_OR_STATUS_ON_START) && !empty($conf->global->OPODER_STATUS_ON_START) && !$remaining)
+				{
+					list($changeReturn, $message) = changeORStatus($line->fk_operation_order, $conf->global->OPODER_STATUS_ON_START);
+					$data['debug'] = $changeReturn . ' | ' . $message;
+					if ($changeReturn) $data['msg'].=$message;
+					else $data['errorMsg'].=$message;
+				}
+
 				$data['debug'].= 'start counter '.$newCounter->label.' '.$newCounter->id;
-				$data['msg'] = $langs->trans('MsgCounterStart', $counter->label, $usr->login);
+				$data['msg'].= $langs->trans('MsgCounterStart', $newCounter->label, $usr->login);
 				$data['result'] = 1;
 			}
 		}
@@ -622,4 +661,29 @@ function displayBarcode($code = '')
 	$barcode =  '<img src="'.$url.'" title="'.$code.'" border="0">';
 
 	return $barcode;
+}
+
+function changeORStatus($or_id, $fk_status)
+{
+	global $user, $db, $langs;
+
+	$return = false;
+	$message = "";
+
+	$OR = new OperationOrder($db);
+	$OR->fetch($or_id);
+
+	$ret = $OR->setStatus($user, $fk_status);
+	if ($ret > 0)
+	{
+		$OR->loadStatusObj();
+		$message.= $langs->trans('OperationOrderSetStatus', $OR->objStatus->label, $OR->ref).'<br />';
+		$return = true;
+	}
+	else
+	{
+		$message.=$OR->error.'<br />';
+	}
+
+	return array($return, $message);
 }
