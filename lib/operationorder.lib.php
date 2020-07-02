@@ -28,7 +28,7 @@
 
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
-dol_include_once('/absence/class/absence.class.php');
+if($conf->absence->enabled) dol_include_once('/absence/class/absence.class.php');
 
 
 
