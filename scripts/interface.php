@@ -681,6 +681,8 @@ function  _getJourOff($start = 0, $end = 0){
 
 function _getJourFull($start = 0, $end = 0){
 
+    global $conf;
+
     $TDates = array();
     $TRes = array();
 
@@ -700,7 +702,14 @@ function _getJourFull($start = 0, $end = 0){
         $res_TimeAvailable = getTimeAvailableByDate($date);
         $res_TimePlanned = getTimePlannedByDate($date);
 
-        if($res_TimeAvailable - $res_TimePlanned <= 0 && !empty($res_TimeAvailable)){
+        //on calcule le pourcentage de temps plannifié par rapport au temps disponible
+        $percentage = 0;
+        if(!empty($res_TimeAvailable))
+        {
+            $percentage = ($res_TimePlanned * 100) / $res_TimeAvailable;
+        }
+
+        if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR){
             $event = new fullCalendarEvent();
 
             $event->title = "Full";

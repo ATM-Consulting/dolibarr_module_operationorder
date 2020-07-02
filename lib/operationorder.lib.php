@@ -1864,7 +1864,6 @@ function getTimePlannedByDate($date_timestamp){
 
                     //si le nombre total de seconde est supérieur à la durée théorique de l'or, alors on arrête de compter et on compte la durée théorique
                     if($nb_seconds_total > $operationOrder->time_planned_t){
-                        var_dump('hey');
                         $nb_seconds_total = $operationOrder->time_planned_t;
                         break;
                     }
