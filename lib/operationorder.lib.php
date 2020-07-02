@@ -1218,26 +1218,27 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
                         foreach ($TRH_absenceDay as $absence)
                         {
-
-                            $absenceDateTimestamp = strtotime($absence->date);
-                            $dayabsence = date('D', $absenceDateTimestamp);
-
-                            if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                            if($absence->isPresence)
                             {
+                                $absenceDateTimestamp = strtotime($absence->date);
 
-                                $TAbsences[] = $absenceDateTimestamp.'_am';
-                                $TAbsences[] = $absenceDateTimestamp.'_pm';
+                                if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                                {
 
-                            }
-                            elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
-                            {
+                                    $TAbsences[] = $absenceDateTimestamp.'_am';
+                                    $TAbsences[] = $absenceDateTimestamp.'_pm';
 
-                                $TAbsences[] = $absenceDateTimestamp.'_am';
+                                }
+                                elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
+                                {
 
-                            }
-                            elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
-                            {
-                                $TAbsences[] = $absenceDateTimestamp.'_pm';
+                                    $TAbsences[] = $absenceDateTimestamp.'_am';
+
+                                }
+                                elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
+                                {
+                                    $TAbsences[] = $absenceDateTimestamp.'_pm';
+                                }
                             }
                         }
                     }
