@@ -1621,6 +1621,11 @@ function verifyScheduleInBusinessHours($startTime, $endTime){
 
 }
 
+/**
+ * Retourne le temps disponible total d'une journée en fonction des plannings de chaque utilisateur
+ * @param timestamp $date_timestamp
+ * @return int (seconds)
+ */
 function getTimeAvailableByDate($date_timestamp){
 
     global $db, $conf;
@@ -1779,6 +1784,11 @@ function getTimeAvailableByDate($date_timestamp){
     return $nb_seconds_total;
 }
 
+/**
+ * Retourne le temps événement OR planifié total d'une journée
+ * @param timestamp $date_timestamp
+ * @return int (seconds)
+ */
 function getTimePlannedByDate($date_timestamp){
 
     global $db;
@@ -1786,52 +1796,69 @@ function getTimePlannedByDate($date_timestamp){
     $error = 0;
     $nb_seconds_total = 0;
 
-
     $dated = date('Y-m-d', $date_timestamp);
     $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
 
+    //on récupère tous les événement OR planifiés sur la journée
     $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' AND datef <= '".$datef."'";
     $resql = $db->query($sql);
 
     if($resql){
 
+        //tant qu'on a un événement OR
         while($obj = $db->fetch_object($resql)){
 
             $or_action = new OperationOrderAction($db);
             $res =$or_action->fetch($obj->id);
 
-            $TNextSchedules = getNextSchedules($or_action->dated);
-
-            foreach($TNextSchedules as $key=>$schedule)
+            //si on trouve l'OR associé à cet événement
+            if($res >= 0)
             {
+                //on récupère tous le créneau actuel et ceux qui suivent le début de l'événement OR
+                $TNextSchedules = getNextSchedules($or_action->dated);
 
-                if ($schedule['date'] != $date_timestamp)
+                foreach ($TNextSchedules as $key => $schedule)
                 {
-                    unset($TNextSchedules[$key]);
+                    if ($schedule['date'] != $date_timestamp) unset($TNextSchedules[$key]);
                 }
-            }
 
-            foreach($TNextSchedules as $schedule){
-
+                //pour chaque créneau de la journée, on ajoute au nombre de seconde total les secondes qu'il faut
+                foreach ($TNextSchedules as $schedule)
+                {
                     $TScheduleMin = explode(':', $schedule['min']);
                     $dateMinTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
 
                     $TScheduleMax = explode(':', $schedule['max']);
                     $dateMaxTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
 
-                    if($or_action->dated  > $dateMinTimestamp && $or_action->datef  >= $dateMaxTimestamp){
+                    //si l'événement or commence après le début du créneau
+                    if ($or_action->dated > $dateMinTimestamp && $or_action->datef >= $dateMaxTimestamp)
+                    {
                         $nb_seconds_total += $dateMaxTimestamp - $or_action->dated;
-                    } elseif($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp){
+                    }
+                    //si l'événement or finit avant la fin du créneau
+                    elseif ($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp)
+                    {
                         $nb_seconds_total += $or_action->datef - $dateMinTimestamp;
-                    } elseif($or_action->dated  > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp) {
+                    }
+                    //si l'événement commence après le début du créneau et finit avant la fin du créneau
+                    elseif ($or_action->dated > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp)
+                    {
                         $nb_seconds_total += $or_action->datef - $or_action->dated;
-                    } else {
+                    }
+                    else
+                    {
                         $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
                     }
 
-                    if($or_action->datef <= $dateMaxTimestamp) {
+                    //si l'événement finit avant ou à la fin du créneau, alors on arrête de compter
+                    if ($or_action->datef <= $dateMaxTimestamp)
+                    {
                         break;
                     }
+                }
+            } else {
+                $error++;
             }
         }
 

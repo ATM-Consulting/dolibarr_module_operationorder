@@ -681,8 +681,6 @@ function  _getJourOff($start = 0, $end = 0){
 
 function _getJourFull($start = 0, $end = 0){
 
-    global $db;
-
     $TDates = array();
     $TRes = array();
 
@@ -702,7 +700,7 @@ function _getJourFull($start = 0, $end = 0){
         $res_TimeAvailable = getTimeAvailableByDate($date);
         $res_TimePlanned = getTimePlannedByDate($date);
 
-        if($res_TimeAvailable - $res_TimePlanned <= 0){
+        if($res_TimeAvailable - $res_TimePlanned <= 0 && !empty($res_TimeAvailable)){
             $event = new fullCalendarEvent();
 
             $event->title = "Full";
@@ -710,7 +708,7 @@ function _getJourFull($start = 0, $end = 0){
             // $event->end	= date('c', $dayOff->date);
             $event->allDay  = true; // will make the time show
             $event->msg = '';
-            $event->color = '#FF0000';
+            $event->color = '#ff7f00';
 
             $TRes[] = $event;
 
@@ -720,33 +718,6 @@ function _getJourFull($start = 0, $end = 0){
         }
 
     }
-//
-//    if (!empty($TDayOff))
-//    {
-//        foreach ($TDayOff as $dayOff)
-//        {
-//            $event = new fullCalendarEvent();
-//
-//            $event->title	= $dayOff->label;
-//
-//            $event->url		= '';
-//            $event->start	= date('c', $dayOff->date);
-//            // $event->end	= date('c', $dayOff->date);
-//            $event->allDay  = true; // will make the time show
-//            $event->msg = '';
-//            $event->color = '#FF0000';
-//
-//            if($db->jdate($dayOff->date) < time()){
-//                $event->color = OO_colorLighten($event->color, 10);
-//            }
-//
-//            $TRes[] = $event;
-//
-//            $eventbg = clone $event;
-//            $eventbg->rendering = 'background';
-//            $TRes[] = $eventbg;
-//        }
-//    }
 
     return $TRes;
 
