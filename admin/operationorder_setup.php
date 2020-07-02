@@ -240,6 +240,10 @@ setup_print_input_form_part($confKey, $langs->trans('OPODER_USERSCAPACITY_PERCEN
 
 setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
 
+$confKey = 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR';
+$customInputHtml = $formother->select_percent($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR, 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR');
+setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR'), '', array(), $customInputHtml);
+
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
 
