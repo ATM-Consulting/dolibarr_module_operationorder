@@ -268,3 +268,5 @@ ErrorProductMissingInOR=Le produit %s n'est pas présent dans l'ordre de répara
 ProductAddedToOR=Le produit %s a été ajouté à l'ordre de réparation %s.
 ErrorAddProductInOR=Une erreur s'est produite pendant l'ajout du produit %s à l'ordre de réparation %s.
 
+ORRef=Ref OR
+
