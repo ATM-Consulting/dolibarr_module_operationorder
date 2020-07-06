@@ -1817,7 +1817,7 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
         $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
 
         //on récupère tous les événement OR planifiés sur la journée
-        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' AND datef <= '".$datef."'";
+        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' OR datef <= '".$datef."'";
         $resql = $db->query($sql);
 
         if ($resql)
