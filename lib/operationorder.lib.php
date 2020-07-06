@@ -1626,159 +1626,168 @@ function verifyScheduleInBusinessHours($startTime, $endTime){
  * @param timestamp $date_timestamp
  * @return int (seconds)
  */
-function getTimeAvailableByDate($date_timestamp){
+function getTimeAvailableByDate($date_timestamp, $isWeek=0){
 
     global $db, $conf;
 
     $nb_seconds_total = 0;
-    $TDays = array ('Mon' => 'lundi','Tue' => 'mardi','Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+    $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
-    $day = date('D', $date_timestamp);
-    $day = $TDays[$day];
+    if($isWeek) $TWeekDates = getWeekRange($date_timestamp);
 
-    //usergroup paramétré
-    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
-
-    $usergroup = new UserGroup($db);
-    $res = $usergroup->fetch($fk_groupuser);
-    $TUsers = $usergroup->listUsersForGroup();
-
-    //jourOff
-    $jourOff = new OperationOrderJoursOff($db);
-    $currentDate = date('Y-m-d H:i:s', $date_timestamp);
-    $res = $jourOff->isOff($currentDate);
-    if($res) return 0;
-
-    foreach ($TUsers as $user)
+    foreach($TWeekDates as $date_timestamp)
     {
-        $absencefullday = false;
-        $absenceam = false;
-        $absencepm = false;
+        $day = date('D', $date_timestamp);
+        $day = $TDays[$day];
 
-        $userplanning = new OperationOrderUserPlanning($db);
-        $res = $userplanning->fetchByObject($user->id, 'user');
+        //usergroup paramétré
+        $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
 
-        if($res > 0 && $userplanning->active){
+        $usergroup = new UserGroup($db);
+        $res = $usergroup->fetch($fk_groupuser);
+        $TUsers = $usergroup->listUsersForGroup();
 
-            //absence
-            if($conf->absence->enabled)
+        //jourOff
+        $jourOff = new OperationOrderJoursOff($db);
+        $currentDate = date('Y-m-d H:i:s', $date_timestamp);
+        $res = $jourOff->isOff($currentDate);
+        if($res) break;
+
+        foreach ($TUsers as $user)
+        {
+            $absencefullday = false;
+            $absenceam = false;
+            $absencepm = false;
+
+            $userplanning = new OperationOrderUserPlanning($db);
+            $res = $userplanning->fetchByObject($user->id, 'user');
+
+            if ($res > 0 && $userplanning->active)
             {
-                $PDOdb = new TPDOdb;
-                $absence = new TRH_Absence($db);
 
-                $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, date('Y-m-d', $date_timestamp), date('Y-m-d', $date_timestamp));
-
-                foreach ($TPlanning as $t_current => $TAbsence)
+                //absence
+                if ($conf->absence->enabled)
                 {
+                    $PDOdb = new TPDOdb;
+                    $absence = new TRH_Absence($db);
 
-                    foreach ($TAbsence as $fk_user => $TRH_absenceDay)
+                    $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, date('Y-m-d', $date_timestamp), date('Y-m-d', $date_timestamp));
+
+                    foreach ($TPlanning as $t_current => $TAbsence)
                     {
 
-                        foreach ($TRH_absenceDay as $absence)
+                        foreach ($TAbsence as $fk_user => $TRH_absenceDay)
                         {
-                            if (!($absence->isPresence))
+
+                            foreach ($TRH_absenceDay as $absence)
                             {
-                                if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                                if (!($absence->isPresence))
                                 {
+                                    if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                                    {
 
-                                    $absencefullday = true;
+                                        $absencefullday = true;
 
-                                }
-                                elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
-                                {
+                                    }
+                                    elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
+                                    {
 
-                                    $absenceam = true;
+                                        $absenceam = true;
 
-                                }
-                                elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
-                                {
-                                    $absencepm = true;
+                                    }
+                                    elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
+                                    {
+                                        $absencepm = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            if(!$absencefullday && !$absenceam)
-            {
-                //matin
-                $start = new DateTime($userplanning->{$day.'_heuredam'});
-                $end = new DateTime($userplanning->{$day.'_heurefam'});
-                $diff = $start->diff($end);
-                $diffStr = $diff->format('%H:%I');
-                $THoursMin = explode(':', $diffStr);
-
-                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
-            }
-
-            if(!$absencefullday && !$absencepm)
-            {
-                //après-midi
-                $start = new DateTime($userplanning->{$day.'_heuredpm'});
-                $end = new DateTime($userplanning->{$day.'_heurefpm'});
-                $diff = $start->diff($end);
-                $diffStr = $diff->format('%H:%I');
-                $THoursMin = explode(':', $diffStr);
-
-                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
-            }
-
-        }
-        else {
-
-            $res = $userplanning->fetchByObject($usergroup->id, 'usergroup');
-
-            if($res > 0 && $userplanning->active){
-
-                //matin
-                $start = new DateTime($userplanning->{$day.'_heuredam'});
-                $end = new DateTime($userplanning->{$day.'_heurefam'});
-                $diff = $start->diff($end);
-                $diffStr = $diff->format('%H:%I');
-                $THoursMin = explode(':', $diffStr);
-
-                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
-
-                //après-midi
-                $start = new DateTime($userplanning->{$day.'_heuredpm'});
-                $end = new DateTime($userplanning->{$day.'_heurefpm'});
-                $diff = $start->diff($end);
-                $diffStr = $diff->format('%H:%I');
-                $THoursMin = explode(':', $diffStr);
-
-                $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
-
-            }
-            //config par défaut
-            else {
-
-                //semaine
-                if($day == 'lundi' || $day == 'mardi' ||$day == 'mercredi' ||$day == 'jeudi' ||$day == 'vendredi')
+                if (!$absencefullday && !$absenceam)
                 {
-                    $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START);
-                    $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END);
+                    //matin
+                    $start = new DateTime($userplanning->{$day.'_heuredam'});
+                    $end = new DateTime($userplanning->{$day.'_heurefam'});
                     $diff = $start->diff($end);
                     $diffStr = $diff->format('%H:%I');
                     $THoursMin = explode(':', $diffStr);
 
                     $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
                 }
-                //week-end
+
+                if (!$absencefullday && !$absencepm)
+                {
+                    //après-midi
+                    $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                    $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                }
+
+            }
+            else
+            {
+
+                $res = $userplanning->fetchByObject($usergroup->id, 'usergroup');
+
+                if ($res > 0 && $userplanning->active)
+                {
+
+                    //matin
+                    $start = new DateTime($userplanning->{$day.'_heuredam'});
+                    $end = new DateTime($userplanning->{$day.'_heurefam'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+                    //après-midi
+                    $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                    $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+                }
+                //config par défaut
                 else
                 {
-                    $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START);
-                    $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END);
-                    $diff = $start->diff($end);
-                    $diffStr = $diff->format('%H:%I');
-                    $THoursMin = explode(':', $diffStr);
 
-                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    //semaine
+                    if ($day == 'lundi' || $day == 'mardi' || $day == 'mercredi' || $day == 'jeudi' || $day == 'vendredi')
+                    {
+                        $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START);
+                        $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END);
+                        $diff = $start->diff($end);
+                        $diffStr = $diff->format('%H:%I');
+                        $THoursMin = explode(':', $diffStr);
+
+                        $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    }
+                    //week-end
+                    else
+                    {
+                        $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START);
+                        $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END);
+                        $diff = $start->diff($end);
+                        $diffStr = $diff->format('%H:%I');
+                        $THoursMin = explode(':', $diffStr);
+
+                        $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    }
+
                 }
-
             }
-        }
 
+        }
     }
 
     return $nb_seconds_total;
@@ -1789,96 +1798,106 @@ function getTimeAvailableByDate($date_timestamp){
  * @param timestamp $date_timestamp
  * @return int (seconds)
  */
-function getTimePlannedByDate($date_timestamp){
+function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
     global $db;
 
     $error = 0;
     $nb_seconds_total = 0;
 
-    $dated = date('Y-m-d', $date_timestamp);
-    $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
+    if($isWeek) $TWeekDates = getWeekRange($date_timestamp);
 
-    //on récupère tous les événement OR planifiés sur la journée
-    $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' AND datef <= '".$datef."'";
-    $resql = $db->query($sql);
+    foreach($TWeekDates as $date_timestamp)
+    {
+        $dated = date('Y-m-d', $date_timestamp);
+        $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
 
-    if($resql){
+        //on récupère tous les événement OR planifiés sur la journée
+        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' AND datef <= '".$datef."'";
+        $resql = $db->query($sql);
 
-        //tant qu'on a un événement OR
-        while($obj = $db->fetch_object($resql)){
+        if ($resql)
+        {
 
-            $or_action = new OperationOrderAction($db);
-            $res =$or_action->fetch($obj->id);
-
-            //si on trouve l'OR associé à cet événement
-            if($res < 0) $error ++;
-
-
-            if(!$error)
+            //tant qu'on a un événement OR
+            while ($obj = $db->fetch_object($resql))
             {
-                $operationOrder = new OperationOrder($db);
-                $res = $operationOrder->fetch($or_action->fk_operationorder);
 
+                $or_action = new OperationOrderAction($db);
+                $res = $or_action->fetch($obj->id);
+
+                //si on trouve l'OR associé à cet événement
                 if ($res < 0) $error++;
-            }
 
-            if(!$error)
-            {
-                //on récupère tous le créneau actuel et ceux qui suivent le début de l'événement OR
-                $TNextSchedules = getNextSchedules($or_action->dated);
 
-                foreach ($TNextSchedules as $key => $schedule)
+                if (!$error)
                 {
-                    if ($schedule['date'] != $date_timestamp) unset($TNextSchedules[$key]);
+                    $operationOrder = new OperationOrder($db);
+                    $res = $operationOrder->fetch($or_action->fk_operationorder);
+
+                    if ($res < 0) $error++;
                 }
 
-                //pour chaque créneau de la journée, on ajoute au nombre de seconde total les secondes qu'il faut
-                foreach ($TNextSchedules as $schedule)
+                if (!$error)
                 {
-                    $TScheduleMin = explode(':', $schedule['min']);
-                    $dateMinTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
+                    //on récupère tous le créneau actuel et ceux qui suivent le début de l'événement OR
+                    $TNextSchedules = getNextSchedules($or_action->dated);
 
-                    $TScheduleMax = explode(':', $schedule['max']);
-                    $dateMaxTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
-
-                    //si l'événement or commence après le début du créneau
-                    if ($or_action->dated > $dateMinTimestamp && $or_action->datef >= $dateMaxTimestamp)
+                    foreach ($TNextSchedules as $key => $schedule)
                     {
-                        $nb_seconds_total += $dateMaxTimestamp - $or_action->dated;
-                    }
-                    //si l'événement or finit avant la fin du créneau
-                    elseif ($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp)
-                    {
-                        $nb_seconds_total += $or_action->datef - $dateMinTimestamp;
-                    }
-                    //si l'événement commence après le début du créneau et finit avant la fin du créneau
-                    elseif ($or_action->dated > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp)
-                    {
-                        $nb_seconds_total += $or_action->datef - $or_action->dated;
-                    }
-                    else
-                    {
-                        $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
+                        if ($schedule['date'] != $date_timestamp) unset($TNextSchedules[$key]);
                     }
 
-                    //si le nombre total de seconde est supérieur à la durée théorique de l'or, alors on arrête de compter et on compte la durée théorique
-                    if($nb_seconds_total > $operationOrder->time_planned_t){
-                        $nb_seconds_total = $operationOrder->time_planned_t;
-                        break;
-                    }
-
-                    //si l'événement finit avant ou à la fin du créneau, alors on arrête de compter
-                    if ($or_action->datef <= $dateMaxTimestamp)
+                    //pour chaque créneau de la journée, on ajoute au nombre de seconde total les secondes qu'il faut
+                    foreach ($TNextSchedules as $schedule)
                     {
-                        break;
+                        $TScheduleMin = explode(':', $schedule['min']);
+                        $dateMinTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
+
+                        $TScheduleMax = explode(':', $schedule['max']);
+                        $dateMaxTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
+
+                        //si l'événement or commence après le début du créneau
+                        if ($or_action->dated > $dateMinTimestamp && $or_action->datef >= $dateMaxTimestamp)
+                        {
+                            $nb_seconds_total += $dateMaxTimestamp - $or_action->dated;
+                        }
+                        //si l'événement or finit avant la fin du créneau
+                        elseif ($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp)
+                        {
+                            $nb_seconds_total += $or_action->datef - $dateMinTimestamp;
+                        }
+                        //si l'événement commence après le début du créneau et finit avant la fin du créneau
+                        elseif ($or_action->dated > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp)
+                        {
+                            $nb_seconds_total += $or_action->datef - $or_action->dated;
+                        }
+                        else
+                        {
+                            $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
+                        }
+
+                        //si le nombre total de seconde est supérieur à la durée théorique de l'or, alors on arrête de compter et on compte la durée théorique
+                        if ($nb_seconds_total > $operationOrder->time_planned_t)
+                        {
+                            $nb_seconds_total = $operationOrder->time_planned_t;
+                            break;
+                        }
+
+                        //si l'événement finit avant ou à la fin du créneau, alors on arrête de compter
+                        if ($or_action->datef <= $dateMaxTimestamp)
+                        {
+                            break;
+                        }
                     }
                 }
             }
+
         }
-
-    } else {
-        $error++;
+        else
+        {
+            $error++;
+        }
     }
 
     if(!$error) return $nb_seconds_total;
