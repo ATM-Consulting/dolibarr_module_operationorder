@@ -51,6 +51,11 @@ function operationorderAdminPrepareHead()
     $head[$h][2] = 'extrafields';
 	$h++;
 
+	$head[$h][0] = dol_buildpath("/operationorder/admin/operationorderstatus_extrafields.php", 1);
+	$head[$h][1] = $langs->trans("OperationOrderStatusExtrafieldPage");
+	$head[$h][2] = 'status_extrafields';
+	$h++;
+
 	$head[$h][0] = dol_buildpath("/operationorder/admin/operationorderjoursoff_setup.php", 1);
 	$head[$h][1] = $langs->trans("oojoursOff");
 	$head[$h][2] = 'oojoursOff';

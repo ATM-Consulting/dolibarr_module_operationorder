@@ -742,6 +742,8 @@ class OperationOrder extends SeedObject
 
 					if (!$error && !$notrigger) {
 						// Call trigger
+						$this->objStatus->oldcopy = $this->objStatus;
+						$this->objStatus = $newStatus;
 						$result = $this->call_trigger($triggercode, $user);
 						if ($result < 0) $error++;
 					}
@@ -771,7 +773,7 @@ class OperationOrder extends SeedObject
 						if($newStatus->fetch($fk_status) > 0)
 						{
 							$langs->load('operationorder@operationorder');
-							$eventLabel = $langs->transnoentities('OperationOrderSetStatus', '"'.$this->objStatus->label . '" => "' . $newStatus->label.'"' , $this->ref );
+							$eventLabel = $langs->transnoentities('OperationOrderSetStatus', '"'.$this->objStatus->oldcopy->label . '" => "' . $this->objStatus->label.'"' , $this->ref );
 							$this->addActionComEvent($eventLabel);
 						}
 					}
