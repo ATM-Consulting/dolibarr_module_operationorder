@@ -1632,10 +1632,12 @@ function getTimeAvailableByDate($date_timestamp, $isWeek=0){
 
     $nb_seconds_total = 0;
     $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+    $TDates = array();
 
-    if($isWeek) $TWeekDates = getWeekRange($date_timestamp);
+    if($isWeek) $TDates = getWeekRange($date_timestamp);
+    else $TDates[] = $date_timestamp;
 
-    foreach($TWeekDates as $date_timestamp)
+    foreach($TDates as $date_timestamp)
     {
         $day = date('D', $date_timestamp);
         $day = $TDays[$day];
@@ -1804,10 +1806,12 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
     $error = 0;
     $nb_seconds_total = 0;
+    $TDates = array();
 
-    if($isWeek) $TWeekDates = getWeekRange($date_timestamp);
+    if($isWeek) $TDates = getWeekRange($date_timestamp);
+    else $TDates[] = $date_timestamp;
 
-    foreach($TWeekDates as $date_timestamp)
+    foreach($TDates as $date_timestamp)
     {
         $dated = date('Y-m-d', $date_timestamp);
         $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql

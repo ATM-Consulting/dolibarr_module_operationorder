@@ -699,17 +699,23 @@ function _getJourFull($start = 0, $end = 0){
 
     foreach($TDates as $date){
 
-        $res_TimeAvailable = getTimeAvailableByDate($date);
-        $res_TimePlanned = getTimePlannedByDate($date);
+        $isfull = false;
+
+        $res_TimeAvailable = getTimeAvailableByDate($date);      //temps disponible par date général
+        $res_TimePlanned = getTimePlannedByDate($date);         //temps plannifié par date
+        $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($date);    //temps disponible en fonction de la capacité de chaque utilisateur
 
         //on calcule le pourcentage de temps plannifié par rapport au temps disponible
         $percentage = 0;
-        if(!empty($res_TimeAvailable))
+        if(!empty($res_TimeUserCapacity))
         {
-            $percentage = ($res_TimePlanned * 100) / $res_TimeAvailable;
+            $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+
+            if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
         }
 
-        if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR){
+
+        if($isfull){
             $event = new fullCalendarEvent();
 
             $event->title = "Full";
