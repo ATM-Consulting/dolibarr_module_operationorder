@@ -1141,7 +1141,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $TDates[] = $i;
     }
 
-    $dateEnd->setTimestamp(end($TDates));
 
     //recherche des jours fériés dans la semaine
     foreach ($TDates as $date){
@@ -1521,7 +1520,7 @@ function getWeekRange($datetime){
     $TDates[] = mktime(0, 0, 0, $firstDayOfWeek['first_month'] , $firstDayOfWeek['first_day'], $firstDayOfWeek['first_year']);
     $nextDay = dol_get_next_day($firstDayOfWeek['first_day'], $firstDayOfWeek['first_month'], $firstDayOfWeek['first_year']);
 
-    while($i < 7){
+    while($i < 6){
 
         $TDates[] = mktime(0, 0, 0, $nextDay['month'] , $nextDay['day'], $nextDay['year']);
 
@@ -1633,8 +1632,12 @@ function getTimeAvailableByDate($date_timestamp, $isWeek=0){
     $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
     $TDates = array();
 
-    if($isWeek) $TDates = getWeekRange($date_timestamp);
-    else $TDates[] = $date_timestamp;
+    if($isWeek) {
+        $TDates = getWeekRange($date_timestamp);
+    }
+    else {
+        $TDates[] = $date_timestamp;
+    }
 
     foreach($TDates as $date_timestamp)
     {
@@ -1870,7 +1873,6 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
 
     if($isWeek) {
         $TDates = getWeekRange($date_timestamp);
-        array_pop($TDates);
     }
     else {
         $TDates[] = $date_timestamp;

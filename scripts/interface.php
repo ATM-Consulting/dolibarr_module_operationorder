@@ -719,18 +719,14 @@ function _getJourFull($start = 0, $end = 0){
         if($isfull){
             $event = new fullCalendarEvent();
 
-            $event->title = "Full";
+            $event->title = "";
             $event->start	= date('c', $date);
-             $event->end	= date('c', $date + (60 * 60 *24));
-//            $event->allDay  = true; // will make the time show
+            $event->end	= date('c', $date + (60 * 60 *24));
             $event->msg = '';
             $event->color = '#ff7f00';
+            $event->rendering = 'background';
 
-//            $TRes[] = $event;
-
-            $eventbg = clone $event;
-            $eventbg->rendering = 'background';
-            $TRes[] = $eventbg;
+            $TRes[] = $event;
         }
 
     }
@@ -746,11 +742,11 @@ function _getWeekFull($start = 0, $end = 0){
     $start = $start->getTimestamp();
     $end = $end->getTimestamp();
 
+
     $isfull = false;
 
     $res_TimePlanned = getTimePlannedByDate($start, 1);         //temps plannifié par date
     $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($start, 1);    //temps disponible en fonction de la capacité de chaque utilisateur
-
 
     //on calcule le pourcentage de temps plannifié par rapport au temps disponible
     $percentage = 0;
@@ -765,8 +761,8 @@ function _getWeekFull($start = 0, $end = 0){
 
         $event = new fullCalendarEvent();
 
-        $event->title = "Full";
-        $event->start	= date('c', $start);
+        $event->title = "";
+        $event->start = date('c', $start);
         $event->end	= date('c', $end);
         $event->allDay  = true; // will make the time show
         $event->msg = '';
@@ -774,9 +770,6 @@ function _getWeekFull($start = 0, $end = 0){
 
         $TRes[] = $event;
 
-//        $eventbg = clone $event;
-//        $eventbg->rendering = 'background';
-//        $TRes[] = $eventbg;
     } else
     {
         $TRes = array();
