@@ -1898,7 +1898,7 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
             $absencepm = false;
 
             $user->fetch_optionals();
-            $efficienty_user = $user->array_options['options_efficiency'];
+            $efficienty_user = !empty($user->array_options['options_efficiency']) ? $user->array_options['options_efficiency'] : 100;
 
             $userplanning = new OperationOrderUserPlanning($db);
             $res = $userplanning->fetchByObject($user->id, 'user');
@@ -1986,7 +1986,7 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
                     $diffStr = $diff->format('%H:%I');
                     $THoursMin = explode(':', $diffStr);
 
-                    $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
 
                     //après-midi
                     $start = new DateTime($userplanning->{$day.'_heuredpm'});
@@ -2001,7 +2001,6 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
                 //config par défaut
                 else
                 {
-
                     //semaine
                     if ($day == 'lundi' || $day == 'mardi' || $day == 'mercredi' || $day == 'jeudi' || $day == 'vendredi')
                     {
@@ -2011,7 +2010,7 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
                         $diffStr = $diff->format('%H:%I');
                         $THoursMin = explode(':', $diffStr);
 
-                        $nb_seconds_total += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                        $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
                     }
                     //week-end
                     else

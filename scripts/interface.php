@@ -701,7 +701,7 @@ function _getJourFull($start = 0, $end = 0){
 
         $isfull = false;
 
-        $res_TimeAvailable = getTimeAvailableByDate($date);      //temps disponible par date général
+//        $res_TimeAvailable = getTimeAvailableByDate($date);      //temps disponible par date général
         $res_TimePlanned = getTimePlannedByDate($date);         //temps plannifié par date
         $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($date);    //temps disponible en fonction de la capacité de chaque utilisateur
 
