@@ -50,7 +50,7 @@ if (empty($reshook) && !empty($action))
 		}
 		else
 		{
-			$userGroup = new OperationOrderUserPlanning($db);
+			$userGroup = new UserGroupOperationOrder($db);
 			$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
 			if ($retgroup > 0)
 			{
