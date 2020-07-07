@@ -1119,7 +1119,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     $TDaysOff = array();
     $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
-
     $dateStart = new DateTime();
     $dateStart->setTimestamp($startTimeWeek);
 
@@ -1813,11 +1812,11 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
     foreach($TDates as $date_timestamp)
     {
-        $dated = date('Y-m-d', $date_timestamp);
-        $datef = date('Y-m-d', $date_timestamp + (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
+        $datedsql = date('Y-m-d', $date_timestamp + (60 * 60 * 24));
+        $datefsql = date('Y-m-d', $date_timestamp - (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
 
         //on récupère tous les événement OR planifiés sur la journée
-        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated >= '".$dated."' OR datef <= '".$datef."'";
+        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated <= '".$datedsql."' AND datef >= '".$datefsql."'";
         $resql = $db->query($sql);
 
         if ($resql)
@@ -1844,56 +1843,10 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
                 if (!$error)
                 {
-                    //on récupère tous le créneau actuel et ceux qui suivent le début de l'événement OR
-                    $TNextSchedules = getNextSchedules($or_action->dated);
+                    $nbDays = num_between_day($or_action->dated, $or_action->datef);
+                    $nbDays ++;
 
-                    foreach ($TNextSchedules as $key => $schedule)
-                    {
-                        if ($schedule['date'] != $date_timestamp) unset($TNextSchedules[$key]);
-                    }
-
-                    //pour chaque créneau de la journée, on ajoute au nombre de seconde total les secondes qu'il faut
-                    foreach ($TNextSchedules as $schedule)
-                    {
-                        $TScheduleMin = explode(':', $schedule['min']);
-                        $dateMinTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1]);
-
-                        $TScheduleMax = explode(':', $schedule['max']);
-                        $dateMaxTimestamp = $schedule['date'] + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]);
-
-                        //si l'événement or commence après le début du créneau
-                        if ($or_action->dated > $dateMinTimestamp && $or_action->datef >= $dateMaxTimestamp)
-                        {
-                            $nb_seconds_total += $dateMaxTimestamp - $or_action->dated;
-                        }
-                        //si l'événement or finit avant la fin du créneau
-                        elseif ($or_action->datef < $dateMaxTimestamp && $or_action->dated <= $dateMinTimestamp)
-                        {
-                            $nb_seconds_total += $or_action->datef - $dateMinTimestamp;
-                        }
-                        //si l'événement commence après le début du créneau et finit avant la fin du créneau
-                        elseif ($or_action->dated > $dateMinTimestamp && $or_action->datef < $dateMaxTimestamp)
-                        {
-                            $nb_seconds_total += $or_action->datef - $or_action->dated;
-                        }
-                        else
-                        {
-                            $nb_seconds_total += $dateMaxTimestamp - $dateMinTimestamp;
-                        }
-
-                        //si le nombre total de seconde est supérieur à la durée théorique de l'or, alors on arrête de compter et on compte la durée théorique
-                        if ($nb_seconds_total > $operationOrder->time_planned_t)
-                        {
-                            $nb_seconds_total = $operationOrder->time_planned_t;
-                            break;
-                        }
-
-                        //si l'événement finit avant ou à la fin du créneau, alors on arrête de compter
-                        if ($or_action->datef <= $dateMaxTimestamp)
-                        {
-                            break;
-                        }
-                    }
+                    $nb_seconds_total += ceil($operationOrder->time_planned_t/$nbDays);
                 }
             }
 
@@ -1906,5 +1859,10 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
     if(!$error) return $nb_seconds_total;
     else return -1;
+}
+
+function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
+{
+
 }
 
