@@ -28,6 +28,7 @@
 
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
 if($conf->absence->enabled) dol_include_once('/absence/class/absence.class.php');
 
 
@@ -1170,13 +1171,11 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
     //initialisation userplanning
     $userplanning = new OperationOrderUserPlanning($db);
-
     if(!empty($fk_groupuser))
     {
-        $usergroup = new UserGroup($db);
+        $usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
         $TUsers = $usergroup->listUsersForGroup();
-
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
