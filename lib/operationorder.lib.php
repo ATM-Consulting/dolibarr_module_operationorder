@@ -1812,11 +1812,10 @@ function getTimePlannedByDate($date_timestamp, $isWeek=0){
 
     foreach($TDates as $date_timestamp)
     {
-        $datedsql = date('Y-m-d', $date_timestamp + (60 * 60 * 24));
-        $datefsql = date('Y-m-d', $date_timestamp - (60 * 60 * 24)); //on passe au jour suivant pour la requête sql
+        $date= date('Y-m-d', $date_timestamp);
 
         //on récupère tous les événement OR planifiés sur la journée
-        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated <= '".$datedsql."' AND datef >= '".$datefsql."'";
+        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated <= '".$date." 23:59:59' AND datef >= '".$date." 00:00:00'";
         $resql = $db->query($sql);
 
         if ($resql)
@@ -1869,8 +1868,14 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $isWeek=0)
     $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
     $TDates = array();
 
-    if($isWeek) $TDates = getWeekRange($date_timestamp);
-    else $TDates[] = $date_timestamp;
+    if($isWeek) {
+        $TDates = getWeekRange($date_timestamp);
+        array_pop($TDates);
+    }
+    else {
+        $TDates[] = $date_timestamp;
+    }
+
 
     foreach($TDates as $date_timestamp)
     {

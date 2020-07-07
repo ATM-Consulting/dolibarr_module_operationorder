@@ -41,6 +41,8 @@ if(GETPOST('action'))
 			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
 		} elseif ($eventsType == 'dayFull') {
             $data = _getJourFull($range_start, $range_end);
+        } elseif ($eventsType == 'weekFull') {
+            $data = _getWeekFull($range_start, $range_end);
         }
 		else
 		{
@@ -701,9 +703,9 @@ function _getJourFull($start = 0, $end = 0){
 
         $isfull = false;
 
-//        $res_TimeAvailable = getTimeAvailableByDate($date);      //temps disponible par date général
         $res_TimePlanned = getTimePlannedByDate($date);         //temps plannifié par date
         $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($date);    //temps disponible en fonction de la capacité de chaque utilisateur
+
 
         //on calcule le pourcentage de temps plannifié par rapport au temps disponible
         $percentage = 0;
@@ -714,24 +716,70 @@ function _getJourFull($start = 0, $end = 0){
             if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
         }
 
-
         if($isfull){
             $event = new fullCalendarEvent();
 
             $event->title = "Full";
             $event->start	= date('c', $date);
-            // $event->end	= date('c', $dayOff->date);
-            $event->allDay  = true; // will make the time show
+             $event->end	= date('c', $date + (60 * 60 *24));
+//            $event->allDay  = true; // will make the time show
             $event->msg = '';
             $event->color = '#ff7f00';
 
-            $TRes[] = $event;
+//            $TRes[] = $event;
 
             $eventbg = clone $event;
             $eventbg->rendering = 'background';
             $TRes[] = $eventbg;
         }
 
+    }
+
+    return $TRes;
+
+}
+
+function _getWeekFull($start = 0, $end = 0){
+
+    global $conf;
+
+    $start = $start->getTimestamp();
+    $end = $end->getTimestamp();
+
+    $isfull = false;
+
+    $res_TimePlanned = getTimePlannedByDate($start, 1);         //temps plannifié par date
+    $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($start, 1);    //temps disponible en fonction de la capacité de chaque utilisateur
+
+
+    //on calcule le pourcentage de temps plannifié par rapport au temps disponible
+    $percentage = 0;
+    if(!empty($res_TimeUserCapacity))
+    {
+        $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+
+        if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+    }
+
+    if($isfull){
+
+        $event = new fullCalendarEvent();
+
+        $event->title = "Full";
+        $event->start	= date('c', $start);
+        $event->end	= date('c', $end);
+        $event->allDay  = true; // will make the time show
+        $event->msg = '';
+        $event->color = '#ff7f00';
+
+        $TRes[] = $event;
+
+//        $eventbg = clone $event;
+//        $eventbg->rendering = 'background';
+//        $TRes[] = $eventbg;
+    } else
+    {
+        $TRes = array();
     }
 
     return $TRes;
