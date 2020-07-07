@@ -350,7 +350,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                                 $.each(dayCurrent, function (index, value) {
 
                                     result.push({
-                                            daysOfWeek: [<?php print $key ?>],
+                                        daysOfWeek: [<?php print $key ?>],
                                         startTime: value['min'],
                                         endTime: value['max'],
                                     });
@@ -362,8 +362,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                         } else {
                             result.push({
                                 daysOfWeek: [1,2,3,4,5],
-                                startTime: fullcalendar_scheduler_businessHours_weekend_start,
-                                endTime: fullcalendar_scheduler_businessHours_week_end,
+                                startTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START ?>',
+                                endTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END ?>',
                             });
                         }
 
