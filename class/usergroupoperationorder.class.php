@@ -60,7 +60,7 @@ class UserGroupOperationOrder extends UserGroup
 		}
 		elseif (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE) || ! empty($user->admin))
 		{
-			$sql.= " AND u.entity IN (0,1,".$conf->entity.")";
+			$sql.= " AND u.entity IN (0,1,".$conf->entity.") AND ug.entity='".$conf->entity."'";
 		}
 		if (! empty($excludefilter)) $sql.=' AND ('.$excludefilter.')';
 
