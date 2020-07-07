@@ -685,6 +685,8 @@ function _getJourFull($start = 0, $end = 0){
 
     global $conf;
 
+    $TRes = array();
+
     $TDates = array();
     $TRes = array();
 
@@ -739,9 +741,10 @@ function _getWeekFull($start = 0, $end = 0){
 
     global $conf;
 
+    $TRes = array();
+
     $start = $start->getTimestamp();
     $end = $end->getTimestamp();
-
 
     $isfull = false;
 
@@ -749,7 +752,6 @@ function _getWeekFull($start = 0, $end = 0){
     $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($start, 1);    //temps disponible en fonction de la capacité de chaque utilisateur
 
     //on calcule le pourcentage de temps plannifié par rapport au temps disponible
-    $percentage = 0;
     if(!empty($res_TimeUserCapacity))
     {
         $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
@@ -770,9 +772,6 @@ function _getWeekFull($start = 0, $end = 0){
 
         $TRes[] = $event;
 
-    } else
-    {
-        $TRes = array();
     }
 
     return $TRes;
