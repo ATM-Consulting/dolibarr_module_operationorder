@@ -276,24 +276,39 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');
 
+    $error = 0;
+
     if($action == 'drop')
     {
+        //si la date de début de l'événement est hors créneau, on ne fait rien
+        if(!verifyScheduleInBusinessHours($startTime)) return 1;
+
         $db->begin();
         $action_or = new OperationOrderAction($db);
         $res = $action_or->fetch($fk_action);
 
-        $operationorder = new OperationOrder($db);
-        $res = $operationorder->fetch($action_or->fk_operationorder);
+        if ($res <= 0) $error++;
 
-        $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
 
-        if ($res > 0)
+        if (!$error)
         {
+            $operationorder = new OperationOrder($db);
+            $res = $operationorder->fetch($action_or->fk_operationorder);
+
+            if($res <= 0) $error++;
+        }
+
+        if(!$error){
+
+            //on recalcule le temps plannifié
+            $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
+
             $action_or->dated = $startTime;
-//            $action_or->datef = $endTime;
             $operationorder->time_planned_f = $time_planned;
+
             if (!empty($allDay)) $action_or->fullday = 1;
             $res = $action_or->save($user);
+
             if ($res > 0)
             {
                 $or = new OperationOrder($db);
@@ -303,16 +318,20 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
                 {
                     $or->planned_date = intval($action_or->dated);
                     $or->save($user);
-                    $db->commit();
-                    return 1;
+
                 }
             }
         }
-        $db->rollback();
-        return -1;
-    } else {
 
-        $error = 0;
+        if(!$error){
+            $db->commit();
+            return 1;
+        } else
+        {
+            $db->rollback();
+            return -1;
+        }
+    } else {
 
         if(!empty($fk_action))
         {
@@ -329,9 +348,11 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                 if($res){
 
-                    $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
-
+                    //si la date de fin du resize est différente de la date de fin de l'action or
 					if ($endTime != $action_or->datef){
+
+                        //on recalcule le temps plannifié
+                        $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
 
                         $action_or->datef = $endTime;
 

@@ -1612,7 +1612,7 @@ function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
  * @param timestamp $endTime
  * @return boolean
  */
-function verifyScheduleInBusinessHours($startTime, $endTime){
+function verifyScheduleInBusinessHours($startTime){
 
     $TWeekDates = getWeekRange($startTime);     //dates de la semaine en cours
     $beginOfWeek = $TWeekDates[0];              //début de la semaine
@@ -1627,7 +1627,7 @@ function verifyScheduleInBusinessHours($startTime, $endTime){
             $TScheduleMin = explode(':', $schedule['min']);
             $TScheduleMax = explode(':', $schedule['max']);
 
-            if($startTime >= ($date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1])) && $endTime <= ($date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]))){
+            if($startTime >= ($date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1])) && $startTime <= ($date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]))){
                 return true;
             }
 

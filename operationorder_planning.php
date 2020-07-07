@@ -278,6 +278,8 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                         });
                     } else calendar.refetchEvents();
 
+                    calendar.refetchEvents();
+
                 }
             });
 
