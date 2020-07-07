@@ -281,12 +281,17 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
         $db->begin();
         $action_or = new OperationOrderAction($db);
         $res = $action_or->fetch($fk_action);
-        $canDrop = verifyScheduleInBusinessHours($startTime, $endTime);
 
-        if ($res > 0 && $canDrop)
+        $operationorder = new OperationOrder($db);
+        $res = $operationorder->fetch($action_or->fk_operationorder);
+
+        $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
+
+        if ($res > 0)
         {
             $action_or->dated = $startTime;
-            $action_or->datef = $endTime;
+//            $action_or->datef = $endTime;
+            $operationorder->time_planned_f = $time_planned;
             if (!empty($allDay)) $action_or->fullday = 1;
             $res = $action_or->save($user);
             if ($res > 0)

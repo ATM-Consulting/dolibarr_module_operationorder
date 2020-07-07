@@ -1574,7 +1574,24 @@ function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
             $endTimeDateFormat = new DateTime();
             $endTimeDateFormat->setTimestamp($endTime);
 
-            $timeSchedule = $dateDSchedule->diff($endTimeDateFormat);
+
+            //si la date de fin est placée hors créneau
+            if($endTime < $dateDScheduleTimeStamp) {
+
+                $TPrevScheduleF = explode(':', $TNextSchedules[$i-1]['max']);
+                $prevDateFScheduleTimeStamp = $TNextSchedules[$i-1]['date'] + convertTime2Seconds($TPrevScheduleF[0], $TPrevScheduleF[1]);
+                $prevDateFSchedule = new DateTime();
+                $prevDateFSchedule->setTimestamp($prevDateFScheduleTimeStamp);
+
+                $timeSchedule = $prevDateFSchedule->diff($endTimeDateFormat);
+
+            }
+            //si la date de fin est placée sur un créneau
+            else
+            {
+                $timeSchedule = $dateDSchedule->diff($endTimeDateFormat);
+            }
+
         }
 
         //convertis temps du créneau en secondes
