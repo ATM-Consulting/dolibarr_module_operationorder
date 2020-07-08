@@ -273,10 +273,9 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                             dataType: 'json',
                             // La fonction à apeller si la requête aboutie
                             success: function (data) {
-                                calendar.refetchEvents();
                             }
                         });
-                    } else calendar.refetchEvents();
+                    }
 
                     calendar.refetchEvents();
 
@@ -362,11 +361,15 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                             <?php } ?>
 
                         } else {
+
+                            <?php if(!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) && !empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END)) {?>
                             result.push({
                                 daysOfWeek: [1,2,3,4,5],
                                 startTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START ?>',
                                 endTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END ?>',
                             });
+
+                            <?php } ?>
                         }
 
                         calendar.setOption('businessHours', result);
