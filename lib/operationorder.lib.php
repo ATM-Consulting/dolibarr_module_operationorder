@@ -1739,7 +1739,7 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
         //usergroup paramétré
         $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
 
-        $usergroup = new UserGroup($db);
+        $usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
         $TUsers = $usergroup->listUsersForGroup();
 
