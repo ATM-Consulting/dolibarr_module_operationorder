@@ -1730,14 +1730,16 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
         $TDates[] = $date_timestamp;
     }
 
+    //usergroup paramétré
+    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+    if(!$fk_groupuser) {
+        return 0;
+    }
 
     foreach($TDates as $date_timestamp)
     {
         $day = date('D', $date_timestamp);
         $day = $TDays[$day];
-
-        //usergroup paramétré
-        $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
 
         $usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
