@@ -1680,12 +1680,20 @@ function getTimePlannedByDate($date_timestamp, $forWeek=false){
                     if ($res < 0) $error++;
                 }
 
+                //on calcule le nombre de secondes plannifiées
                 if (!$error)
                 {
-                    $nbDays = num_between_day($or_action->dated, $or_action->datef);
-                    $nbDays ++;
 
-                    $nb_seconds_total += round($operationOrder->time_planned_t/$nbDays);
+                    //nombre de jours disponibles (tient compte des jours off et des absences) entre le début de l'événement or et la fin
+                    $TDays = daysAvailableBetween($or_action->dated, $or_action->datef);
+                    $nbDays = count($TDays);
+
+                    //si le jour de la semaine sur lequel on boucle est un jour disponible de l'or, alors on prend son temps plannifié théorique et on le divise par le nombre de jours sur lesquels s'étend l'événement or
+                    if(in_array($date_timestamp, $TDays))
+                    {
+                        $nb_seconds_total += round($operationOrder->time_planned_t / $nbDays);
+                    }
+
                 }
             }
 
@@ -1884,6 +1892,47 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
     }
 
     return $nb_seconds_total;
+
+}
+
+function daysAvailableBetween($dated, $datef){
+
+
+    $dateStart = new DateTime();
+    $dateStart->setTimestamp($dated);
+
+    $dateEnd = new DateTime();
+    $dateEnd->setTimestamp($datef);
+
+    //Dates de la semaine en cours
+    $TDates = array();
+
+    $date_start_details = date_parse($dateStart->format('Y-m-d'));
+    $date_end_details = date_parse($dateEnd->format('Y-m-d'));
+
+    $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
+    $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
+
+    for ($i = $debut_date; $i <= $fin_date; $i += 86400)
+    {
+        $TDates[] = $i;
+    }
+
+    $TBusinessHours = getNextSchedules($dated);
+
+    $TDays = array();
+
+    foreach($TDates as $date){
+
+        foreach($TBusinessHours as $TSchedule){
+            if($TSchedule['date'] == $date){
+                $TDays[] = $date;
+            }
+        }
+
+    }
+
+    return $TDays;
 
 }
 
