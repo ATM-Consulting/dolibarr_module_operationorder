@@ -47,7 +47,7 @@ LeftMenuOperationOrderStatusList=Liste
 OperationOrderInfo=Suivi
 LeftMenuOperationOrderManager=Atelier
 
-# EVEN ACTION COM CONF
+# EVENT ACTION COM CONF
 OperationOrderStatusChange=Changement de status d'un ordre de réparation
 OperationOrderStatusChangeDesc=permet l'historisation des changements de status des ordres de réparation
 
