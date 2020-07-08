@@ -250,6 +250,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 },
                 eventResizeStop: function(info) {
 				    $('.operationOrderTooltip').hide();
+                    calendar.refetchEvents();
                 },
                 eventDrop: function(eventDropInfo) {
 				    if(!eventDropInfo.event.allDay)

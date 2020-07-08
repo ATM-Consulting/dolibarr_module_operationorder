@@ -278,6 +278,8 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
     $error = 0;
 
+    if($allDay) return 1;
+
     if($action == 'drop')
     {
         //si la date de début de l'événement est hors créneau, on ne fait rien
