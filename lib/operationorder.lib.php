@@ -1134,7 +1134,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     $TDaysOff = array();
     $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
 
-
     $dateStart = new DateTime();
     $dateStart->setTimestamp($startTimeWeek);
 
@@ -1157,7 +1156,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $TDates[] = $i;
     }
 
-    $dateEnd->setTimestamp(end($TDates));
 
     //recherche des jours fériés dans la semaine
     foreach ($TDates as $date){
@@ -1535,7 +1533,7 @@ function getWeekRange($datetime){
     $TDates[] = mktime(0, 0, 0, $firstDayOfWeek['first_month'] , $firstDayOfWeek['first_day'], $firstDayOfWeek['first_year']);
     $nextDay = dol_get_next_day($firstDayOfWeek['first_day'], $firstDayOfWeek['first_month'], $firstDayOfWeek['first_year']);
 
-    while($i < 7){
+    while($i < 6){
 
         $TDates[] = mktime(0, 0, 0, $nextDay['month'] , $nextDay['day'], $nextDay['year']);
 
@@ -1648,6 +1646,312 @@ function verifyScheduleInBusinessHours($startTime){
     }
 
     return false;
+
+}
+
+/**
+ * Retourne le temps événement OR planifié total d'une journée (tiens compte du temps théorique)
+ * Si "$forWeek" = true alors donne le temps de la semaine où se situe la date donnée
+ * @param timestamp $date_timestamp
+ * @param boolean $forWeek
+ * @return int (seconds)
+ */
+function getTimePlannedByDate($date_timestamp, $forWeek=false){
+
+    global $db;
+
+    $error = 0;
+    $nb_seconds_total = 0;
+    $TDates = array();
+
+    if($forWeek) $TDates = getWeekRange($date_timestamp);
+    else $TDates[] = $date_timestamp;
+
+    foreach($TDates as $date_timestamp)
+    {
+        $date= date('Y-m-d', $date_timestamp);
+
+        //on récupère tous les événement OR planifiés sur la journée
+        $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated <= '".$date." 23:59:59' AND datef >= '".$date." 00:00:00'";
+        $resql = $db->query($sql);
+
+        if ($resql)
+        {
+
+            //tant qu'on a un événement OR
+            while ($obj = $db->fetch_object($resql))
+            {
+
+                $or_action = new OperationOrderAction($db);
+                $res = $or_action->fetch($obj->id);
+
+                //si on trouve l'OR associé à cet événement
+                if ($res < 0) $error++;
+
+
+                if (!$error)
+                {
+                    $operationOrder = new OperationOrder($db);
+                    $res = $operationOrder->fetch($or_action->fk_operationorder);
+
+                    if ($res < 0) $error++;
+                }
+
+                //on calcule le nombre de secondes plannifiées
+                if (!$error)
+                {
+
+                    //nombre de jours disponibles (tient compte des jours off et des absences) entre le début de l'événement or et la fin
+                    $TDays = daysAvailableBetween($or_action->dated, $or_action->datef);
+                    $nbDays = count($TDays);
+
+                    //si le jour de la semaine sur lequel on boucle est un jour disponible de l'or, alors on prend son temps plannifié théorique et on le divise par le nombre de jours sur lesquels s'étend l'événement or
+                    if(in_array($date_timestamp, $TDays))
+                    {
+                        $nb_seconds_total += round($operationOrder->time_planned_t / $nbDays);
+                    }
+
+                }
+            }
+
+        }
+        else
+        {
+            $error++;
+        }
+    }
+
+    if(!$error) return $nb_seconds_total;
+    else return -1;
+}
+
+/**
+ * Retourne le temps disponible total d'une journée en fonction des plannings de chaque utilisateur et de leurs capacités
+ * Si "$forWeek" = true alors donne le temps de la semaine où se situe la date donnée
+ * @param timestamp $date_timestamp
+ * @param boolean $forWeek
+ * @return int (seconds)
+ */
+function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
+{
+    global $db, $conf;
+
+    $nb_seconds_total = 0;
+    $TDays = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
+    $TDates = array();
+
+    if($forWeek) {
+        $TDates = getWeekRange($date_timestamp);
+    }
+    else {
+        $TDates[] = $date_timestamp;
+    }
+
+    //usergroup paramétré
+    $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+    if(!$fk_groupuser) {
+        return 0;
+    }
+
+    foreach($TDates as $date_timestamp)
+    {
+        $day = date('D', $date_timestamp);
+        $day = $TDays[$day];
+
+        $usergroup = new UserGroupOperationOrder($db);
+        $res = $usergroup->fetch($fk_groupuser);
+        $TUsers = $usergroup->listUsersForGroup();
+
+        //jourOff
+        $jourOff = new OperationOrderJoursOff($db);
+        $currentDate = date('Y-m-d H:i:s', $date_timestamp);
+        $res = $jourOff->isOff($currentDate);
+        if($res) break;
+
+        foreach ($TUsers as $user)
+        {
+            $nb_seconds_user = 0;
+            $absencefullday = false;
+            $absenceam = false;
+            $absencepm = false;
+
+            $user->fetch_optionals();
+            $efficienty_user = !empty($user->array_options['options_efficiency']) ? $user->array_options['options_efficiency'] : 100;
+
+            $userplanning = new OperationOrderUserPlanning($db);
+            $res = $userplanning->fetchByObject($user->id, 'user');
+
+            if ($res > 0 && $userplanning->active)
+            {
+
+                //absence
+                if ($conf->absence->enabled)
+                {
+                    $PDOdb = new TPDOdb;
+                    $absence = new TRH_Absence($db);
+
+                    $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, date('Y-m-d', $date_timestamp), date('Y-m-d', $date_timestamp));
+
+                    foreach ($TPlanning as $t_current => $TAbsence)
+                    {
+
+                        foreach ($TAbsence as $fk_user => $TRH_absenceDay)
+                        {
+
+                            foreach ($TRH_absenceDay as $absence)
+                            {
+                                if (!($absence->isPresence))
+                                {
+                                    if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
+                                    {
+
+                                        $absencefullday = true;
+
+                                    }
+                                    elseif (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'matin')
+                                    {
+
+                                        $absenceam = true;
+
+                                    }
+                                    elseif (!empty($absence) && $absence->ddMoment == 'apresmidi' && $absence->dfMoment == 'apresmidi')
+                                    {
+                                        $absencepm = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!$absencefullday && !$absenceam)
+                {
+                    //matin
+                    $start = new DateTime($userplanning->{$day.'_heuredam'});
+                    $end = new DateTime($userplanning->{$day.'_heurefam'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                }
+
+                if (!$absencefullday && !$absencepm)
+                {
+                    //après-midi
+                    $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                    $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                }
+
+            }
+            else
+            {
+
+                $res = $userplanning->fetchByObject($usergroup->id, 'usergroup');
+
+                if ($res > 0 && $userplanning->active)
+                {
+
+                    //matin
+                    $start = new DateTime($userplanning->{$day.'_heuredam'});
+                    $end = new DateTime($userplanning->{$day.'_heurefam'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+                    //après-midi
+                    $start = new DateTime($userplanning->{$day.'_heuredpm'});
+                    $end = new DateTime($userplanning->{$day.'_heurefpm'});
+                    $diff = $start->diff($end);
+                    $diffStr = $diff->format('%H:%I');
+                    $THoursMin = explode(':', $diffStr);
+
+                    $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+
+                }
+                //config par défaut
+                else
+                {
+                    //semaine
+                    if ($day == 'lundi' || $day == 'mardi' || $day == 'mercredi' || $day == 'jeudi' || $day == 'vendredi')
+                    {
+                        $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START);
+                        $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END);
+                        $diff = $start->diff($end);
+                        $diffStr = $diff->format('%H:%I');
+                        $THoursMin = explode(':', $diffStr);
+
+                        $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    }
+                    //week-end
+                    else
+                    {
+                        $start = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_START);
+                        $end = new DateTime($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEKEND_END);
+                        $diff = $start->diff($end);
+                        $diffStr = $diff->format('%H:%I');
+                        $THoursMin = explode(':', $diffStr);
+
+                        $nb_seconds_user += convertTime2Seconds($THoursMin[0], $THoursMin[1]);
+                    }
+
+                }
+            }
+
+            $nb_seconds_user = $nb_seconds_user * ($efficienty_user / 100);
+            $nb_seconds_total += $nb_seconds_user;
+        }
+    }
+
+    return $nb_seconds_total;
+
+}
+
+function daysAvailableBetween($dated, $datef){
+
+
+    $dateStart = new DateTime();
+    $dateStart->setTimestamp($dated);
+
+    $dateEnd = new DateTime();
+    $dateEnd->setTimestamp($datef);
+
+    //Dates de la semaine en cours
+    $TDates = array();
+
+    $date_start_details = date_parse($dateStart->format('Y-m-d'));
+    $date_end_details = date_parse($dateEnd->format('Y-m-d'));
+
+    $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
+    $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
+
+    for ($i = $debut_date; $i <= $fin_date; $i += 86400)
+    {
+        $TDates[] = $i;
+    }
+
+    $TBusinessHours = getNextSchedules($dated);
+
+    $TDays = array();
+
+    foreach($TDates as $date){
+
+        foreach($TBusinessHours as $TSchedule){
+            if($TSchedule['date'] == $date){
+                $TDays[] = $date;
+            }
+        }
+
+    }
+
+    return $TDays;
 
 }
 

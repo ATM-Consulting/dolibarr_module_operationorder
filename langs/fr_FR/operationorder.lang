@@ -26,16 +26,14 @@ OPODER_DISPLAY_STOCK_ON_PLANNING_help=Prenant en compte les commandes fournisseu
 OPODER_CANT_EXCEED_SENT_QTY=Sur l'écran "Atelier" ne pas pouvoir excéder les quantités présentes dans l'ordre de réparation
 OPODER_CANT_EXCEED_SENT_QTY_help=Si activé, il est impossible de sortir du stock une quantité supérieure à ce qui est présent dans l'OR pour chaque produit
 OPODER_ADD_PRODUCT_IN_OR_IF_MISSING=Sur l'écran "Atelier", si on scanne un produit absent de l'OR, ajouter ce produit à l'OR
+OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR=Alerte planning : capacité d'opérations
 BarCodeImpSetup=Paramétrage code-barres des tâches improductives
 BarCodeAdded=Code-barres ajouté
 BarCodeDeleted=Code-barres supprimé
 AddBarCode=Ajouter un code-barres
 OPORDER_CHANGE_OR_STATUS_ON_START=Au démarrage d'une tâche, changer le statut de l'ordre de réparation associé
 OPODER_STATUS_ON_START=Statut à utiliser lors de la réalisation de tâches sur l'OR
-OPODER_STATUS_ON_START_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "planifié" => statut à utiliser "en cours à l'atelier"
-OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l'ordre de réparation associé (si aucune autre tâche n'est en court)
-OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
-OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
+
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -67,7 +65,7 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 # Extrafields
 oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande founisseur
 oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
-
+ProductionCapacityRate=Taux de capacité de production de l'utilisateur (en pourcentage)
 
 # STATUS
 OperationOrderStatusActivated=Activé
@@ -276,4 +274,5 @@ ProductAddedToOR=Le produit %s a été ajouté à l'ordre de réparation %s.
 ErrorAddProductInOR=Une erreur s'est produite pendant l'ajout du produit %s à l'ordre de réparation %s.
 
 ORRef=Ref OR
+
 

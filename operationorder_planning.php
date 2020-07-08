@@ -112,6 +112,24 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 failure: function() {
                     //document.getElementById('script-warning').style.display = 'block'
                 }
+            },
+            {
+                url: operationOrderInterfaceUrl,
+                extraParams: {
+                    eventsType: 'dayFull'
+                },
+                failure: function() {
+                    //document.getElementById('script-warning').style.display = 'block'
+                }
+            },
+            {
+                url: operationOrderInterfaceUrl,
+                extraParams: {
+                    eventsType: 'weekFull'
+                },
+                failure: function() {
+                    //document.getElementById('script-warning').style.display = 'block'
+                }
             }
         ]
 
