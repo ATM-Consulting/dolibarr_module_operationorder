@@ -150,35 +150,38 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				},
 				eventRender: function(info) {
 
-					$(info.el).attr('title', info.event.extendedProps.msg);
-					$(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
-					$(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
-					$(info.el).attr('data-ope_percent', info.event.extendedProps.ope_percent);
+                    $(info.el).attr('title', info.event.extendedProps.msg);
+                    $(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
+                    $(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
+                    $(info.el).attr('data-ope_percent', info.event.extendedProps.ope_percent);
 
 
-					$(info.el).tooltip({
-						track: true,
-						show: {
-							collision: "flipfit",
-							effect: 'toggle',
-							delay: 50
-						},
-						hide: {
-							delay: 0
-						},
-						container: "body",
-						tooltipClass: "operationOrderTooltip",
-						content: function () {
-							return this.getAttribute("title");
-						}
-					});
+                    $(info.el).tooltip({
+                        track: true,
+                        show: {
+                            collision: "flipfit",
+                            effect: 'toggle',
+                            delay: 50
+                        },
+                        hide: {
+                            delay: 0
+                        },
+                        container: "body",
+                        tooltipClass: "operationOrderTooltip",
+                        content: function () {
+                            return this.getAttribute("title");
+                        }
+                    });
 
-					let eventTitle = $(info.el).find('.fc-title')[0];
-					$(eventTitle).html($(eventTitle).text());
-					let progressColor = 'green';
-					if ($(info.el).attr('data-ope_percent') > 100) progressColor = 'red';
-					$(info.el).append('<div style="position: absolute;bottom: 0;height:5px;width:100%;background-color:lightgrey;"><div style="height:100%;width:'+$(info.el).attr('data-ope_percent')+'%;background-color:'+progressColor+';max-width:100%">&nbsp;</div>&nbsp;</div>')
-				},
+                    if ((info.event.extendedProps.operationOrderId) !== undefined) {
+                        let eventTitle = $(info.el).find('.fc-title')[0];
+                        $(eventTitle).html($(eventTitle).text());
+                        let progressColor = 'green';
+                        if ($(info.el).attr('data-ope_percent') > 100) progressColor = 'red';
+                        $(info.el).append('<div style="position: absolute;bottom: 0;height:5px;width:100%;background-color:lightgrey;"><div style="height:100%;width:' + $(info.el).attr('data-ope_percent') + '%;background-color:' + progressColor + ';max-width:100%">&nbsp;</div>&nbsp;</div>')
+
+                    }
+                },
 				eventSources: eventSources_parameters,
 				loading: function(bool) {
 					//document.getElementById('loading').style.display = bool ? 'block' : 'none';
