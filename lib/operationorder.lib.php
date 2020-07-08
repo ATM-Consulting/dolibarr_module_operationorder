@@ -1587,7 +1587,24 @@ function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
             $endTimeDateFormat = new DateTime();
             $endTimeDateFormat->setTimestamp($endTime);
 
-            $timeSchedule = $dateDSchedule->diff($endTimeDateFormat);
+
+            //si la date de fin est placée hors créneau
+            if($endTime < $dateDScheduleTimeStamp) {
+
+                $TPrevScheduleF = explode(':', $TNextSchedules[$i-1]['max']);
+                $prevDateFScheduleTimeStamp = $TNextSchedules[$i-1]['date'] + convertTime2Seconds($TPrevScheduleF[0], $TPrevScheduleF[1]);
+                $prevDateFSchedule = new DateTime();
+                $prevDateFSchedule->setTimestamp($prevDateFScheduleTimeStamp);
+
+                $timeSchedule = $prevDateFSchedule->diff($endTimeDateFormat);
+
+            }
+            //si la date de fin est placée sur un créneau
+            else
+            {
+                $timeSchedule = $dateDSchedule->diff($endTimeDateFormat);
+            }
+
         }
 
         //convertis temps du créneau en secondes
@@ -1608,7 +1625,7 @@ function calculatePlannedTimeEventByBusinessHours($startTime, $endTime){
  * @param timestamp $endTime
  * @return boolean
  */
-function verifyScheduleInBusinessHours($startTime, $endTime){
+function verifyScheduleInBusinessHours($startTime){
 
     $TWeekDates = getWeekRange($startTime);     //dates de la semaine en cours
     $beginOfWeek = $TWeekDates[0];              //début de la semaine
@@ -1623,7 +1640,7 @@ function verifyScheduleInBusinessHours($startTime, $endTime){
             $TScheduleMin = explode(':', $schedule['min']);
             $TScheduleMax = explode(':', $schedule['max']);
 
-            if($startTime >= ($date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1])) && $endTime <= ($date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]))){
+            if($startTime >= ($date + convertTime2Seconds($TScheduleMin[0], $TScheduleMin[1])) && $startTime <= ($date + convertTime2Seconds($TScheduleMax[0], $TScheduleMax[1]))){
                 return true;
             }
 

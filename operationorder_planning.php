@@ -253,6 +253,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 },
                 eventResizeStop: function(info) {
 				    $('.operationOrderTooltip').hide();
+                    calendar.refetchEvents();
                 },
                 eventDrop: function(eventDropInfo) {
 				    if(!eventDropInfo.event.allDay)
@@ -276,10 +277,11 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                             dataType: 'json',
                             // La fonction à apeller si la requête aboutie
                             success: function (data) {
-                                calendar.refetchEvents();
                             }
                         });
-                    } else calendar.refetchEvents();
+                    }
+
+                    calendar.refetchEvents();
 
                 }
             });
@@ -353,7 +355,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                                 $.each(dayCurrent, function (index, value) {
 
                                     result.push({
-                                            daysOfWeek: [<?php print $key ?>],
+                                        daysOfWeek: [<?php print $key ?>],
                                         startTime: value['min'],
                                         endTime: value['max'],
                                     });
@@ -363,11 +365,15 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                             <?php } ?>
 
                         } else {
+
+                            <?php if(!empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START) && !empty($conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END)) {?>
                             result.push({
                                 daysOfWeek: [1,2,3,4,5],
-                                startTime: fullcalendar_scheduler_businessHours_weekend_start,
-                                endTime: fullcalendar_scheduler_businessHours_week_end,
+                                startTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_START ?>',
+                                endTime: '<?php print $conf->global->FULLCALENDARSCHEDULER_BUSINESSHOURS_WEEK_END ?>',
                             });
+
+                            <?php } ?>
                         }
 
                         calendar.setOption('businessHours', result);
