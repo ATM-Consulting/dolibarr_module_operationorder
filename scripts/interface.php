@@ -756,7 +756,7 @@ function _getWeekFull($start = 0, $end = 0){
     {
         $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
 
-        if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+        if(!empty($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) && $percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
     }
 
     if($isfull){
