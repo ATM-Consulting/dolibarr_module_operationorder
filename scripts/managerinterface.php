@@ -10,10 +10,10 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
 require_once __DIR__ . '/../class/unitstools.class.php';
 require_once __DIR__ . '/../lib/operationorder.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
-require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/stock/class/mouvementstock.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/modules/barcode/doc/tcpdfbarcode.modules.php';
+dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
@@ -50,7 +50,7 @@ if (empty($reshook) && !empty($action))
 		}
 		else
 		{
-			$userGroup = new UserGroup($db);
+			$userGroup = new UserGroupOperationOrder($db);
 			$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
 			if ($retgroup > 0)
 			{

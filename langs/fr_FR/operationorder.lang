@@ -249,6 +249,7 @@ OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
 
 
 OperationOrderHistoryList=Historique
+OperationOrderHistory=Historique
 #manager
 operationorder_manager_read=Accéder au manager d'atelier
 productUsedForOorder=Produit utilisé pour Ordre de réparation %s

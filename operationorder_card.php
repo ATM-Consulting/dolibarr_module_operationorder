@@ -1191,6 +1191,39 @@ else
 	}
 }
 
+?>
+<script type="text/javascript">
+	$('.inputhour').css('width', '100px');
+	$('.inputminute').css('width', '100px');
+
+	$(document).on('change', '#qty', function () {
+		//Getting values
+		let qty = $(this).val();
+		let time_plannedhour = $(this).closest('form').find("#unitaire_timehour").val();
+		let time_plannedmin = $(this).closest('form').find("#unitaire_timemin").val();
+		let hoursToAdd = 0;
+		//Parsing
+		if (isNaN(qty)) qty = 0;
+		else qty = parseFloat(qty);
+		if (isNaN(time_plannedhour)) time_plannedhour = 0;
+		else time_plannedhour = parseInt(time_plannedhour);
+		if (isNaN(time_plannedmin)) time_plannedmin = 0;
+		else time_plannedmin = parseInt(time_plannedmin);
+
+		//Je convertis le tout en minutes
+		time_plannedmin = ((time_plannedhour * 60) + time_plannedmin);
+
+		let newTime_plannedmin = qty * time_plannedmin;
+		if (newTime_plannedmin >= 60) {
+			hoursToAdd = Math.floor(newTime_plannedmin / 60);
+			newTime_plannedmin = newTime_plannedmin % 60;
+		}
+
+		$("#field_time_planned").find('input[name="time_plannedhour"]').val(hoursToAdd);
+		$("#field_time_planned").find('input[name="time_plannedmin"]').val(Math.round(newTime_plannedmin));
+	});
+</script>
+<?php
 
 llxFooter();
 $db->close();
