@@ -152,6 +152,11 @@ function operationorder_prepare_head(OperationOrder $object)
         $h++;
     }
 
+	$head[$h][0] = dol_buildpath("/operationorder/operationorder_history.php", 1).'?id='.$object->id;
+	$head[$h][1] = $langs->trans("OperationOrderHistory");
+	$head[$h][2] = 'history';
+	$h++;
+
     require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
     require_once DOL_DOCUMENT_ROOT.'/core/class/link.class.php';
     $upload_dir = $conf->operationorder->dir_output . "/operationorder/" . dol_sanitizeFileName($object->ref);
