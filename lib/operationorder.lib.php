@@ -28,6 +28,7 @@
 
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
+dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
 if($conf->absence->enabled) dol_include_once('/absence/class/absence.class.php');
 
 
@@ -150,6 +151,11 @@ function operationorder_prepare_head(OperationOrder $object)
         $head[$h][2] = 'note';
         $h++;
     }
+
+	$head[$h][0] = dol_buildpath("/operationorder/operationorder_history.php", 1).'?id='.$object->id;
+	$head[$h][1] = $langs->trans("OperationOrderHistory");
+	$head[$h][2] = 'history';
+	$h++;
 
     require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
     require_once DOL_DOCUMENT_ROOT.'/core/class/link.class.php';
@@ -513,6 +519,15 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 			$outForm .= '<input type="hidden" name="save" value="1">' . "\n";
 			$outForm .= '<input type="hidden" name="editline" value="'.$line->id.'">' . "\n";
 			$outForm .= '<input type="hidden" name="lineid" value="'.$line->id.'">' . "\n";
+			if(empty($line->product)) $line->fetch_product();
+			if(!empty($line->product->duration_value)) {
+				$line->product->duration_value = floatval($line->product->duration_value);
+				$remainder = fmod($line->product->duration_value , 1);
+				$minutes = 60 * $remainder;
+				$hours = (int) $line->product->duration_value;
+				$outForm .= '<input type="hidden" id="unitaire_timehour" value="'.$hours.'">' . "\n";
+				$outForm .= '<input type="hidden" id="unitaire_timemin" value="'.$minutes.'">' . "\n";
+			}
 		}else{
 			$outForm .= '<input type="hidden" name="action" value="addline">' . "\n";
 		}
@@ -1168,13 +1183,11 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
     //initialisation userplanning
     $userplanning = new OperationOrderUserPlanning($db);
-
     if(!empty($fk_groupuser))
     {
-        $usergroup = new UserGroup($db);
+        $usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
         $TUsers = $usergroup->listUsersForGroup();
-
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
