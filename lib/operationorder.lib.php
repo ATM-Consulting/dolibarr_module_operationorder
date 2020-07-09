@@ -1944,7 +1944,7 @@ function daysAvailableBetween($dated, $datef){
     foreach($TDates as $date){
 
         foreach($TBusinessHours as $TSchedule){
-            if($TSchedule['date'] == $date){
+            if($TSchedule['date'] == $date && !in_array($date, $TDays)){
                 $TDays[] = $date;
             }
         }
