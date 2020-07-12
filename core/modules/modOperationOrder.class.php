@@ -95,7 +95,6 @@ class modOperationOrder extends DolibarrModules
 				'ordersuppliercard',
                 'productdao',
 				'operationordercard',
-				'warehousecard'
 			)
         );
 
