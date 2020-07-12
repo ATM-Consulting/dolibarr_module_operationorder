@@ -214,7 +214,7 @@ class ActionsOperationOrder
 		global $conf;
 		global $mc;
 
-		// if global sharings is enabled
+		// Add entity badges on Operation order
 		if (! empty($conf->global->MULTICOMPANY_SHARINGS_ENABLED)
 			&& ! empty($conf->global->MULTICOMPANY_OPERATIONORDER_SHARING_ENABLED)
 			&& $object->element == 'operationorder'
@@ -234,6 +234,28 @@ class ActionsOperationOrder
 
 				$this->resprints .= "\n" . '<!-- END operationOrder moreHtmlRef -->' . "\n";
 		}
+		//Add entities badges on wharehouses
+		if (! empty($conf->global->MULTICOMPANY_SHARINGS_ENABLED)
+			&& ! empty($conf->global->MULTICOMPANY_STOCK_SHARING_ENABLED)
+			&& $object->element == 'stock'
+			&& ! empty($conf->stock->enabled)
+			&& ! empty($mc->sharings['stock'])
+			&& $object->entity!=$conf->entity)
+		{
+
+			dol_include_once('/multicompany/class/actions_multicompany.class.php');
+			$actMulticomp= new ActionsMulticompany($this->db);
+			$actMulticomp->getInfo($object->entity);
+
+			$this->resprints = "\n" . '<!-- BEGIN Stock moreHtmlRef -->' . "\n";
+
+			$this->resprints .= '<div class="refidno modify-entity multicompany-entity-container">';
+			$this->resprints .= '<span class="fa fa-globe"></span><span class="multiselect-selected-title-text">' . $actMulticomp->label . '</span>';
+			$this->resprints .= '</div>';
+
+			$this->resprints .= "\n" . '<!-- END Stock moreHtmlRef -->' . "\n";
+		}
+		return 0;
 		return 0;
 	}
 }
