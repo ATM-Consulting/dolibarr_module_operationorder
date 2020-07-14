@@ -149,6 +149,24 @@ if($action == 'addbarcodeimp'){
         setEventMessage('Error', 'errors');
 
     }
+} elseif (preg_match('/set_(.*)/', $action, $reg))
+{
+	$code=$reg[1];
+
+	$theValue = GETPOST($code);
+	if(is_array($theValue)){
+		$theValue = implode(',',$theValue);
+	}
+
+	if (dolibarr_set_const($db, $code, $theValue, 'chaine', 0, '', $conf->entity) > 0)
+	{
+		header("Location: ".$_SERVER["PHP_SELF"]);
+		exit;
+	}
+	else
+	{
+		dol_print_error($db);
+	}
 }
 
 /*
@@ -182,6 +200,33 @@ $formfile = new FormFile($db);
 
 print '<table class="noborder" width="100%">';
 
+setup_print_title($langs->trans("OPERATION_ORDER_BARCODE_TYPE"));
+
+//BarCodeSetup
+$confKey='OPERATION_ORDER_BARCODE_TYPE';
+$TAvailableBarCode = array();
+$sql = "SELECT rowid, code as encoding, libelle as label, coder, example";
+$sql.= " FROM ".MAIN_DB_PREFIX."c_barcode_type";
+$sql.= " WHERE entity = ".$conf->entity;
+$sql.= " ORDER BY code";
+
+dol_syslog("clitheobald/admin/clitheobald_setup.php", LOG_DEBUG);
+$resql=$db->query($sql);
+if ($resql) {
+	$num = $db->num_rows($resql);
+	if ($num > 0) {
+		while ($obj = $db->fetch_object($resql)) {
+			$TAvailableBarCode[$obj->encoding] = $obj->label . ' ' . $langs->trans('BarcodeDesc' . $obj->encoding);
+		}
+	}
+} else {
+	setEventMessage($db->lasterror,'errors');
+}
+
+$customInputHtml = $form->selectarray($confKey, $TAvailableBarCode, $conf->global->OPERATION_ORDER_BARCODE_TYPE, 1);
+
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
 setup_print_title($langs->trans("BarCodeImpSetup"));
 
 print '<tr>';
@@ -197,7 +242,8 @@ foreach($TBarCodes as $barcode){
         print '<td class="center barcode_label">'.$barcode->label.'</td>';
 
         // Build barcode on disk (not used, this is done to make debug easier)
-        $result = $moduleBarcode->writeBarCode($barcode->code, 'C128', 'Y');
+	    $barcodetype=empty($conf->global->OPERATION_ORDER_BARCODE_TYPE)?'C128':$conf->global->OPERATION_ORDER_BARCODE_TYPE;
+        $result = $moduleBarcode->writeBarCode($barcode->code, $barcodetype, 'Y');
         // Generate on the fly and output barcode with generator
         $url = DOL_URL_ROOT.'/viewimage.php?modulepart=barcode&amp;generator=tcpdfbarcode&amp;code='.urlencode($barcode->code).'&amp;encoding=C128';
         //print $url;

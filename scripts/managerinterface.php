@@ -649,14 +649,15 @@ print json_encode($data);
 
 function displayBarcode($code = '')
 {
-	global $db;
+	global $db, $conf;
 
 	$moduleBarcode = new modTcpdfbarcode($db);
 
 	// Build barcode on disk (not used, this is done to make debug easier)
-	$result = $moduleBarcode->writeBarCode($code, 'C128', 'Y');
+	$barcodetype=empty($conf->global->OPERATION_ORDER_BARCODE_TYPE)?'C128':$conf->global->OPERATION_ORDER_BARCODE_TYPE;
+	$result = $moduleBarcode->writeBarCode($code, $barcodetype, 'Y');
 	// Generate on the fly and output barcode with generator
-	$url = DOL_URL_ROOT.'/viewimage.php?modulepart=barcode&amp;generator=tcpdfbarcode&amp;code='.urlencode($code).'&amp;encoding=C128';
+	$url = DOL_URL_ROOT.'/viewimage.php?modulepart=barcode&amp;generator=tcpdfbarcode&amp;code='.urlencode($code).'&amp;encoding='.$barcodetype;
 	//print $url;
 	$barcode =  '<img src="'.$url.'" title="'.$code.'" border="0">';
 
