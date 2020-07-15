@@ -68,7 +68,7 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 # Extrafields
 oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande founisseur
 oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
-
+ProductionCapacityRate=Taux de capacité de production de l'utilisateur (en pourcentage)
 
 # STATUS
 OperationOrderStatusActivated=Activé
