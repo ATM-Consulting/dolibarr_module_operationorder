@@ -17,6 +17,8 @@ dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
 dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
+dol_include_once('/operationorder/class/operationorderstatus.class.php');
+
 global $db;
 $hookmanager->initHooks(array('oordermanagerinterface'));
 
@@ -102,6 +104,8 @@ if (empty($reshook) && !empty($action))
 
 	else if ($action == "getORList")
 	{
+		$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderStatus class
+
 		$data['courantTask'] = ''; // tâche courante de l'utilisateur
 
 		$u = GETPOST('user'); // code barre user USR{login}
@@ -118,6 +122,7 @@ if (empty($reshook) && !empty($action))
 				$sql = "SELECT oorder.ref FROM ".MAIN_DB_PREFIX."operationorder oorder";
 				$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
 				$sql.= " WHERE ordet.rowid = ".$counter->fk_orDet;
+				$sql.= " AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  or_pointable > 0 ) ';";
 
 				$resql = $db->query($sql);
 				if ($resql)

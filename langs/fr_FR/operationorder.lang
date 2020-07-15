@@ -33,6 +33,7 @@ BarCodeDeleted=Code-barres supprimé
 AddBarCode=Ajouter un code-barres
 OPORDER_CHANGE_OR_STATUS_ON_START=Au démarrage d'une tâche, changer le statut de l'ordre de réparation associé
 OPODER_STATUS_ON_START=Statut à utiliser lors de la réalisation de tâches sur l'OR
+OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
 
 
 # MENU
@@ -90,6 +91,8 @@ DisplayOnPlanningHelp=Afficher les ordres de réparation sur ce statut dans le p
 DisplayOnPlanning=Afficher les ordres de réparation sur ce statut dans le planning
 CleanEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, supprimer la plannification existante de l'OR
 CleanEventOnThisStatusHelp=Utile pour déplanifier un ordre de réparation
+OperationOrderPointable=OR Pointable
+OperationOrderPointableHelp=un OR dans ce status est pointable dans l'écran de l'atelier
 
 NewStatus=Nouveau statut
 NoOperationOrderStatus=Pas de statut
