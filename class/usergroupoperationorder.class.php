@@ -54,11 +54,7 @@ class UserGroupOperationOrder extends UserGroup
 		$sql.= " WHERE 1 = 1";
 		if (! empty($this->id)) $sql.= " AND ug.fk_user = u.rowid";
 		if (! empty($this->id)) $sql.= " AND ug.fk_usergroup = ".$this->id;
-		if (! empty($conf->multicompany->enabled) && $conf->entity == 1 && $user->admin && ! $user->entity)
-		{
-			$sql.= " AND u.entity IS NOT NULL";
-		}
-		elseif (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE) || ! empty($user->admin))
+		if (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE))
 		{
 			$sql.= " AND u.entity IN (0,1,".$conf->entity.") AND ug.entity='".$conf->entity."'";
 		}

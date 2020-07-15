@@ -793,28 +793,29 @@ class OperationOrder extends SeedObject
     /**
      * @param int    $withpicto     Add picto into link
      * @param string $moreparams    Add more parameters in the URL
+     * @param  int  $notooltip		1=Disable tooltip
      * @return string
      */
-    public function getNomUrl($withpicto = 0, $moreparams = '')
+    public function getNomUrl($withpicto = 0, $moreparams = '', $notooltip = 0)
     {
-		global $langs;
+		global $langs, $conf;
 
-        $result='';
-        $label = '<u>' . $langs->trans("ShowOperationOrder") . '</u>';
-        if (! empty($this->ref)) $label.= '<br><b>'.$langs->trans('Ref').':</b> '.$this->ref;
+	    if (!empty($conf->dol_no_mouse_hover)) $notooltip = 1; // Force disable tooltips
 
-        $linkclose = '" title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip">';
-        $link = '<a href="'.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$this->id.urlencode($moreparams).$linkclose;
+	    $label='';
+	    $linkclose = '>';
+	    if (empty($notooltip)) {
+		    $label = '<u>' . $langs->trans("ShowOperationOrder") . '</u>';
+		    if (! empty($this->ref)) $label.= '<br><b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
+		    $linkclose = '" title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip">';
+	    }
+	    $link = '<a href="'.dol_buildpath('/operationorder/operationorder_card.php', 1).'?id='.$this->id.urlencode($moreparams).'"'.$linkclose;
         $linkend='</a>';
 
-        $picto='generic';
-//        $picto='operationorder@operationorder';
+	    if ($withpicto) $picto=img_picto($label, 'setup', ($notooltip ? '' : 'class="classfortooltip"'));
 
-        if ($withpicto) $result.=($link.img_object($label, $picto, 'class="classfortooltip"').$linkend);
-        if ($withpicto && $withpicto != 2) $result.=' ';
-
-        $result.=$link.$this->ref.$linkend;
+        $result = $link.$picto.$this->ref.$linkend;
 
         global $action, $hookmanager;
         $hookmanager->initHooks(array('operationorderdao'));

@@ -39,7 +39,11 @@ if(GETPOST('action'))
 
 		if($eventsType == 'dayOff'){
 			$data = _getJourOff($range_start->getTimestamp(), $range_end->getTimestamp());
-		}
+		} elseif ($eventsType == 'dayFull') {
+            $data = _getJourFull($range_start, $range_end);
+        } elseif ($eventsType == 'weekFull') {
+            $data = _getWeekFull($range_start, $range_end);
+        }
 		else
 		{
 			$data = _getOperationOrderEvents($range_start->getTimestamp(), $range_end->getTimestamp(), $eventsType);
@@ -276,19 +280,39 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');
 
+    $error = 0;
+
     if($action == 'drop')
     {
+        //si la date de début de l'événement est hors créneau, on ne fait rien
+        if(!verifyScheduleInBusinessHours($startTime)) return 1;
+
         $db->begin();
         $action_or = new OperationOrderAction($db);
         $res = $action_or->fetch($fk_action);
-        $canDrop = verifyScheduleInBusinessHours($startTime, $endTime);
 
-        if ($res > 0 && $canDrop)
+        if ($res <= 0) $error++;
+
+
+        if (!$error)
         {
+            $operationorder = new OperationOrder($db);
+            $res = $operationorder->fetch($action_or->fk_operationorder);
+
+            if($res <= 0) $error++;
+        }
+
+        if(!$error){
+
+            //on recalcule le temps plannifié
+            $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
+
             $action_or->dated = $startTime;
-            $action_or->datef = $endTime;
+            $operationorder->time_planned_f = $time_planned;
+
             if (!empty($allDay)) $action_or->fullday = 1;
             $res = $action_or->save($user);
+
             if ($res > 0)
             {
                 $or = new OperationOrder($db);
@@ -298,16 +322,22 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
                 {
                     $or->planned_date = intval($action_or->dated);
                     $or->save($user);
-                    $db->commit();
-                    return 1;
+
                 }
             }
         }
-        $db->rollback();
-        return -1;
+
+        if(!$error){
+            $db->commit();
+            return 1;
+        } else
+        {
+            $db->rollback();
+            return -1;
+        }
     } else {
 
-        $error = 0;
+        if($allDay) return 1;
 
         if(!empty($fk_action))
         {
@@ -324,9 +354,11 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
 
                 if($res){
 
-                    $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
-
+                    //si la date de fin du resize est différente de la date de fin de l'action or
 					if ($endTime != $action_or->datef){
+
+                        //on recalcule le temps plannifié
+                        $time_planned = calculatePlannedTimeEventByBusinessHours($startTime, $endTime);
 
                         $action_or->datef = $endTime;
 
@@ -675,6 +707,103 @@ function  _getJourOff($start = 0, $end = 0){
 	}
 
 	return $TRes;
+}
+
+function _getJourFull($start = 0, $end = 0){
+
+    global $conf;
+
+    $TRes = array();
+
+    $TDates = array();
+    $TRes = array();
+
+    $date_start_details = date_parse($start->format('Y-m-d'));
+    $date_end_details = date_parse($end->format('Y-m-d'));
+
+    $debut_date = mktime(0, 0, 0, $date_start_details['month'], $date_start_details['day'], $date_start_details['year']);
+    $fin_date = mktime(0, 0, 0, $date_end_details['month'], $date_end_details['day'], $date_end_details['year']);
+
+    for ($i = $debut_date; $i < $fin_date; $i += 86400)
+    {
+        $TDates[] = $i;
+    }
+
+    foreach($TDates as $date){
+
+        $isfull = false;
+
+        $res_TimePlanned = getTimePlannedByDate($date);         //temps plannifié par date
+        $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($date);    //temps disponible en fonction de la capacité de chaque utilisateur
+
+
+        //on calcule le pourcentage de temps plannifié par rapport au temps disponible
+        $percentage = 0;
+        if(!empty($res_TimeUserCapacity))
+        {
+            $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+
+            if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+        }
+
+        if($isfull){
+            $event = new fullCalendarEvent();
+
+            $event->title = "";
+            $event->start	= date('c', $date);
+            $event->end	= date('c', $date + (60 * 60 *24));
+            $event->msg = '';
+            $event->color = '#ff7f00';
+            $event->rendering = 'background';
+
+            $TRes[] = $event;
+        }
+
+    }
+
+    return $TRes;
+
+}
+
+function _getWeekFull($start = 0, $end = 0){
+
+    global $conf;
+
+    $TRes = array();
+
+    $start = $start->getTimestamp();
+    $end = $end->getTimestamp();
+
+    $isfull = false;
+
+    $res_TimePlanned = getTimePlannedByDate($start, 1);         //temps plannifié par date
+    $res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($start, 1);    //temps disponible en fonction de la capacité de chaque utilisateur
+
+    //on calcule le pourcentage de temps plannifié par rapport au temps disponible
+    if(!empty($res_TimeUserCapacity))
+    {
+        $percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+
+        if(!empty($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) && $percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+    }
+
+    if($isfull){
+
+        $event = new fullCalendarEvent();
+
+        $event->title = "";
+        $event->start = date('c', $start);
+        $event->end	= date('c', $end);
+        $event->allDay  = true; // will make the time show
+        $event->msg = '';
+        $event->color = '#ff7f00';
+
+        $TRes[] = $event;
+
+    }
+
+    return $TRes;
+
 }
 
 

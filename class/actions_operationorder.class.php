@@ -214,7 +214,7 @@ class ActionsOperationOrder
 		global $conf;
 		global $mc;
 
-		// if global sharings is enabled
+		// Add entity badges on Operation order
 		if (! empty($conf->global->MULTICOMPANY_SHARINGS_ENABLED)
 			&& ! empty($conf->global->MULTICOMPANY_OPERATIONORDER_SHARING_ENABLED)
 			&& $object->element == 'operationorder'

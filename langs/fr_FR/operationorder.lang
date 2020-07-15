@@ -26,6 +26,7 @@ OPODER_DISPLAY_STOCK_ON_PLANNING_help=Prenant en compte les commandes fournisseu
 OPODER_CANT_EXCEED_SENT_QTY=Sur l'écran "Atelier" ne pas pouvoir excéder les quantités présentes dans l'ordre de réparation
 OPODER_CANT_EXCEED_SENT_QTY_help=Si activé, il est impossible de sortir du stock une quantité supérieure à ce qui est présent dans l'OR pour chaque produit
 OPODER_ADD_PRODUCT_IN_OR_IF_MISSING=Sur l'écran "Atelier", si on scanne un produit absent de l'OR, ajouter ce produit à l'OR
+OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR=Alerte planning : capacité d'opérations
 BarCodeImpSetup=Paramétrage code-barres des tâches improductives
 BarCodeAdded=Code-barres ajouté
 BarCodeDeleted=Code-barres supprimé

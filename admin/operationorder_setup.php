@@ -32,6 +32,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 require_once '../lib/operationorder.lib.php';
 dol_include_once('abricot/includes/lib/admin.lib.php');
 dol_include_once('operationorder/class/operationorder.class.php');
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 
 // Translations
 $langs->loadLangs(array('operationorder@operationorder', 'admin', 'other'));
@@ -224,6 +225,7 @@ setup_print_on_off('OPODER_SUPPLIER_ORDER_LIMITED_TO_SERVICE');
 
 setup_print_on_off('OPODER_SUPPLIER_ORDER_AUTO_VALIDATE');
 
+
 $confKey = 'OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING';
 setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING'), '', array(), $form->select_dolgroups($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING, 'OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING'));
 
@@ -232,6 +234,11 @@ setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLA
 setup_print_on_off('OPODER_CANT_EXCEED_SENT_QTY', false, '', 'OPODER_CANT_EXCEED_SENT_QTY_help');
 
 setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
+
+$formother = new FormOther($db);
+$confKey = 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR';
+$customInputHtml = $formother->select_percent($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR, 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR');
+setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR'), '', array(), $customInputHtml);
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
