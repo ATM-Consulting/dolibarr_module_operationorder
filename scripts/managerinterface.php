@@ -120,7 +120,7 @@ if (empty($reshook) && !empty($action))
 			if (!empty($counter->fk_orDet))
 			{
 				$sql = "SELECT oorder.ref FROM ".MAIN_DB_PREFIX."operationorder oorder";
-				$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
+				$sql.= " INNER JOIN ".MAIN_DB_PREFIX."operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
 				$sql.= " WHERE ordet.rowid = ".$counter->fk_orDet;
 				$sql.= " AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  or_pointable > 0 ) ';";
 
@@ -135,8 +135,10 @@ if (empty($reshook) && !empty($action))
 		}
 
 		$sql = "SELECT DISTINCT ooa.fk_operationorder FROM ".MAIN_DB_PREFIX."operationorderaction ooa";
+		$sql.= " INNER JOIN ".MAIN_DB_PREFIX."operationorder oorder ON oorder.rowid=ooa.fk_operationorder";
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
+		$sql.= " AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  or_pointable > 0 ) ';";
 
 		$data['oOrders']=array();
 
