@@ -109,28 +109,28 @@ if (empty($reshook) && !empty($action))
 		$data['courantTask'] = ''; // tâche courante de l'utilisateur
 
 		$u = GETPOST('user'); // code barre user USR{login}
-		$usr = new User($db);
-		$usr->fetch('', substr($u, 3));
+		if (!empty($u)) {
+			$usr = new User($db);
+			$usr->fetch('', substr($u, 3));
 
-		$counter = new OperationOrderTaskTime($db);
-		$ret = $counter->fetchCourantCounter($usr->id);
-		if ($ret > 0)
-		{
-			$data['courantTask'] = $counter->label;
-			if (!empty($counter->fk_orDet))
-			{
-				$sql = "SELECT oorder.ref FROM ".MAIN_DB_PREFIX."operationorder oorder";
-				$sql.= " INNER JOIN ".MAIN_DB_PREFIX."operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
-				$sql.= " WHERE ordet.rowid = ".$counter->fk_orDet;
-				$sql.= " AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  or_pointable > 0 ) ';";
+			$counter = new OperationOrderTaskTime($db);
+			$ret = $counter->fetchCourantCounter($usr->id);
+			if ($ret > 0) {
+				$data['courantTask'] = $counter->label;
+				if (!empty($counter->fk_orDet)) {
+					$sql = "SELECT oorder.ref FROM " . MAIN_DB_PREFIX . "operationorder oorder";
+					$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
+					$sql .= " WHERE ordet.rowid = " . $counter->fk_orDet;
+					$sql .= ' AND oorder.status IN ( SELECT s.rowid FROM ' . MAIN_DB_PREFIX . $sOperationOrderStatus->table_element . ' as s WHERE  or_pointable > 0 ) ';
 
-				$resql = $db->query($sql);
-				if ($resql)
-				{
-					$obj = $db->fetch_object($resql);
-					if (!empty($obj->ref)) $data['courantTask'].= ' ('.$obj->ref.')';
+					$resql = $db->query($sql);
+					if ($resql) {
+						$obj = $db->fetch_object($resql);
+						if (!empty($obj->ref))
+							$data['courantTask'] .= ' (' . $obj->ref . ')';
+					}
+
 				}
-
 			}
 		}
 
@@ -138,7 +138,7 @@ if (empty($reshook) && !empty($action))
 		$sql.= " INNER JOIN ".MAIN_DB_PREFIX."operationorder oorder ON oorder.rowid=ooa.fk_operationorder";
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
-		$sql.= " AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' s WHERE  or_pointable > 0 ) ';";
+		$sql.= ' AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' as s WHERE or_pointable > 0 ) ';
 
 		$data['oOrders']=array();
 
