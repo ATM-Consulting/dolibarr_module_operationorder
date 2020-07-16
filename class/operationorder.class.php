@@ -1562,7 +1562,8 @@ class OperationOrder extends SeedObject
         {
             foreach ($this->lines as $line)
             {
-                $total_time += $line->time_planned;
+            	
+                if(empty($line->fk_parent_line))$total_time += $line->time_planned;
             }
         }
 
