@@ -265,8 +265,8 @@ class pdf_barcodeimp extends CommonDocGenerator
 				{
 					$object->list = array();
 
-					require_once DOL_DOCUMENT_ROOT . '/user/class/usergroup.class.php';
-					$userGroup = new UserGroup($this->db);
+					dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
+					$userGroup = new UserGroupOperationOrder($this->db);
 					$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
 					if ($retgroup > 0)
 					{
