@@ -236,4 +236,28 @@ class ActionsOperationOrder
 		}
 		return 0;
 	}
+
+	public function addSearchEntry($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf, $langs, $user, $db;
+		$langs->load('operationorder@operationorder');
+
+		dol_include_once('/operationorder/core/modules/modOperationOrder.class.php');
+		$modOperationOrder = new modOperationOrder($db);
+
+		if (empty($conf->global->OR_HIDE_QUICK_SEARCH) && $user->rights->operationorder->read) {
+			$str_search_driver = '&Listview_operationorder_search_ref='. urlencode($parameters['search_boxvalue']);
+
+			$arrayresult['searchintor'] = array(
+				'position' => $modOperationOrder->numero,
+				'text' => img_object('', 'operationorder@operationorder') . ' ' . $langs->trans('OR'),
+				'url' => dol_buildpath('/custom/operationorder/list.php', 1) . '?search_by=Listview_operationorder_search_ref'.$str_search_driver
+			);
+
+		}
+
+		$this->results = $arrayresult;
+
+		return 0;
+	}
 }
