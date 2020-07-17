@@ -517,7 +517,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 	$sOperationOrder = new OperationOrder($db); // a static usage of operation order class
 	$sOperationOrderAction = new OperationOrderAction($db); // a static usage of OperationOrderAction class
-	$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderAction class
+	$sOperationOrderStatus = new OperationOrderStatus($db); // a static usage of OperationOrderStatus class
 
 
 	$langs->loadLangs(array('operationorder@operationorder', 'orders', 'companies', 'bills', 'products', 'other'));

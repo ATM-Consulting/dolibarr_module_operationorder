@@ -145,6 +145,16 @@ class OperationOrderStatus extends SeedObject
             'default'=>0,
             'help'=>'CheckVirtualStockHelp'
         ),
+		'or_pointable' => array(
+            'type'=>'boolean',
+            'label'=>'OperationOrderPointable',
+            'enabled'=>1,
+            'position'=>60,
+            'visible'=> -1,
+            'required'=>0,
+            'default'=>0,
+            'help'=>'OperationOrderPointableHelp'
+        ),
 //		'edit' => array(
 //			'type'=>'smallint',
 //			'label'=>'CouldEdit',

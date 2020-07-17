@@ -37,6 +37,7 @@ OPODER_STATUS_ON_START_help=Attention ce statut doit être accessible par le sta
 OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l'ordre de réparation associé (si aucune autre tâche n'est en court)
 OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
 OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
+OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -66,7 +67,7 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 
 
 # Extrafields
-oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande founisseur
+oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande fournisseur
 oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
 ProductionCapacityRate=Taux de capacité de production de l'utilisateur (en pourcentage)
 
@@ -93,6 +94,8 @@ DisplayOnPlanningHelp=Afficher les ordres de réparation sur ce statut dans le p
 DisplayOnPlanning=Afficher les ordres de réparation sur ce statut dans le planning
 CleanEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, supprimer la plannification existante de l'OR
 CleanEventOnThisStatusHelp=Utile pour déplanifier un ordre de réparation
+OperationOrderPointable=OR Pointable
+OperationOrderPointableHelp=un OR dans ce status est pointable dans l'écran de l'atelier
 
 NewStatus=Nouveau statut
 NoOperationOrderStatus=Pas de statut
@@ -265,7 +268,7 @@ noCounterToStop=Aucun compteur à arréter.
 ErrorCounterInvalidUser=Pas d'utilisateur pour démarrer cette tâche, veuillez sélectionner un utilisateur avant de démarrer la tâche
 ErreurCounterInvalidLineSelected=La ligne sélectionnée n'appartient pas à l'OR sélectionné.
 ErrorStockMVTService=Le produit sélectionné est un service. Selon votre configuration, on ne peut pas déstocker des services.
-ErrorNoDefaultWarehouse=Pas d'entrepot par défaut pour se produit. Sortie de stock impossible.
+ErrorNoDefaultWarehouse=Pas d'entrepot par défaut pour ce produit. Sortie de stock impossible.
 ErrorCantFetchOR=Impossible de récupérer l'ordre de réparation.
 ErrorNoProdWithThisBarcode=Impossible de trouver un produit avec le code barre : %s
 ErrorProductHasNoBarCode=Le produit n'a pas de code Barre enregistré
