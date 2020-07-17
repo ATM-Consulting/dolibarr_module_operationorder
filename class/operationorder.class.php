@@ -1136,12 +1136,14 @@ class OperationOrder extends SeedObject
             	//Update child recursively
 	            if ($this->line->qty != $staticline->qty) {
 					$TNestedChilds = $this->line->fetch_all_children_lines($this->line->id, true, true);
-					$ratioQty = $this->line->qty / $staticline->qty;
-					if(!empty($TNestedChilds)) {
-						foreach($TNestedChilds as  $child) {
-							$child->qty = $child->qty * $ratioQty;
-							$child->time_planned = $child->time_planned * $ratioQty;
-							$child->update($user, $notrigger);
+					if($this->line->qty != 0 && $staticline->qty != 0) {
+						$ratioQty = $this->line->qty / $staticline->qty;
+						if (!empty($TNestedChilds)) {
+							foreach ($TNestedChilds as $child) {
+								$child->qty = $child->qty * $ratioQty;
+								$child->time_planned = $child->time_planned * $ratioQty;
+								$child->update($user, $notrigger);
+							}
 						}
 					}
 	            }
