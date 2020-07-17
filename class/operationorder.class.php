@@ -1133,6 +1133,18 @@ class OperationOrder extends SeedObject
             $result = $this->line->update($user, $notrigger);
             if ($result > 0)
             {
+            	//Update child recursively
+	            if ($this->line->qty != $staticline->qty) {
+					$TNestedChilds = $this->line->fetch_all_children_lines($this->line->id, true, true);
+					$ratioQty = $this->line->qty / $staticline->qty;
+					if(!empty($TNestedChilds)) {
+						foreach($TNestedChilds as  $child) {
+							$child->qty = $child->qty * $ratioQty;
+							$child->time_planned = $child->time_planned * $ratioQty;
+							$child->update($user, $notrigger);
+						}
+					}
+	            }
                 // Reorder if child line
                 if (!empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
@@ -1542,7 +1554,7 @@ class OperationOrder extends SeedObject
 
         foreach ($this->lines as $line)
         {
-            $total_time = +$line->time_planned;
+	        if(empty($line->fk_parent_line))$total_time = +$line->time_planned;
         }
 
         $this->time_planned_t = $total_time;
@@ -1562,7 +1574,7 @@ class OperationOrder extends SeedObject
         {
             foreach ($this->lines as $line)
             {
-            	
+
                 if(empty($line->fk_parent_line))$total_time += $line->time_planned;
             }
         }
