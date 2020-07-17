@@ -774,7 +774,7 @@ function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $produc
  * @throws Exception
  */
 function OO_parseFullCalendarDateTime($string, $timezone=null) {
-
+	if(strpos($string, ' ') !== false) $string = str_replace(' ', '+', $string);
 	$date = new DateTime($string);
 	if ($timezone) {
 		// If our timezone was ignored above, force it.
@@ -930,7 +930,6 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
         if ($res)
         {
             $action_or = new OperationOrderAction($db);
-
             $action_or->dated = $startTime;
 
             //OR temps forcé ou temps théorique ou rien
@@ -1440,7 +1439,6 @@ function getNextSchedules ($startTime)
     while($toadd <= 3)
     {
         $TBusinessHours = getOperationOrderUserPlanningSchedule($beginOfWeek, $endOfWeek);
-
         $TBusinessHours = sortBusinessHours($TBusinessHours);
 
         foreach ($TBusinessHours as $date => $TSchedules)

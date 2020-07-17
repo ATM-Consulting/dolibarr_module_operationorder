@@ -310,7 +310,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 			});
 
 			calendar.render();
-
+			setBusinessHours();
 			$(window).on('resize', function(){
 				calendar.setOption('height', getFullCalendarHeight());
 			});
@@ -336,7 +336,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				return  $( window ).height() - $("#id-right").offset().top - 30;
 			}
 
-            setBusinessHours();
+
 
 
             $(document).on('click','.fc-button-group',function() {
@@ -395,6 +395,7 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                         }
 
                         calendar.setOption('businessHours', result);
+                        calendar.refetchEvents();
                     }
                 });
             }
