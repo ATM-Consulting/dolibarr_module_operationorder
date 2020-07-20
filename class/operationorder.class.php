@@ -1898,7 +1898,7 @@ class OperationOrderDet extends SeedObject
     	$langs->loadLangs(array('operationorder@operationorder', 'stocks'));
 
 		$out = '';
-		if ($this->fk_product > 0 && empty($this->product_type) && $this->product) {
+		if ($this->fk_product > 0 && empty($this->product->type) && $this->product) {
 
 			$this->product->load_stock();
             if(!empty($params['planned_date'])) $this->isVirtualStockAvailableForDate($params['planned_date']);
