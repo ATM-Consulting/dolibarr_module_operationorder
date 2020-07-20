@@ -33,18 +33,7 @@ $langs = $GLOBALS['langs'];
 $linkedObjectBlock = $GLOBALS['linkedObjectBlock'];
 
 $langs->load("operationorder@operationorder");
-echo '<br>';
-print load_fiche_titre($langs->trans("OperationOrderRelated"));
-?>
-<table class="noborder allwidth">
-<tr class="liste_titre">
-	<td><?php echo $langs->trans("Ref"); ?></td>
-	<td class="center"><?php echo $langs->trans("Label"); ?></td>
-	<td class="center"><?php echo $langs->trans("DateMaj"); ?></td>
-	<td class="right"><?php echo $langs->trans("Status"); ?></td>
-	<td></td>
-</tr>
-<?php
+
 $var=true;
 $total=0;
 foreach($linkedObjectBlock as $key => $objectlink)
@@ -52,16 +41,17 @@ foreach($linkedObjectBlock as $key => $objectlink)
 	$var=!$var;
 ?>
 <tr <?php echo $GLOBALS['bc'][$var]; ?> >
+    <td><?php echo $langs->trans('OperationOrder') ?></td>
     <td><?php echo $objectlink->getNomUrl(1); ?></td>
 	<td class="center"><?php echo $objectlink->label; ?></td>
-	<td class="center"><?php echo dol_print_date($objectlink->date_maj, 'day'); ?></td>
-	<td class="right"><?php echo $objectlink->getLibStatut(0); ?></td>
-	<td class="right"><a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$objectlink->id.'&action=dellink&dellinkid='.$key; ?>"><?php echo img_delete($langs->transnoentitiesnoconv("RemoveLink")); ?></a></td>
+	<td class="center"><?php echo dol_print_date($objectlink->date_operation_order, 'day'); ?></td>
+	<td class="center"></td>
+	<td class="right"><?php echo $objectlink->getLibStatut(2); ?></td>
+	<td class="right"><a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$objectlink->id.'&action=dellink&dellinkid='.$key; ?>"><span class="fas fa-unlink"></span></a></td>
 </tr>
 <?php
 }
 ?>
 
-</table>
 
 <!-- END PHP TEMPLATE -->
