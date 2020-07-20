@@ -1191,7 +1191,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         foreach ($TUsers as $user)
         {
             $res = $userplanning->fetchByObject($user->id, 'user');
-
             //si l'utilisateur a un planning actif alors on utilise son planning
             if ($res > 0 && $userplanning->active > 0)
             {
@@ -1259,7 +1258,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
             foreach ($TDates as $date)
             {
                 $i = 0;
-
                 $datetime = new DateTime();
                 $datetime->setTimestamp($date);
 
@@ -1293,8 +1291,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                     {
                         $scheduletoaddam = true;
                         $scheduletoaddpm = true;
-
-                        foreach($TSchedules[$date] as $schedule){
+                        foreach($TSchedules[$date] as &$schedule){
 
                             //si l'heure de début est inférieure au minimum et que l'heure de fin est contenue dans le créneau, alors on usurpe le minimum
                             if($userplanning->{$day.'_heuredam'} < $schedule['min'] && ($userplanning->{$day.'_heurefam'} <= $schedule['max'] && $userplanning->{$day.'_heurefam'} >= $schedule['min'])){
