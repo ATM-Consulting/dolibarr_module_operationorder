@@ -1562,7 +1562,7 @@ class OperationOrder extends SeedObject
         {
             foreach ($this->lines as $line)
             {
-            	
+
                 if(empty($line->fk_parent_line))$total_time += $line->time_planned;
             }
         }
@@ -1649,7 +1649,7 @@ class OperationOrderDet extends SeedObject
 {
     public $table_element = 'operationorderdet';
 
-    public $element = 'operationorderdet';
+    public $element = 'operationorder_operationorderdet';
 
     /** @var int $isextrafieldmanaged Enable the fictionalises of extrafields */
     public $isextrafieldmanaged = 1;

@@ -116,7 +116,7 @@ class OperationOrderHistory extends SeedObject
                 $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
             }
             foreach($TDiff as $keyDiff => $diff) {
-                if($keyDiff == 'fields' || $keyDiff == 'oldcopy' || ($object->element == 'operationorderdet' && $keyDiff == 'label') || is_object($diff)) continue;
+                if($keyDiff == 'fields' || $keyDiff == 'oldcopy' || ($object->element == 'operationorder_operationorderdet' && $keyDiff == 'label') || is_object($diff)) continue;
                 if(!is_array($diff)) {
                     if(!empty($object->fields[$keyDiff])) {
                         $oldvalue = $oldcopy->showOutputFieldQuick($keyDiff);
