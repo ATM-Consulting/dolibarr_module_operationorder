@@ -1649,7 +1649,7 @@ class OperationOrderDet extends SeedObject
 {
     public $table_element = 'operationorderdet';
 
-    public $element = 'operationorder_operationorderdet';
+    public $element = 'operationorderdet';
 
     /** @var int $isextrafieldmanaged Enable the fictionalises of extrafields */
     public $isextrafieldmanaged = 1;

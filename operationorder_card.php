@@ -456,7 +456,7 @@ if (empty($reshook))
                 if($resSupplierOrder>0)
                 {
                 	$supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
-					$supplierOrder->add_object_linked('operationorder_operationorderdet', $lineid);// and link to line origin for user interface
+					$supplierOrder->add_object_linked('operationorderdet', $lineid);// and link to line origin for user interface
 
                     if(!empty($conf->global->OPODER_SUPPLIER_ORDER_AUTO_VALIDATE)){
                         $supplierOrder->valid($user);
