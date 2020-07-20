@@ -399,6 +399,7 @@ if (empty($reshook))
         	// check && prepare order
 			$supplierOrder = new CommandeFournisseur($object->db);
 			$TSupplierOrderFields = array('fk_soc');
+			$supplierOrder->model_pdf = 'gop';
 
 			// Auto set values
 			foreach($TSupplierOrderFields as $key){
@@ -420,7 +421,9 @@ if (empty($reshook))
 
 
 			// Check & prepare line
-			$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
+			//Add same product as the poduct/service on the current line
+			//$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
+			$TSupplierOrderLineFields = array( 'desc');
 
             $supplierOrderLine = new CommandeFournisseurLigne($object->db);
             // Auto set values
@@ -432,6 +435,18 @@ if (empty($reshook))
                     $error++;
                 }
             }
+		$lineid = GETPOST('lineid');
+		$ligne = new OperationOrderDet($db);
+		$ligne->fetch($lineid);
+
+			$supplierOrderLine->product_type =$ligne->product_type;
+			$supplierOrderLine->fk_product = $ligne->fk_product;
+			$supplierOrderLine->ref = $ligne->ref;
+			$supplierOrderLine->pu_ht = $ligne->price;
+			$supplierOrderLine->price = $ligne->price;
+			$supplierOrderLine->subprice = $ligne->price;
+			$supplierOrderLine->qty = $ligne->qty;
+			$supplierOrderLine->tva_tx = $ligne->product->tva_tx;
             $supplierOrder->lines[] = $supplierOrderLine;
 
             if(empty($error)){
@@ -440,12 +455,28 @@ if (empty($reshook))
                 $resSupplierOrder = $supplierOrder->create($user);
                 if($resSupplierOrder>0)
                 {
-                    $supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
-                    $supplierOrder->add_object_linked('operationorderdet', $lineid);// and link to line origin for user interface
+                	$supplierOrder->add_object_linked('operationorder', $object->id); // and link to object to be displayed un document
+					$supplierOrder->add_object_linked('operationorder_operationorderdet', $lineid);// and link to line origin for user interface
 
                     if(!empty($conf->global->OPODER_SUPPLIER_ORDER_AUTO_VALIDATE)){
                         $supplierOrder->valid($user);
                     }
+					if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+						// Define output language
+						$outputlangs = $langs;
+						$newlang = '';
+						if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+							$newlang = GETPOST('lang_id', 'aZ09');
+							if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+								$newlang = $object->thirdparty->default_lang;
+								if (!empty($newlang)) {
+									$outputlangs = new Translate("", $conf);
+									$outputlangs->setDefaultLang($newlang);
+								}
+
+								$ret = $supplierOrder->fetch($supplierOrder->id); // Reload to get new records
+								$supplierOrder->generateDocument($supplierOrder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					}
 
                     $parameters=array(
                         'supplierOrder' =>& $supplierOrder,
@@ -558,6 +589,54 @@ if (empty($reshook))
             if ($result >= 0) {
 
 				$updateLineResult = true;
+
+				//if objectkinked, we update it
+				$lineid=GETPOST('lineid');
+				$lineupdated = new operationorderdet($db);
+				$lineupdated->fetch($lineid);
+				$lineupdated->fetchObjectLinked();
+				if(!empty($lineupdated->linkedObjects['order_supplier'])){
+					$supplieroder = array_values($lineupdated->linkedObjects['order_supplier'])[0];
+					Foreach($supplieroder->lines as $supplierOrderLine){
+						 if ($supplierOrderLine->fk_product == $lineupdated->fk_product){
+
+							$oldstatus = $supplieroder->statut;
+							$res=1;
+							if($oldstatus>0){
+								$res=$supplieroder->setStatus($user, 0);
+								$res=$supplieroder->fetch($supplieroder->id);
+							}
+							if($res>0){
+								$res=$supplieroder->updateline($supplierOrderLine->id, $supplierOrderLine->desc, $lineupdated->price, $lineupdated->qty, 0, $lineupdated->product->tva_tx, 0, 0, 'HT', 0, $supplierOrderLine->product_type, 0,'', '', $supplierOrderLine->array_options);
+								if($res>0){
+									$res = $supplieroder->update_note(dol_html_entity_decode($supplieroder->note_private . '<br/>' . $description, ENT_QUOTES), '_private');
+								}
+							}
+							if($oldstatus>0){
+								$res=$supplieroder->setStatus($user,$oldstatus);
+								$res=$supplieroder->fetch($supplieroder->id);
+							}
+							if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+								// Define output language
+								$outputlangs = $langs;
+								$newlang = '';
+								if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09'))
+									$newlang = GETPOST('lang_id', 'aZ09');
+									if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+										$newlang = $object->thirdparty->default_lang;
+										if (!empty($newlang)) {
+											$outputlangs = new Translate("", $conf);
+											$outputlangs->setDefaultLang($newlang);
+										}
+
+										$ret = $supplieroder->fetch($supplieroder->id); // Reload to get new records
+										$supplieroder->generateDocument($supplieroder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+							}
+						}
+					}
+
+				}
+
 
                 if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
                     // Define output language
@@ -1252,7 +1331,6 @@ function _displayDialogSupplierOrder($lineid){
 		$outForm.= '<table class="table-full">';
 
 		// Cette partie permet une evolution du formulaire de creation de commandes fournisseur
-
 		$supplierOrder = new CommandeFournisseur($object->db);
 		$supplierOrder->fields['fk_soc']['label']='Supplier';
 		$TSupplierOrderFields = array('fk_soc');
@@ -1276,7 +1354,9 @@ function _displayDialogSupplierOrder($lineid){
             $outForm.= '<input type="hidden" name="orderline_product_type" value="1">' . "\n";
         }
 
-		$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
+		 //$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
+		 //Add same product as the poduct/service on the current line
+		 $TSupplierOrderLineFields = array('desc');
 
 		$params = array(
 		    'OperationOrderDet' => $line
