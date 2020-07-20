@@ -421,7 +421,7 @@ if (empty($reshook))
 
 
 			// Check & prepare line
-			//TODO CHeck
+			//Add same product as the poduct/service on the current line
 			//$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
 			$TSupplierOrderLineFields = array( 'desc');
 
@@ -1355,7 +1355,7 @@ function _displayDialogSupplierOrder($lineid){
         }
 
 		 //$TSupplierOrderLineFields = array('product_type', 'subprice', 'tva_tx', 'qty', 'desc');
-		 //TODO CHeck
+		 //Add same product as the poduct/service on the current line
 		 $TSupplierOrderLineFields = array('desc');
 
 		$params = array(
