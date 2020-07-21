@@ -33,8 +33,11 @@ BarCodeDeleted=Code-barres supprimé
 AddBarCode=Ajouter un code-barres
 OPORDER_CHANGE_OR_STATUS_ON_START=Au démarrage d'une tâche, changer le statut de l'ordre de réparation associé
 OPODER_STATUS_ON_START=Statut à utiliser lors de la réalisation de tâches sur l'OR
+OPODER_STATUS_ON_START_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "planifié" => statut à utiliser "en cours à l'atelier"
+OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l'ordre de réparation associé (si aucune autre tâche n'est en court)
+OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
+OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
 OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
-
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -277,6 +280,8 @@ ProductAddedToOR=Le produit %s a été ajouté à l'ordre de réparation %s.
 ErrorAddProductInOR=Une erreur s'est produite pendant l'ajout du produit %s à l'ordre de réparation %s.
 
 ORRef=Ref OR
+
+OperationOrderStatusExtrafieldPage=Attributs supplémentaires (Status)
 
 
 OperationOrderRelated = Ordres de réparations liés
