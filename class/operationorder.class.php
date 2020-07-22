@@ -1135,6 +1135,34 @@ class OperationOrder extends SeedObject
             $result = $this->line->update($user, $notrigger);
             if ($result > 0)
             {
+	            if ($this->line->qty != $staticline->qty) {
+		            //Update child recursively
+		            $TNestedChilds = $this->line->fetch_all_children_lines($this->line->id, true, true);
+					if($this->line->qty != 0 && $staticline->qty != 0) {
+						$ratioQty = $this->line->qty / $staticline->qty;
+						if (!empty($TNestedChilds)) {
+							foreach ($TNestedChilds as $child) {
+								$child->qty = $child->qty * $ratioQty;
+								$child->time_planned = $child->time_planned * $ratioQty;
+								$child->update($user, $notrigger);
+							}
+						}
+					}
+
+	            }
+	            if($this->line->time_planned != $staticline->time_planned || $this->line->time_spent != $staticline->time_spent) {
+		            //Update parent recursively
+		            $TParents = $this->line->fetch_all_parent_lines();
+		            if(!empty($TParents)) {
+			            foreach ($TParents as $parent) {
+				            $time_planned_to_add = $this->line->time_planned - $staticline->time_planned;
+				            $time_spend_to_add = $this->line->time_spent - $staticline->time_spent;
+				            $parent->time_planned += $time_planned_to_add;
+				            $parent->time_spent += $time_spend_to_add;
+				            $parent->update($user, $notrigger);
+			            }
+		            }
+	            }
                 // Reorder if child line
                 if (!empty($fk_parent_line)) $this->line_order(true, 'DESC');
 
@@ -1544,7 +1572,7 @@ class OperationOrder extends SeedObject
 
         foreach ($this->lines as $line)
         {
-            $total_time = +$line->time_planned;
+	        if(empty($line->fk_parent_line))$total_time = +$line->time_planned;
         }
 
         $this->time_planned_t = $total_time;
@@ -2209,6 +2237,17 @@ class OperationOrderDet extends SeedObject
 			dol_syslog(get_class($this) . "::fetch " . $this->error, LOG_ERR);
 			return - 1;
 		}
+	}
+
+	public function fetch_all_parent_lines(&$TParentLines = array()) {
+		if(!empty($this->fk_parent_line)) {
+			$parentLine = new OperationOrderDet($this->db);
+			$parentLine->fetch($this->fk_parent_line);
+			$TParentLines[$parentLine->id] = $parentLine;
+			$parentLine->fetch_all_parent_lines($TParentLines);
+		}
+
+		return $TParentLines;
 	}
 
     public function isVirtualStockAvailableForDate($date) {
