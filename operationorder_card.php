@@ -164,15 +164,13 @@ if (empty($reshook))
                 $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
                 if ($ret < 0) $error++;
             }
-
 			if ($error > 0)
 			{
 				$action = 'edit';
 				break;
 			}
-
 			$res = $object->save($user);
-            if ($res < 0)
+            if ($res <= 0)
             {
                 setEventMessage($object->errors, 'errors');
                 if (empty($object->id)) $action = 'create';
