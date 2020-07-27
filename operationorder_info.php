@@ -52,7 +52,7 @@ if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
 
 $result = restrictedArea($user, $object->element, $id, $object->table_element.'&'.$object->element);
 
-
+$hookmanager->initHooks(array('operationorderinfo'));
 
 /*
  * View
