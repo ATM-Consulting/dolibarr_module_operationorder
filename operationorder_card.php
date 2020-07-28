@@ -397,7 +397,7 @@ if (empty($reshook))
         	// check && prepare order
 			$supplierOrder = new CommandeFournisseur($object->db);
 			$TSupplierOrderFields = array('fk_soc');
-			$supplierOrder->modelpdf = 'gop';
+			$supplierOrder->ref_supplier = $object->ref;
 
 			// Auto set values
 			foreach($TSupplierOrderFields as $key){
@@ -473,7 +473,7 @@ if (empty($reshook))
 								}
 
 								$ret = $supplierOrder->fetch($supplierOrder->id); // Reload to get new records
-								$supplierOrder->generateDocument($supplierOrder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+								$supplierOrder->generateDocument('gop', $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 
                     $parameters=array(
