@@ -650,14 +650,6 @@ if (empty($reshook) && !empty($action))
 
 	}
 
-	/* PART FOR PENDING OR ENDED OperationOrder planning
-		used in operationorder_orplanning.php
-	*/
-	else if ($action == 'getCounters')
-	{
-
-	}
-
 }
 
 print json_encode($data);

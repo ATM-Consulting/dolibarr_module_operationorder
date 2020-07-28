@@ -37,7 +37,7 @@ $action = GETPOST('action');
 $date = GETPOSTISSET('date') ? strtotime(GETPOST('dateyear').'-'.GETPOST('datemonth').'-'.GETPOST('dateday')) : dol_now();
 $entity = GETPOSTISSET('entity') ? GETPOST('entity', 'int') : $conf->entity;
 
-$title = $langs->trans("OperationOrderPlanning");
+$title = $langs->trans("LeftMenuOperationOrderORPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
 $help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
@@ -74,7 +74,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 
 					print "<tr>";
 					print "<td>".$langs->trans('Entity')."</td>";
-					print "<td>".$form->selectarray("entity", $TEntity, $selected)."</td>";
+					print "<td>".(($conf->entity == 1) ? $form->selectarray("entity", $TEntity, $selected) : $TEntity[$conf->entity])."</td>";
 					print "</tr>";
 				}
 			} ?>
@@ -84,8 +84,14 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 		</div>
 	</form>
 
-<?php print load_fiche_titre($langs->trans("Planning"), '', 'calendar'); ?>
+<?php
+if (!empty($TSchedules))
+{
+	print load_fiche_titre($langs->trans("Planning"), '', 'calendar');
+
+?>
 	<div id="schedule"></div>
+<!--	<div id="logs"></div>-->
 
 	<script type="text/javascript">
 		// function addLog(type, message){
@@ -108,40 +114,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 				bundleMoveWidth: 6,  // width to move all schedules to the right of the clicked time line cell
 				draggable: isDraggable,
 				resizable: isResizable,
-				rows : <?php print json_encode($TSchedules) ?>/*{
-					'0' : {
-						title : 'Title Area1',
-						schedule:[
-							{
-								start: '09:00',
-								end: '10:00',
-								text: 'Text Area',
-								data: {
-									"title":"lalala"
-								}
-							},
-							{
-								start: '10:00',
-								end: '13:00',
-								text: 'Text Area',
-								data: {
-								}
-							}
-						]
-					},
-					'1' : {
-						title : 'Title Area2',
-						schedule:[
-							{
-								start: '16:00',
-								end: '17:00',
-								text: 'Text Area',
-								data: {
-								}
-							}
-						]
-					}
-				}*/,
+				rows : <?php print json_encode($TSchedules) ?>,
 				onChange: function(node, data){
 					// addLog('onChange', data);
 				},
@@ -150,6 +123,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 				},
 				onClick: function(node, data){
 					// addLog('onClick', data);
+					console.log(data); // pour plus tard redirection vers la card de l'OR si possible
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);
@@ -207,6 +181,10 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 	</script>
 
 <?php
-
+}
+else
+{
+	print $langs->trans('ErrorNoUserInGroupOrNoGroup');
+}
 llxFooter();
 
