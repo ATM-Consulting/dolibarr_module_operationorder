@@ -1,0 +1,7 @@
+.timeline::before{
+	background-color: transparent;
+}
+
+.timeline {
+	margin:0;
+}
