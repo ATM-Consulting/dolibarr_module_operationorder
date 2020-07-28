@@ -31,30 +31,19 @@ $TIncludeJS = array(
 
 $langs->loadLangs(array('operationorder@operationorder'));
 
-$hookmanager->initHooks(array('operationorderorplanning'));
+$hookmanager->initHooks(array('operationorderORplanning'));
 
 $action = GETPOST('action');
-$id_operationorder = GETPOST('operationorder');
-$startTime = GETPOST('startTime');
-$endTime = GETPOST('endTime');
-$beginOfWeek = GETPOST('beginOfWeek');
-$endOfWeek = GETPOST('endOfWeek');
-$allDay = GETPOST('allDay');
-$entity = GETPOST('entity', 'int');
+$date = GETPOSTISSET('date') ? strtotime(GETPOST('dateyear').'-'.GETPOST('datemonth').'-'.GETPOST('dateday')) : dol_now();
+$entity = GETPOSTISSET('entity') ? GETPOST('entity', 'int') : $conf->entity;
 
 $title = $langs->trans("OperationOrderPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
 $help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 
-// test user event création right
-$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
-$statusAllowed = new OperationOrderStatus($db);
-$res = $statusAllowed->fetch($fk_status);
-$userCanCreateEvent = 0;
-if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
-	$userCanCreateEvent = 1;
-}
+$TSchedules = getCountersForPlanning($date, $entity);
+//print '<pre>'; print_r($TSchedules); print '</pre>';
 
 $form = new Form($db);
 
@@ -65,7 +54,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 		<table width="100%">
 			<tr>
 				<td>Date</td>
-				<td><?php print $form->selectDate() ?></td>
+				<td><?php print $form->selectDate($date, 'date'); ?></td>
 			</tr>
 
 			<?php if ($conf->multicompany->enabled) {
@@ -98,8 +87,6 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 <?php print load_fiche_titre($langs->trans("Planning"), '', 'calendar'); ?>
 	<div id="schedule"></div>
 
-
-
 	<script type="text/javascript">
 		// function addLog(type, message){
 		// 	var $log = $('<tr />');
@@ -113,7 +100,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 			var isResizable = false;
 			var $sc = $("#schedule").timeSchedule({
 				startTime: "07:00", // schedule start time(HH:ii)
-				endTime: "21:00",   // schedule end time(HH:ii)
+				endTime: "20:00",   // schedule end time(HH:ii)
 				widthTime: 60 * 10,  // cell timestamp example 10 minutes
 				timeLineY: 60,       // height(px)
 				verticalScrollbar: 20,   // scrollbar (px)
@@ -121,7 +108,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 				bundleMoveWidth: 6,  // width to move all schedules to the right of the clicked time line cell
 				draggable: isDraggable,
 				resizable: isResizable,
-				rows : {
+				rows : <?php print json_encode($TSchedules) ?>/*{
 					'0' : {
 						title : 'Title Area1',
 						schedule:[
@@ -134,7 +121,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 								}
 							},
 							{
-								start: '11:00',
+								start: '10:00',
 								end: '13:00',
 								text: 'Text Area',
 								data: {
@@ -154,7 +141,7 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 							}
 						]
 					}
-				},
+				}*/,
 				onChange: function(node, data){
 					// addLog('onChange', data);
 				},
@@ -180,7 +167,8 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 						node.addClass('sc_bar_photo');
 					}
 					if(data.data.title){
-						//node.tooltip();
+						node.attr('title', data.data.title);
+						node.tooltip();
 					}
 				},
 			});
@@ -214,9 +202,6 @@ print load_fiche_titre($langs->trans("Filter").'s', '', 'search');
 						// addLog('Ajax GetData', data);
 						$sc.timeSchedule('setRows', data);
 					});
-			});
-			$('#clear-logs').on('click', function(){
-				$('#logs .table').empty();
 			});
 		});
 	</script>

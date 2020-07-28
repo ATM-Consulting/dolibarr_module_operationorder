@@ -1955,3 +1955,82 @@ function daysAvailableBetween($dated, $datef){
 
 }
 
+function getCountersForPlanning($date, $entity = 1)
+{
+	global $conf, $db, $langs;
+
+	dol_include_once('/operationorder/class/operationorder.class.php');
+	dol_include_once('/operationorder/class/operationordertasktime.class.php');
+
+	$TSchedules = array();
+	$userGroup = new UserGroupOperationOrder($db);
+
+	$oldEntity = $conf->entity;
+	$conf->entity = $entity;
+	$conf->setValues($db);
+
+	$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
+
+	if ($retgroup > 0)
+	{
+		$userList = $userGroup->listUsersForGroup();
+		if (!empty($userList))
+		{
+			foreach ($userList as $u)
+			{
+				$TSchedules[$u->id] = new stdClass;
+				$TSchedules[$u->id]->title = $u->getFullName($langs);
+				$TSchedules[$u->id]->schedule = array();
+
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationordertasktime";
+				$sql.= " WHERE fk_user = ".$u->id;
+				$sql.= " AND task_datehour_d < '".date("Y-m-d 23:59:59", $date)."'";
+				$sql.= " AND task_datehour_f > '".date("Y-m-d 00:00:00", $date)."'";
+				$sql.= " AND entity = ".$entity;
+
+				$resql = $db->query($sql);
+				if ($resql && $db->num_rows($resql))
+				{
+					while ($obj = $db->fetch_object($resql))
+					{
+						$tt = new OperationOrderTaskTime($db);
+						$res = $tt->fetch($obj->rowid);
+						if ($res > 0)
+						{
+							$label = $tt->label;
+
+							$det = new OperationOrderDet($db);
+							if (!empty($tt->fk_orDet))
+							{
+								$ret = $det->fetch($tt->fk_orDet);
+
+								if ($ret > 0)
+								{
+									$OR = new OperationOrder($db);
+									$OR->fetch($det->fk_operation_order);
+									$label = $OR->ref . ' - ' . $tt->label;
+								}
+							}
+							$tempTT = new stdClass;
+							$tempTT->start = date("H:i", $tt->task_datehour_d);
+							$tempTT->end = date("H:i", $tt->task_datehour_f);
+							$tempTT->text = $label;
+							$tempTT->data = new stdClass;
+							$tempTT->data->title = $label;
+
+							$TSchedules[$u->id]->schedule[] = $tempTT;
+						}
+
+					}
+				}
+			}
+
+		}
+	}
+
+	$conf->entity = $oldEntity;
+	$conf->setValues($db);
+
+	return $TSchedules;
+}
+
