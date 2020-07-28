@@ -397,7 +397,7 @@ if (empty($reshook))
         	// check && prepare order
 			$supplierOrder = new CommandeFournisseur($object->db);
 			$TSupplierOrderFields = array('fk_soc');
-			$supplierOrder->model_pdf = 'gop';
+			$supplierOrder->modelpdf = 'gop';
 
 			// Auto set values
 			foreach($TSupplierOrderFields as $key){
@@ -419,7 +419,7 @@ if (empty($reshook))
 
 
 			// Check & prepare line
-			//Add same product as the poduct/service on the current line
+			//Add same product as the product/service on the current line
 			//$TSupplierOrderLineFields = array('product_type', 'subprice', 'qty', 'desc', 'tva_tx');
 			$TSupplierOrderLineFields = array( 'desc');
 
@@ -433,9 +433,9 @@ if (empty($reshook))
                     $error++;
                 }
             }
-		$lineid = GETPOST('lineid');
-		$ligne = new OperationOrderDet($db);
-		$ligne->fetch($lineid);
+			$lineid = GETPOST('lineid');
+			$ligne = new OperationOrderDet($db);
+			$ligne->fetch($lineid);
 
 			$supplierOrderLine->product_type =$ligne->product_type;
 			$supplierOrderLine->fk_product = $ligne->fk_product;
