@@ -592,6 +592,7 @@ if (empty($reshook))
 				$lineid=GETPOST('lineid');
 				$lineupdated = new operationorderdet($db);
 				$lineupdated->fetch($lineid);
+				$conf->operationorderdet->enabled=1;
 				$lineupdated->fetchObjectLinked();
 				if(!empty($lineupdated->linkedObjects['order_supplier'])){
 					$supplieroder = array_values($lineupdated->linkedObjects['order_supplier'])[0];
@@ -1567,6 +1568,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date));
 
 			// display object linked on line
+			$conf->operationorderdet->enabled=1;
             $line->fetchObjectLinked();
             if(!empty($line->linkedObjects)){
                 $out .= '		<div class="operation-order-det-element-element">';
