@@ -473,12 +473,12 @@ if (empty($reshook))
 								}
 
 								$ret = $supplierOrder->fetch($supplierOrder->id); // Reload to get new records
-								$supplierOrder->generateDocument('gop', $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 
                     $parameters=array(
                         'supplierOrder' =>& $supplierOrder,
-                        'supplierOrderId' => $resSupplierOrder
+                        'supplierOrderId' => $resSupplierOrder,
+						'outputlangs' => $outputlangs
                     );
                     $reshook = $hookmanager->executeHooks('doActionsAfterAddSupplierOrderFromLine', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
                     if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
