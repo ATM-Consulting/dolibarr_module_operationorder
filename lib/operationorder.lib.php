@@ -1962,7 +1962,7 @@ function getCountersForPlanning($date, $entity = 1)
 	dol_include_once('/operationorder/class/operationorder.class.php');
 	dol_include_once('/operationorder/class/operationordertasktime.class.php');
 
-	$TSchedules = array();
+	$TSchedules = $TOr = $TOrDet = array();
 	$userGroup = new UserGroupOperationOrder($db);
 
 	$oldEntity = $conf->entity;
@@ -1999,16 +1999,27 @@ function getCountersForPlanning($date, $entity = 1)
 						{
 							$label = $tt->label;
 
-							$det = new OperationOrderDet($db);
 							if (!empty($tt->fk_orDet))
 							{
-								$ret = $det->fetch($tt->fk_orDet);
-
-								if ($ret > 0)
+								if (!array_key_exists($tt->fk_orDet, $TOrDet))
 								{
-									$OR = new OperationOrder($db);
-									$OR->fetch($det->fk_operation_order);
-									$label = $OR->ref . ' - ' . $tt->label;
+									$det = new OperationOrderDet($db);
+									$ret = $det->fetch($tt->fk_orDet);
+									if ($ret > 0)
+									{
+										$TOrDet[$tt->fk_orDet] = $det;
+									}
+								}
+
+								if (array_key_exists($tt->fk_orDet, $TOrDet))
+								{
+									if (!array_key_exists($TOrDet[$tt->fk_orDet]->fk_operation_order, $TOr))
+									{
+										$OR = new OperationOrder($db);
+										$OR->fetch($TOrDet[$tt->fk_orDet]->fk_operation_order);
+										$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] = $OR->ref;
+									}
+									$label = $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] . ' - ' . $tt->label;
 								}
 							}
 							$tempTT = new stdClass;
