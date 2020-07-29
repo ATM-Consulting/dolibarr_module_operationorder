@@ -1993,6 +1993,8 @@ function getCountersForPlanning($date, $entity = 1)
 				{
 					while ($obj = $db->fetch_object($resql))
 					{
+						$class = 'improd';
+
 						$tt = new OperationOrderTaskTime($db);
 						$res = $tt->fetch($obj->rowid);
 						if ($res > 0)
@@ -2020,6 +2022,12 @@ function getCountersForPlanning($date, $entity = 1)
 										$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] = $OR->ref;
 									}
 									$label = $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] . ' - ' . $tt->label;
+
+									$class = "in-time";
+									if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
+									{
+										$class = "late";
+									}
 								}
 							}
 							$tempTT = new stdClass;
@@ -2028,6 +2036,7 @@ function getCountersForPlanning($date, $entity = 1)
 							$tempTT->text = $label;
 							$tempTT->data = new stdClass;
 							$tempTT->data->title = $label;
+							$tempTT->data->class = $class;
 
 							$TSchedules[$u->id]->schedule[] = $tempTT;
 						}

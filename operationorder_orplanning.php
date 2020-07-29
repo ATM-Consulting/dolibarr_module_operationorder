@@ -22,7 +22,7 @@ if($langjs == 'en') $langjs = 'en-gb';
 
 $TIncludeCSS = array(
     '/operationorder/vendor/dailySchedule/css/style.min.css',
-    '/operationorder/css/dailySchedule.css'
+    '/operationorder/css/dailySchedule.css.php'
 );
 
 $TIncludeJS = array(
@@ -100,6 +100,10 @@ if (!empty($TSchedules))
 		// 	$log.append($('<td />').text(message ? JSON.stringify(message) : ''));
 		// 	$("#logs table").prepend($log);
 		// }
+
+		/* plugin jquery https://ateliee.github.io/jquery.schedule/demo/
+		* trouvé ici : https://www.jqueryscript.net/time-clock/Simple-Daily-Schedule-Plugin-with-jQuery-and-jQuery-UI-Schedule.html */
+
 		$(function(){
 			// $("#logs").append('<table class="table">');
 			var isDraggable = false;
@@ -108,6 +112,7 @@ if (!empty($TSchedules))
 				startTime: "07:00", // schedule start time(HH:ii)
 				endTime: "20:00",   // schedule end time(HH:ii)
 				widthTime: 60 * 10,  // cell timestamp example 10 minutes
+				widthTimeX: 20,
 				timeLineY: 60,       // height(px)
 				verticalScrollbar: 20,   // scrollbar (px)
 				timeLineBorder: 2,   // border(top and bottom)
@@ -146,7 +151,9 @@ if (!empty($TSchedules))
 					}
 				},
 			});
-			$('#event_timelineData').on('click', function(){
+
+			// je garde ces trucs venant de la doc de base pour infos si on a besoin d'interair avec le schedule
+			/*$('#event_timelineData').on('click', function(){
 				// addLog('timelineData', $sc.timeSchedule('timelineData'));
 			});
 			$('#event_scheduleData').on('click', function(){
@@ -176,7 +183,7 @@ if (!empty($TSchedules))
 						// addLog('Ajax GetData', data);
 						$sc.timeSchedule('setRows', data);
 					});
-			});
+			});*/
 		});
 	</script>
 
