@@ -147,7 +147,22 @@ if (!empty($TSchedules))
 					}
 					if(data.data.title){
 						node.attr('title', data.data.title);
-						node.tooltip();
+						node.tooltip({
+							track: true,
+							show: {
+								collision: "flipfit",
+								effect: 'toggle',
+								delay: 50
+							},
+							hide: {
+								delay: 0
+							},
+							container: "body",
+							tooltipClass: "operationOrderTooltip",
+							content: function () {
+								return this.getAttribute("title");
+							}
+						});
 					}
 				},
 			});

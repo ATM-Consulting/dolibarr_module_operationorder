@@ -1957,7 +1957,7 @@ function daysAvailableBetween($dated, $datef){
 
 function getCountersForPlanning($date, $entity = 1)
 {
-	global $conf, $db, $langs;
+	global $conf, $db, $langs, $hookmanager;
 
 	dol_include_once('/operationorder/class/operationorder.class.php');
 	dol_include_once('/operationorder/class/operationordertasktime.class.php');
@@ -2000,6 +2000,7 @@ function getCountersForPlanning($date, $entity = 1)
 						if ($res > 0)
 						{
 							$label = $tt->label;
+							$title = $tt->label;
 
 							if (!empty($tt->fk_orDet))
 							{
@@ -2019,9 +2020,45 @@ function getCountersForPlanning($date, $entity = 1)
 									{
 										$OR = new OperationOrder($db);
 										$OR->fetch($TOrDet[$tt->fk_orDet]->fk_operation_order);
-										$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] = $OR->ref;
+										$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] = $OR;
 									}
-									$label = $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] . ' - ' . $tt->label;
+
+									if (array_key_exists($TOrDet[$tt->fk_orDet]->fk_operation_order, $TOr))
+									{
+										$label = $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->ref . ' - ' . $tt->label;
+
+										$T = array();
+
+										$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc', 'planned_date', 'time_planned_t', 'time_planned_f');
+
+										foreach ($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->fields as $fieldKey => $field){
+											if(!in_array($fieldKey, $TFieldForTooltip)) continue;
+
+											$T[$fieldKey] = $langs->trans($field['label']) .' : '.$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->showOutputFieldQuick($fieldKey);
+										}
+
+										$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
+
+										$title = implode('<br/>',$T);
+
+										if (is_object($hookmanager))
+										{
+											$parameters= array(
+												'operationOrder' => $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]
+											);
+
+											$reshook=$hookmanager->executeHooks('operationorderORplanningMoreTooltip',$parameters);    // Note that $action and $object may have been modified by hook
+
+											if ($reshook>0)
+											{
+												$title = $hookmanager->resPrint;
+											}
+											else if (empty($reshook))
+											{
+												$title.= $hookmanager->resPrint;
+											}
+										}
+									}
 
 									$class = "in-time";
 									if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
@@ -2030,12 +2067,13 @@ function getCountersForPlanning($date, $entity = 1)
 									}
 								}
 							}
+
 							$tempTT = new stdClass;
 							$tempTT->start = date("H:i", $tt->task_datehour_d);
 							$tempTT->end = date("H:i", $tt->task_datehour_f);
 							$tempTT->text = $label;
 							$tempTT->data = new stdClass;
-							$tempTT->data->title = $label;
+							$tempTT->data->title = $title;
 							$tempTT->data->class = $class;
 
 							$TSchedules[$u->id]->schedule[] = $tempTT;
