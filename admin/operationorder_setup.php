@@ -240,6 +240,23 @@ $confKey = 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR';
 $customInputHtml = $formother->select_percent($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR, 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR');
 setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR'), '', array(), $customInputHtml);
 
+setup_print_title("LeftMenuOperationOrderORPlanning");
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_IMPROD_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_INTIME_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_LATE_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));
 

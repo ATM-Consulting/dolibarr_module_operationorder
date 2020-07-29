@@ -38,6 +38,9 @@ OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l
 OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
 OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
 OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
+OR_ACTIVITYPLANNING_IMPROD_COLOR=Couleur utilisée dans l'écran "Activités journalières" pour afficher les activités improductives
+OR_ACTIVITYPLANNING_INTIME_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche a été effectuée dans les temps
+OR_ACTIVITYPLANNING_LATE_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en dépassement (temps passé > temps prévu)
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
