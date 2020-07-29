@@ -397,7 +397,7 @@ if (empty($reshook))
         	// check && prepare order
 			$supplierOrder = new CommandeFournisseur($object->db);
 			$TSupplierOrderFields = array('fk_soc');
-			$supplierOrder->modelpdf = 'gop';
+			$supplierOrder->ref_supplier = $object->ref;
 
 			// Auto set values
 			foreach($TSupplierOrderFields as $key){
@@ -473,12 +473,12 @@ if (empty($reshook))
 								}
 
 								$ret = $supplierOrder->fetch($supplierOrder->id); // Reload to get new records
-								$supplierOrder->generateDocument($supplierOrder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 
                     $parameters=array(
                         'supplierOrder' =>& $supplierOrder,
-                        'supplierOrderId' => $resSupplierOrder
+                        'supplierOrderId' => $resSupplierOrder,
+						'outputlangs' => $outputlangs
                     );
                     $reshook = $hookmanager->executeHooks('doActionsAfterAddSupplierOrderFromLine', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
                     if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
@@ -592,6 +592,7 @@ if (empty($reshook))
 				$lineid=GETPOST('lineid');
 				$lineupdated = new operationorderdet($db);
 				$lineupdated->fetch($lineid);
+				$conf->operationorderdet->enabled=1;
 				$lineupdated->fetchObjectLinked();
 				if(!empty($lineupdated->linkedObjects['order_supplier'])){
 					$supplieroder = array_values($lineupdated->linkedObjects['order_supplier'])[0];
@@ -1567,6 +1568,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date));
 
 			// display object linked on line
+			$conf->operationorderdet->enabled=1;
             $line->fetchObjectLinked();
             if(!empty($line->linkedObjects)){
                 $out .= '		<div class="operation-order-det-element-element">';
