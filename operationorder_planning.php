@@ -150,18 +150,16 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 					center: 'title',
 					right: 'timeGridWeek'
 				},
-				editable: false, // next step add rights and allow edition
 				selectable: userCanCreateEvent,
 				minTime: fullcalendarscheduler_minTime,
 				maxTime: fullcalendarscheduler_maxTime,
 				scrollTime: '10:00:00',
-				height: getFullCalendarHeight(), //
+				height: getFullCalendarHeight(),
 				selectMirror: true,
 				locale: fullcalendarscheduler_initialLangCode,
 				eventLimit: true, // allow "more" link when too many events
                 editable:true,
                 businessHours: [],
-                // eventConstraint:'businessHours',
                 selectConstraint:'businessHours',
 				eventDestroy: function(info) {
 					$(info.el).tooltip({disabled: true});
@@ -172,7 +170,6 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                     $(info.el).attr('data-operationorderid', info.event.extendedProps.operationOrderId);
                     $(info.el).attr('data-operationorderactionid', info.event.extendedProps.operationOrderActionId);
                     $(info.el).attr('data-ope_percent', info.event.extendedProps.ope_percent);
-
 
                     $(info.el).tooltip({
                         track: true,
@@ -315,12 +312,6 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
 				calendar.setOption('height', getFullCalendarHeight());
 			});
 
-			// function newEventModal(start, end = 0){
-			// 	// console.log(start);
-			// 	// $("#dialog-add-event").html("title");
-			// 	// $("#dialog-add-event").modal();
-			// }
-
             //Définition de la boite de dialog "Créer un nouvel événement OR"
             var operationorderneweventmodal = $('#dialog-add-event');
 
@@ -332,18 +323,15 @@ $Tfullcalendar_scheduler_businessHours_days = array('1'=>'lundi', '2'=>'mardi', 
                 }
             });
 
-            function getFullCalendarHeight(){
-				return  $( window ).height() - $("#id-right").offset().top - 30;
-			}
-
-
-
-
             $(document).on('click','.fc-button-group',function() {
                 setBusinessHours();
             });
 
-			function setBusinessHours(){
+            function getFullCalendarHeight(){
+                return  $( window ).height() - $("#id-right").offset().top - 30;
+            }
+
+            function setBusinessHours(){
 
                 var beginOfWeek = Math.floor(calendar.view.activeStart.getTime() / 1000);
                 var endOfWeek = Math.floor(calendar.view.activeEnd.getTime() / 1000);

@@ -71,14 +71,12 @@ if(GETPOST('action'))
         $data = getOperationOrderUserPlanningSchedule($beginOfWeek,  $endOfWeek);
 
         foreach($data as $date=>$TSchedules){
-
             $data[$TDaysConvert[date('D', $date)]] = $TSchedules;
             unset($data[$date]);
         }
 
         print json_encode($data);
         exit;
-
     }
 	elseif($action=='setOperationOrderlevelHierarchy'){
 		if (! $user->rights->operationorder->write){
@@ -101,7 +99,6 @@ if(GETPOST('action'))
 	elseif($action=='getProductInfos' && !empty($user->rights->produit->lire)){
 		include_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 		$productId = GETPOST('fk_product', 'int');
-
 
 		$product = new Product($db);
 		if(!empty($productId) && $product->fetch($productId) > 0)
@@ -226,7 +223,6 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
         $out.= ' <td data-order="'.$operationOrder->ref.'" data-search="'.$operationOrder->ref.'"  ><a href="'.$url.'?action=createOperationOrderAction&operationorder='.$operationOrder->id.'&startTime='.$startTime.'&endTime='.$endTime.'&endOfWeek='.$endOfWeek.'&beginOfWeek='.$beginOfWeek.'">'.$operationOrder->ref.'</a></td>';
 
         //ref client
-        //TODO : ajout lien vers planning page avec action pour ajouter l'événement
         $out.= ' <td data-order="'.$operationOrder->ref_client.'" data-search="'.$operationOrder->ref_client.'"  >'.$operationOrder->ref_client.'</td>';
 
         //Nom Client
@@ -292,7 +288,6 @@ function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action, 
         $res = $action_or->fetch($fk_action);
 
         if ($res <= 0) $error++;
-
 
         if (!$error)
         {
@@ -462,8 +457,8 @@ function _updateOperationOrderlevelHierarchy($operationOrderId, $TItem, $parent 
 		}
 		else{
 			$errorMsg.= 'Error : update data base'."\n";
-			return -1;
-			$db->rollback();
+            $db->rollback();
+            return -1;
 		}
 	}
 
@@ -504,7 +499,7 @@ function _statusRank(&$data)
  * @param int $start
  * @param int $end
  * @param string $agendaType not used yet for multiple source type
- * @return false|string
+ * @return array
  */
 function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanned'){
 
@@ -591,11 +586,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 			$event->operationOrderId = $obj->id;
 			$event->operationOrderActionId = $obj->actionid;
-
-
-
 			$event->color = $operationOrder->objStatus->color;
-
 
 			if($db->jdate($obj->datef) < time()){
 				$event->color = OO_colorLighten($event->color, 10);
@@ -651,7 +642,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
  * @param int $start
  * @param int $end
  * @param string $agendaType not used yet for multiple source type
- * @return false|string
+ * @return array
  */
 function  _getJourOff($start = 0, $end = 0){
 
@@ -675,7 +666,6 @@ function  _getJourOff($start = 0, $end = 0){
 	);
 
 	$TDayOff = $dayOff->fetchAll(0, false, $TFilter);
-
 
 	$TRes = array();
 
