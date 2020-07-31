@@ -53,22 +53,23 @@ $dow = date("N", $date);
 $date_lundi = strtotime("-".($dow -1)."days ", $date);
 $date_dimanche = strtotime("+".(7-$dow)."days ", $date);
 
-$planningUser = getOperationOrderUserPlanningSchedule($date_lundi, $date_dimanche);
+$DailyPlanning = getOperationOrderUserPlanningSchedule($date_lundi, $date_dimanche);
 $fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+$planningUser = getOperationOrderTUserPlanningFromGroup($fk_groupuser);
 
 $minHour = "07:00";
 $maxHour = "20:00";
-if (isset($planningUser[$date]))
+if (isset($DailyPlanning[$date]))
 {
-	if ($planningUser[$date][0]['min'] != '00:00')
+	if ($DailyPlanning[$date][0]['min'] != '00:00')
 	{
-		$tmpHour = explode(':', $planningUser[$date][0]['min']);
+		$tmpHour = explode(':', $DailyPlanning[$date][0]['min']);
 		$minHour = $tmpHour[0].':00';
 	}
 
-	if ($planningUser[$date][1]['max'] != '00:00')
+	if ($DailyPlanning[$date][1]['max'] != '00:00')
 	{
-		$tmpHour = explode(':', $planningUser[$date][1]['max']);
+		$tmpHour = explode(':', $DailyPlanning[$date][1]['max']);
 		$maxHour = ($tmpHour[0]+1).':00';
 	}
 }
@@ -77,7 +78,54 @@ $conf->entity = $oldEntity;
 $conf->setValues($db);
 
 /*------------------- END Heures d'ouvertures dynamiques -----------------*/
+var_dump($TSchedules);
+// affichages des plages d'indispos
+if (!empty($TSchedules))
+{
+	$joursDeLaSemaine = array(1 => "lundi", 2 => "mardi", 3 => "mercredi", 4 => "jeudi", 5 => "vendredi", 6 => "samedi", 7 => "dimanche");
 
+	foreach ($TSchedules as $id_user => $data)
+	{
+		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"} > $minHour)
+		{
+			$tempTT = new stdClass;
+			$tempTT->start = $minHour;
+			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"};
+			$tempTT->text = "indispo";
+			$tempTT->data = new stdClass;
+			$tempTT->data->title = "plage non-travaillé";
+
+			$TSchedules[$id_user]->schedule[] = $tempTT;
+		}
+
+		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"} < $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"})
+		{
+			$tempTT = new stdClass;
+			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
+			$tempTT->text = "indispo";
+			$tempTT->data = new stdClass;
+			$tempTT->data->title = "plage non-travaillé";
+
+			$TSchedules[$id_user]->schedule[] = $tempTT;
+		}
+
+		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"} < $maxHour)
+		{
+			$tempTT = new stdClass;
+			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
+			$tempTT->end = $maxHour;
+			$tempTT->text = "indispo";
+			$tempTT->data = new stdClass;
+			$tempTT->data->title = "plage non-travaillé";
+
+			$TSchedules[$id_user]->schedule[] = $tempTT;
+		}
+
+	}
+}
+
+// Hook d'ajout d'événements supplémentaires
 $parameters = array(
 	'date' 			=> $date,
 	'entity' 		=> $entity,

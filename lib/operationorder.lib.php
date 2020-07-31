@@ -1195,13 +1195,14 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
+
             $res = $userplanning->fetchByObject($user->id, 'user');
             //si l'utilisateur a un planning actif alors on utilise son planning
             if ($res > 0 && $userplanning->active > 0)
             {
                 $TSchedulesByUser[] = $userplanning;
             }
-            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning
+            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning de groupe
             else {
 
                 $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
@@ -1362,6 +1363,49 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     }
 
     return $TSchedules;
+}
+
+function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
+{
+	global $db;
+
+	$TSchedulesByUser = array();
+
+
+	$userGroupPlanning = new OperationOrderUserPlanning($db);
+
+	if(!empty($fk_groupuser))
+	{
+		$userGroupPlanning->fetchByObject($fk_groupuser, 'usergroup');
+
+		$usergroup = new UserGroupOperationOrder($db);
+		$res = $usergroup->fetch($fk_groupuser);
+		$TUsers = $usergroup->listUsersForGroup();
+		//userplanning en fonction des utilisateurs
+		foreach ($TUsers as $user)
+		{
+			$userplanning = new OperationOrderUserPlanning($db);
+			$res = $userplanning->fetchByObject($user->id, 'user');
+
+			//si l'utilisateur a un planning actif alors on utilise son planning
+			if ($res > 0 && $userplanning->active > 0)
+			{
+				$TSchedulesByUser[$user->id] = $userplanning;
+			}
+
+			//si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning de groupe
+			else {
+
+				if ($userplanning->rowid > 0)
+				{
+					$TSchedulesByUser[$user->id] = $userplanning;
+				}
+
+			}
+		}
+	}
+
+	return $TSchedulesByUser;
 }
 
 /**
