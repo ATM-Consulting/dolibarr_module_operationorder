@@ -1568,6 +1568,10 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date));
 
 			// display object linked on line
+			if (! isset($conf->operationorderdet->enabled))
+			{
+				$conf->operationorderdet=new stdClass();
+			}
 			$conf->operationorderdet->enabled=1;
             $line->fetchObjectLinked();
             if(!empty($line->linkedObjects)){
