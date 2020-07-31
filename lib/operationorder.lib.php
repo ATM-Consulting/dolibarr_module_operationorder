@@ -2000,7 +2000,7 @@ function getCountersForPlanning($date, $entity = 1)
 						if ($res > 0)
 						{
 							$label = $tt->label;
-							$title = $tt->label;
+							$title = $tt->label . '<br />' . date("H:i", $tt->task_datehour_d) . ' - ' . date("H:i", $tt->task_datehour_f);
 
 							if (!empty($tt->fk_orDet))
 							{
@@ -2039,7 +2039,7 @@ function getCountersForPlanning($date, $entity = 1)
 
 										$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
 
-										$title = implode('<br/>',$T);
+										$title.= '<br/><br/>'.implode('<br/>',$T);
 
 										if (is_object($hookmanager))
 										{
