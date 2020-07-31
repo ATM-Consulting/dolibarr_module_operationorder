@@ -43,6 +43,54 @@ $help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 
 $TSchedules = getCountersForPlanning($date, $entity);
+
+/*------------------- Heures d'ouvertures dynamiques -----------------*/
+$oldEntity = $conf->entity;
+$conf->entity = $entity;
+$conf->setValues($db);
+
+$dow = date("N", $date);
+$date_lundi = strtotime("-".($dow -1)."days ", $date);
+$date_dimanche = strtotime("+".(7-$dow)."days ", $date);
+
+$planningUser = getOperationOrderUserPlanningSchedule($date_lundi, $date_dimanche);
+$fk_groupuser = $conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING;
+
+$minHour = "07:00";
+$maxHour = "20:00";
+if (isset($planningUser[$date]))
+{
+	if ($planningUser[$date][0]['min'] != '00:00')
+	{
+		$tmpHour = explode(':', $planningUser[$date][0]['min']);
+		$minHour = $tmpHour[0].':00';
+	}
+
+	if ($planningUser[$date][1]['max'] != '00:00')
+	{
+		$tmpHour = explode(':', $planningUser[$date][1]['max']);
+		$maxHour = ($tmpHour[0]+1).':00';
+	}
+}
+
+$conf->entity = $oldEntity;
+$conf->setValues($db);
+
+/*------------------- END Heures d'ouvertures dynamiques -----------------*/
+
+$parameters = array(
+	'date' 			=> $date,
+	'entity' 		=> $entity,
+	'minHour'		=> $minHour,
+	'maxHour'		=> $maxHour,
+	'fk_groupuser' 	=> $fk_groupuser,
+	'TSchedules' 	=> $TSchedules
+);
+
+$reshook = $hookmanager->executeHooks('oOrderORPlanningAddMoreSchedules', $parameters, $object, $action); // Note that $action and $object may have been modified by some
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+else if ($reshook > 1) $TSchedules = $hookmanager->resArray;
+
 //print '<pre>'; print_r($TSchedules); print '</pre>';
 
 $form = new Form($db);
@@ -109,8 +157,8 @@ if (!empty($TSchedules))
 			var isDraggable = false;
 			var isResizable = false;
 			var $sc = $("#schedule").timeSchedule({
-				startTime: "07:00", // schedule start time(HH:ii)
-				endTime: "20:00",   // schedule end time(HH:ii)
+				startTime: "<?php echo $minHour; ?>", // schedule start time(HH:ii)
+				endTime: "<?php echo $maxHour; ?>",   // schedule end time(HH:ii)
 				widthTime: 60 * 10,  // cell timestamp example 10 minutes
 				widthTimeX: 20,
 				timeLineY: 60,       // height(px)
@@ -135,9 +183,12 @@ if (!empty($TSchedules))
 				},
 				onAppendSchedule: function(node, data){
 					// addLog('onAppendSchedule', data);
-					console.log(data)
+					// console.log(data)
 					if(data.data.class){
 						node.addClass(data.data.class);
+					}
+					if(data.data.style){
+						node.attr('style', node.attr('style')+data.data.style);
 					}
 					if(data.data.image){
 						var $img = $('<div class="photo"><img></div>');
