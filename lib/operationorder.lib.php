@@ -1373,6 +1373,7 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
 
 
 	$userGroupPlanning = new OperationOrderUserPlanning($db);
+	// TODO générer un planning par défaut avec la conf générale du module
 
 	if(!empty($fk_groupuser))
 	{
@@ -1999,14 +2000,52 @@ function daysAvailableBetween($dated, $datef){
 
 }
 
-function getCountersForPlanning($date, $entity = 1)
+function initSchedule($entity = 1)
+{
+	global $conf, $db, $langs;
+
+	$TSchedules = array();
+	$userGroup = new UserGroupOperationOrder($db);
+
+	if ($entity != 1) $changeEntity = true;
+
+	if ($changeEntity)
+	{
+		$oldEntity = $conf->entity;
+		$conf->entity = $entity;
+		$conf->setValues($db);
+	}
+
+	$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
+	if ($retgroup > 0) {
+		$userList = $userGroup->listUsersForGroup();
+		if (!empty($userList))
+		{
+			foreach ($userList as $u)
+			{
+				$TSchedules[$u->id] = new stdClass;
+				$TSchedules[$u->id]->title = $u->getFullName($langs);
+				$TSchedules[$u->id]->schedule = array();
+			}
+		}
+	}
+
+	if ($changeEntity)
+	{
+		$conf->entity = $oldEntity;
+		$conf->setValues($db);
+	}
+	return $TSchedules;
+}
+
+function getCountersForPlanning($TSchedules, $date, $entity = 1)
 {
 	global $conf, $db, $langs, $hookmanager;
 
 	dol_include_once('/operationorder/class/operationorder.class.php');
 	dol_include_once('/operationorder/class/operationordertasktime.class.php');
 
-	$TSchedules = $TOr = $TOrDet = array();
+	$TOr = $TOrDet = array();
 	$userGroup = new UserGroupOperationOrder($db);
 
 	$oldEntity = $conf->entity;
@@ -2022,9 +2061,12 @@ function getCountersForPlanning($date, $entity = 1)
 		{
 			foreach ($userList as $u)
 			{
-				$TSchedules[$u->id] = new stdClass;
-				$TSchedules[$u->id]->title = $u->getFullName($langs);
-				$TSchedules[$u->id]->schedule = array();
+				if (!isset($TSchedules[$u->id]))
+				{
+					$TSchedules[$u->id] = new stdClass;
+					$TSchedules[$u->id]->title = $u->getFullName($langs);
+					$TSchedules[$u->id]->schedule = array();
+				}
 
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationordertasktime";
 				$sql.= " WHERE fk_user = ".$u->id;

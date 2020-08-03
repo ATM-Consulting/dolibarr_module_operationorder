@@ -42,7 +42,7 @@ $title = $langs->trans("LeftMenuOperationOrderORPlanning");
 $help_url = '';
 llxHeader('', $title, $help_url, '', 0, 0, $TIncludeJS, $TIncludeCSS);
 
-$TSchedules = getCountersForPlanning($date, $entity);
+$TSchedules = initSchedule($entity);
 
 /*------------------- Heures d'ouvertures dynamiques -----------------*/
 $oldEntity = $conf->entity;
@@ -78,7 +78,7 @@ $conf->entity = $oldEntity;
 $conf->setValues($db);
 
 /*------------------- END Heures d'ouvertures dynamiques -----------------*/
-var_dump($TSchedules);
+
 // affichages des plages d'indispos
 if (!empty($TSchedules))
 {
@@ -86,6 +86,7 @@ if (!empty($TSchedules))
 
 	foreach ($TSchedules as $id_user => $data)
 	{
+		// planning journalier débute après l'heure début affichée
 		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"} > $minHour)
 		{
 			$tempTT = new stdClass;
@@ -94,6 +95,7 @@ if (!empty($TSchedules))
 			$tempTT->text = "indispo";
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
+			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
@@ -106,24 +108,28 @@ if (!empty($TSchedules))
 			$tempTT->text = "indispo";
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
+			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
 
-		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"} < $maxHour)
+		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"} < $maxHour)
 		{
 			$tempTT = new stdClass;
-			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
+			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"};
 			$tempTT->end = $maxHour;
 			$tempTT->text = "indispo";
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
+			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
 
 	}
 }
+
+$TSchedules = getCountersForPlanning($TSchedules, $date, $entity);
 
 // Hook d'ajout d'événements supplémentaires
 $parameters = array(
@@ -132,6 +138,7 @@ $parameters = array(
 	'minHour'		=> $minHour,
 	'maxHour'		=> $maxHour,
 	'fk_groupuser' 	=> $fk_groupuser,
+	'planningUser'	=> $planningUser,
 	'TSchedules' 	=> $TSchedules
 );
 
@@ -207,8 +214,8 @@ if (!empty($TSchedules))
 			var $sc = $("#schedule").timeSchedule({
 				startTime: "<?php echo $minHour; ?>", // schedule start time(HH:ii)
 				endTime: "<?php echo $maxHour; ?>",   // schedule end time(HH:ii)
-				widthTime: 60 * 10,  // cell timestamp example 10 minutes
-				widthTimeX: 20,
+				widthTime: 60 * 5,  // cell timestamp example 10 minutes
+				widthTimeX: 10,
 				timeLineY: 60,       // height(px)
 				verticalScrollbar: 20,   // scrollbar (px)
 				timeLineBorder: 2,   // border(top and bottom)
@@ -222,9 +229,12 @@ if (!empty($TSchedules))
 				onInitRow: function(node, data){
 					// addLog('onInitRow', data);
 				},
-				onClick: function(node, data){
+				onClick: function(node, data){ // quand on clique sur un événement
 					// addLog('onClick', data);
-					console.log(data); // pour plus tard redirection vers la card de l'OR si possible
+					console.log(node, data); // pour plus tard redirection vers la card de l'OR si possible
+				},
+				onScheduleClick: function(node, data){ // quand on clique sur un endroit vide
+					console.log(node, data);
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);
