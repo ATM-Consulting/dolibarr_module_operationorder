@@ -104,6 +104,20 @@ class OperationOrderHistory extends SeedObject
         return $TRes;
     }
 
+    public function stockMvt($object, $product, $qty) {
+	    global $langs;
+	    $langs->load('operationorder@operationorder');
+	    require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
+	    $warehouse = new Entrepot($this->db);
+	    $warehouse->fetch($product->fk_default_warehouse);
+	    $this->title = $langs->transnoentitiesnoconv('OOStockMvt', $object->ref);
+	    $this->description = $langs->transnoentitiesnoconv('OOStockMvtDetail', $product->ref, $qty, $warehouse->ref);
+	    $this->fk_operationorder = $object->id;
+	    $useradm=new User($this->db);
+	    $useradm->fetch(1);
+	    return $this->save($useradm);
+    }
+
     public function compareAndSaveDiff($oldcopy, &$object) {
         global $langs, $user;
         if(strpos($object->element, 'det') !== false) $this->title = $langs->transnoentitiesnoconv('OOLineUpdate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());

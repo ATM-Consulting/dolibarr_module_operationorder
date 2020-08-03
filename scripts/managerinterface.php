@@ -18,6 +18,8 @@ dol_include_once('/operationorder/class/operationorder.class.php');
 dol_include_once('/operationorder/class/operationordertasktime.class.php');
 dol_include_once('/operationorder/class/operationorderbarcode.class.php');
 dol_include_once('/operationorder/class/operationorderstatus.class.php');
+dol_include_once('/operationorder/class/operationorderhistory.class.php');
+
 
 global $db;
 $hookmanager->initHooks(array('oordermanagerinterface'));
@@ -374,7 +376,7 @@ if (empty($reshook) && !empty($action))
 
 		if ($ret > 0)
 		{
-			$counter->task_datehour_f = dol_now();
+			$counter->task_datehour_f = dol_nstockMouvementow();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$retupd = $counter->update($usr);
 
@@ -417,7 +419,6 @@ if (empty($reshook) && !empty($action))
 
 
 	}
-
 	else if ($action == 'startLineCounter')
 	{
 		$orBarcode = GETPOST('or_barcode');
@@ -520,6 +521,7 @@ if (empty($reshook) && !empty($action))
 
 			$OR = new OperationOrder($db);
 			$ret = $OR->fetchBy($orRef, 'ref');
+
 			if ($ret > 0)
 			{
 
@@ -585,9 +587,16 @@ if (empty($reshook) && !empty($action))
 								}
 								else
 								{
-									$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
-									$data['result'] = 1;
-									$data['msg'] = $langs->trans('StockMouvementGenerated', $prod->ref);
+									$result = $mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+									if ($result>0) {
+										$oOHistory = new OperationOrderHistory($this->db);
+										$oOHistory->stockMvt($OR, $prod, $qty);
+
+										$data['result'] = 1;
+										$data['msg'] = $langs->trans('StockMouvementGenerated', $prod->ref);
+									} elseif($result<0) {
+										$data['errorMsg'] = $langs->trans('ErrorStockMVT');
+									}
 								}
 
 							}
@@ -621,9 +630,16 @@ if (empty($reshook) && !empty($action))
 											$qty = $prodTotalQty;
 									}
 
-									$mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
-									$data['result'] = 1;
-									$data['msg'].= '<br />'.$langs->trans('StockMouvementGenerated', $prod->ref);
+									$result = $mvt->livraison($user, $prod->id, $prod->fk_default_warehouse, $qty, 0, $langs->trans('productUsedForOorder', $OR->ref));
+									if ($result>0) {
+										$oOHistory = new OperationOrderHistory($this->db);
+										$oOHistory->stockMvt($OR, $prod);
+
+										$data['result'] = 1;
+										$data['msg'].= '<br />'.$langs->trans('StockMouvementGenerated', $prod->ref);
+									} elseif($result<0) {
+										$data['errorMsg'] = $langs->trans('ErrorStockMVT');
+									}
 								}
 								else
 								{
@@ -647,9 +663,7 @@ if (empty($reshook) && !empty($action))
 		{
 			$data['errorMsg'] = $langs->trans('ErrorNoProdWithThisBarcode', $prod_barcode);
 		}
-
 	}
-
 }
 
 print json_encode($data);
