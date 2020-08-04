@@ -70,6 +70,9 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande fournisseur
 oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
 ProductionCapacityRate=Taux de capacité de production de l'utilisateur (en pourcentage)
+oorder_ventilation_produit=Ventilation produit
+OrScan=Pointable OR
+OrScanHelp=Si coché, alors c'est le code barre qui sera affiché à la place de la référence dans le document Thor des ordres de réparations
 
 # STATUS
 OperationOrderStatusActivated=Activé
@@ -200,6 +203,12 @@ OperationOrderCloned=Ordre de réparation cloné
 OperationOrderCloneError=Clônage en échec
 OperationOrderNotFound=Ordre de réparation non trouvé
 OperationOrderDeleteError=Erreur lors de la suppression de l'ordre de réparation %s
+TotalHTReimbursement=Total HT Remboursement
+TotalHTPart=Total HT Pièce
+TotalHTExternal=Total HT Externe
+TotalHTMO = Total HT Main d'oeuvre
+TotalHT = Total HT
+
 
 # AJAX
 UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées
