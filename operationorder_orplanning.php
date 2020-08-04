@@ -84,8 +84,14 @@ if (!empty($TSchedules))
 {
 	$joursDeLaSemaine = array(1 => "lundi", 2 => "mardi", 3 => "mercredi", 4 => "jeudi", 5 => "vendredi", 6 => "samedi", 7 => "dimanche");
 
-	foreach ($TSchedules as $id_user => $data)
+	foreach ($TSchedules as $id_user => &$data)
 	{
+		if (empty($planningUser[$id_user]))
+		{
+			$data->title = img_warning($langs->trans('errNoPlanning')) . $data->title;
+			continue;
+		}
+
 		// planning journalier débute après l'heure début affichée
 		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"} > $minHour)
 		{

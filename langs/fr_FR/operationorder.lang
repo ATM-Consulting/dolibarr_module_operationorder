@@ -253,6 +253,7 @@ OODelete = Suppression de l'ordre de réparation %s
 OOLineDelete = Suppression de ligne dans l'ordre de réparation %s, produit %s
 OOCreate = Création de l'ordre de réparation %s
 OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
+errNoPlanning=Pas de planning défini pour l'utilisateur ou le groupe
 
 
 OperationOrderHistoryList=Historique
