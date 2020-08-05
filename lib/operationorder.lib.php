@@ -1195,13 +1195,14 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
+
             $res = $userplanning->fetchByObject($user->id, 'user');
             //si l'utilisateur a un planning actif alors on utilise son planning
             if ($res > 0 && $userplanning->active > 0)
             {
                 $TSchedulesByUser[] = $userplanning;
             }
-            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning
+            //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning de groupe
             else {
 
                 $res = $userplanning->fetchByObject($fk_groupuser, 'usergroup');
@@ -1362,6 +1363,59 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
     }
 
     return $TSchedules;
+}
+
+function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
+{
+	global $db;
+
+	$TSchedulesByUser = array();
+
+
+	$userGroupPlanning = new OperationOrderUserPlanning($db);
+	// TODO générer un planning par défaut avec la conf générale du module
+
+	if(!empty($fk_groupuser))
+	{
+		$userGroupPlanning->fetchByObject($fk_groupuser, 'usergroup');
+
+		$usergroup = new UserGroupOperationOrder($db);
+        $res = $usergroup->fetch($fk_groupuser);
+        if ($res > 0)
+        {
+            $TUsers = $usergroup->listUsersForGroup();
+            if (!empty($TUser))
+            {
+                //userplanning en fonction des utilisateurs
+                foreach ($TUsers as $user)
+                {
+                    $userplanning = new OperationOrderUserPlanning($db);
+                    $res = $userplanning->fetchByObject($user->id, 'user');
+
+                    //si l'utilisateur a un planning actif alors on utilise son planning
+                    if ($res > 0 && $userplanning->active > 0)
+                    {
+                        $TSchedulesByUser[$user->id] = $userplanning;
+                    }
+
+                    //si l'utilisateur n'a pas de planning actif ou que le planning est inexistant alors on utilise son planning de groupe
+                    else {
+
+                        if ($userGroupPlanning->rowid > 0)
+                        {
+                            $TSchedulesByUser[$user->id] = $userGroupPlanning;
+                        }
+
+                    }
+                }
+
+            }
+            
+        }
+		
+	}
+
+	return $TSchedulesByUser;
 }
 
 /**
@@ -1953,5 +2007,183 @@ function daysAvailableBetween($dated, $datef){
 
     return $TDays;
 
+}
+
+function initSchedule($entity = 1)
+{
+	global $conf, $db, $langs;
+
+	$TSchedules = array();
+	$userGroup = new UserGroupOperationOrder($db);
+
+	if ($entity != 1) $changeEntity = true;
+
+	if ($changeEntity)
+	{
+		$oldEntity = $conf->entity;
+		$conf->entity = $entity;
+		$conf->setValues($db);
+	}
+
+	$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
+	if ($retgroup > 0) {
+		$userList = $userGroup->listUsersForGroup();
+		if (!empty($userList))
+		{
+			foreach ($userList as $u)
+			{
+				$TSchedules[$u->id] = new stdClass;
+				$TSchedules[$u->id]->title = $u->getFullName($langs);
+				$TSchedules[$u->id]->schedule = array();
+			}
+		}
+	}
+
+	if ($changeEntity)
+	{
+		$conf->entity = $oldEntity;
+		$conf->setValues($db);
+	}
+	return $TSchedules;
+}
+
+function getCountersForPlanning($TSchedules, $date, $entity = 1)
+{
+	global $conf, $db, $langs, $hookmanager;
+
+	dol_include_once('/operationorder/class/operationorder.class.php');
+	dol_include_once('/operationorder/class/operationordertasktime.class.php');
+
+	$TOr = $TOrDet = array();
+	$userGroup = new UserGroupOperationOrder($db);
+
+	$oldEntity = $conf->entity;
+	$conf->entity = $entity;
+	$conf->setValues($db);
+
+	$retgroup = $userGroup->fetch($conf->global->OPERATION_ORDER_GROUPUSER_DEFAULTPLANNING);
+
+	if ($retgroup > 0)
+	{
+		$userList = $userGroup->listUsersForGroup();
+		if (!empty($userList))
+		{
+			foreach ($userList as $u)
+			{
+				if (!isset($TSchedules[$u->id]))
+				{
+					$TSchedules[$u->id] = new stdClass;
+					$TSchedules[$u->id]->title = $u->getFullName($langs);
+					$TSchedules[$u->id]->schedule = array();
+				}
+
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationordertasktime";
+				$sql.= " WHERE fk_user = ".$u->id;
+				$sql.= " AND task_datehour_d < '".date("Y-m-d 23:59:59", $date)."'";
+				$sql.= " AND task_datehour_f > '".date("Y-m-d 00:00:00", $date)."'";
+				$sql.= " AND entity = ".$entity;
+
+				$resql = $db->query($sql);
+				if ($resql && $db->num_rows($resql))
+				{
+					while ($obj = $db->fetch_object($resql))
+					{
+						$class = 'improd';
+
+						$tt = new OperationOrderTaskTime($db);
+						$res = $tt->fetch($obj->rowid);
+						if ($res > 0)
+						{
+							$label = $tt->label;
+							$title = $tt->label . '<br />' . date("H:i", $tt->task_datehour_d) . ' - ' . date("H:i", $tt->task_datehour_f);
+
+							if (!empty($tt->fk_orDet))
+							{
+								if (!array_key_exists($tt->fk_orDet, $TOrDet))
+								{
+									$det = new OperationOrderDet($db);
+									$ret = $det->fetch($tt->fk_orDet);
+									if ($ret > 0)
+									{
+										$TOrDet[$tt->fk_orDet] = $det;
+									}
+								}
+
+								if (array_key_exists($tt->fk_orDet, $TOrDet))
+								{
+									if (!array_key_exists($TOrDet[$tt->fk_orDet]->fk_operation_order, $TOr))
+									{
+										$OR = new OperationOrder($db);
+										$OR->fetch($TOrDet[$tt->fk_orDet]->fk_operation_order);
+										$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order] = $OR;
+									}
+
+									if (array_key_exists($TOrDet[$tt->fk_orDet]->fk_operation_order, $TOr))
+									{
+										$label = $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->ref . ' - ' . $tt->label;
+
+										$T = array();
+
+										$TFieldForTooltip = array('status', 'ref', 'ref_client', 'fk_soc', 'planned_date', 'time_planned_t', 'time_planned_f');
+
+										foreach ($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->fields as $fieldKey => $field){
+											if(!in_array($fieldKey, $TFieldForTooltip)) continue;
+
+											$T[$fieldKey] = $langs->trans($field['label']) .' : '.$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->showOutputFieldQuick($fieldKey);
+										}
+
+										$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
+
+										$title.= '<br/><br/>'.implode('<br/>',$T);
+
+										if (is_object($hookmanager))
+										{
+											$parameters= array(
+												'operationOrder' => $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]
+											);
+
+											$reshook=$hookmanager->executeHooks('operationorderORplanningMoreTooltip',$parameters);    // Note that $action and $object may have been modified by hook
+
+											if ($reshook>0)
+											{
+												$title = $hookmanager->resPrint;
+											}
+											else if (empty($reshook))
+											{
+												$title.= $hookmanager->resPrint;
+											}
+										}
+									}
+
+									$class = "in-time";
+									if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
+									{
+										$class = "late";
+									}
+								}
+							}
+
+							$tempTT = new stdClass;
+							$tempTT->start = date("H:i", $tt->task_datehour_d);
+							$tempTT->end = date("H:i", $tt->task_datehour_f);
+							$tempTT->text = $label;
+							$tempTT->data = new stdClass;
+							$tempTT->data->title = $title;
+							$tempTT->data->class = $class;
+
+							$TSchedules[$u->id]->schedule[] = $tempTT;
+						}
+
+					}
+				}
+			}
+
+		}
+	}
+
+	$conf->entity = $oldEntity;
+	$conf->setValues($db);
+
+	return $TSchedules;
 }
 
