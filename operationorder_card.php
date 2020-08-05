@@ -378,6 +378,7 @@ if (empty($reshook))
                         $ret = $object->fetch($object->id); // Reload to get new records
                         $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
                     }
+                    $object->setTimePlannedT();
 
                     header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
                     exit;

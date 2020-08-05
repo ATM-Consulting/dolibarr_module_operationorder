@@ -545,6 +545,14 @@ class modOperationOrder extends DolibarrModules
 		$e = new ExtraFields($this->db);
 		$res = $e->addExtraField('efficiency', "Efficiency", 'int', 0, 3, 'user', 0, 0, '100', 'a:1:{s:7:"options";a:1:{s:0:"";N;}}', 1, 1, 1, "ProductionCapacityRate", "", 1, 'operationorder@operationorder');
 
+		// product
+		$e = new ExtraFields($this->db);
+		$res = $e->addExtraField('oorder_ventilation_produit', "oorder_ventilation_produit", 'select', 0, 1, 'product', 0, 0, '',  array("options" => array(1=>"Refacturation casse",2=>"Refacturation diverse",3=>"Refacturation extérieure")), 1, 1, 1, "", "", 0, 'operationorder@operationorder');
+
+		// Pointable sur ordre de réparation
+		$e=new ExtraFields($this->db);
+		$param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
+		$e->addExtraField('or_scan', 'OrScan', 'boolean', 0, '1', 'product'   ,0,0,'',$param, 1, '', 1, 'OrScanHelp', '', 0, 'operationorder@operationorder');
 
 		return $this->_init($sql, $options);
 	}

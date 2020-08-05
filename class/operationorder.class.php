@@ -101,6 +101,12 @@ class OperationOrder extends SeedObject
         'time_planned_f' => array ('type' => 'integer', 'label' => 'TimePlannedForced', 'enabled' => 1, 'position' => 1400, 'notnull' => 0, 'visible' => 1, 'help'=>"HoursMinFormat"),
         'planned_date' => array ('type' => 'datetime', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1),
 		'date_creation' => array ('type' => 'datetime', 'label' => 'DateCreationOperationOrder', 'enabled' => 1, 'position' => 1600, 'notnull' => 1, 'visible' => 4,'noteditable'=>'1'),
+		'total_ht_reimbursement' => array ('type' => 'real', 'label' => 'TotalHTReimbursement', 'enabled' => 1, 'position' => 1700, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+		'total_ht_part' => array ('type' => 'real', 'label' => 'TotalHTPart', 'enabled' => 1, 'position' => 1800, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+		'total_ht_external' => array ('type' => 'real', 'label' => 'TotalHTExternal', 'enabled' => 1, 'position' => 1900, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+		'total_ht_mo' => array ('type' => 'real', 'label' => 'TotalHTMO', 'enabled' => 1, 'position' => 2000, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+		'total_ht' => array ('type' => 'real', 'label' => 'TotalHT', 'enabled' => 1, 'position' => 2100, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+
     );
 
     public $ref;
@@ -133,6 +139,11 @@ class OperationOrder extends SeedObject
     public $time_planned_t;
     public $time_planned_f;
     public $planned_date;
+    public $total_ht_reimbursement;
+    public $total_ht_part;
+    public $total_ht_external;
+    public $total_ht_mo;
+    public $total_ht;
 
     /**
      * @var int    Name of subtable line
@@ -196,7 +207,7 @@ class OperationOrder extends SeedObject
     public function save($user, $notrigger = false)
     {
         $this->time_planned_t = $this->getTimePlannedT();
-
+		$this->calcTotal();
         return $this->create($user, $notrigger);
     }
 
@@ -343,7 +354,7 @@ class OperationOrder extends SeedObject
     public function update(User &$user, $notrigger = false)
     {
         $this->time_planned_t = $this->getTimePlannedT();
-
+		$this->calcTotal();
         $res = $this->updateOperationOrderActions();
         if($res < 0) return -1;
 
@@ -546,6 +557,7 @@ class OperationOrder extends SeedObject
         $line->fetch($lineid);
 
         if($line->delete($user) > 0) {
+	        $this->setTimePlannedT();
             $this->db->commit();
             return 1;
         }
@@ -1642,6 +1654,30 @@ class OperationOrder extends SeedObject
         }
 
         return $total_time;
+    }
+
+    public function calcTotal() {
+	    $this->total_ht_reimbursement = 0;
+	    $this->total_ht_external = 0;
+	    $this->total_ht_mo = 0;
+	    $this->total_ht_part = 0;
+	    $this->total_ht = 0;
+    	if(empty($this->lines)) $this->fetchLines();
+    	if(!empty($this->lines)) {
+		    foreach ($this->lines as $line)
+		    {
+			    if(empty($line->product)) $line->fetch_product();
+			    if(empty($line->product->array_options)) $line->product->fetch_optionals();
+			    if($line->product->type == Product::TYPE_SERVICE) {
+				    if (!empty($line->product->array_options['options_oorder_available_for_supplier_order'])) $this->total_ht_external += $line->total_ht;
+				    if (!empty($line->product->array_options['options_or_scan'])) $this->total_ht_mo += $line->total_ht;
+				    if(!empty($line->product->array_options['options_oorder_ventilation_produit']) && empty($line->fk_parent_line)) $this->total_ht_reimbursement += $line->total_ht;
+			    }
+			    if($line->product->type == Product::TYPE_PRODUCT) $this->total_ht_part += $line->total_ht;
+
+		    }
+		    $this->total_ht = $this->total_ht_part + $this->total_ht_mo + $this->total_ht_external + $this->total_ht_reimbursement;
+	    }
     }
 
     public function getTimeSpent(){
