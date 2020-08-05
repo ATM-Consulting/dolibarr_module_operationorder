@@ -234,11 +234,34 @@ setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLA
 setup_print_on_off('OPODER_CANT_EXCEED_SENT_QTY', false, '', 'OPODER_CANT_EXCEED_SENT_QTY_help');
 
 setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
+setup_print_on_off('OORDER_HIDE_TIME_SPENT');
+setup_print_on_off('OORDER_HIDE_TIME_PLANNED_IF_CHILD');
 
 $formother = new FormOther($db);
 $confKey = 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR';
 $customInputHtml = $formother->select_percent($conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR, 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR');
 setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR'), '', array(), $customInputHtml);
+
+setup_print_title("LeftMenuOperationOrderORPlanning");
+
+if (empty($conf->global->OR_ACTIVITYPLANNING_IMPROD_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_IMPROD_COLOR', '4f93d6');
+if (empty($conf->global->OR_ACTIVITYPLANNING_INTIME_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_INTIME_COLOR', '008000');
+if (empty($conf->global->OR_ACTIVITYPLANNING_LATE_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_LATE_COLOR', 'ff0000');
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_IMPROD_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_INTIME_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
+
+$formother = new FormOther($db);
+$confKey = 'OR_ACTIVITYPLANNING_LATE_COLOR';
+$customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);
+setup_print_input_form_part($confKey, $langs->trans($confKey), '', array(), $customInputHtml);
 
 // Example with imput
 //setup_print_input_form_part('CONSTNAME', $langs->trans('ParamLabel'));

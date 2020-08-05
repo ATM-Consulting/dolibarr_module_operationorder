@@ -165,19 +165,19 @@ class modOperationOrder extends DolibarrModules
                 'OperationOrderDictTypeLabel'
             ),                                                    // Label of tables
             'tabsql' => array(
-                'SELECT f.rowid, f.code, f.label, f.position, f.active, f.entity FROM '.MAIN_DB_PREFIX.'c_operationorder_type as f WHERE f.entity IN (0, '.$conf->entity.')'
+                'SELECT f.rowid, f.code, f.label, f.blocked_status_code, f.position, f.active, f.entity FROM '.MAIN_DB_PREFIX.'c_operationorder_type as f WHERE f.entity IN (0, '.$conf->entity.')'
             ),
             'tabsqlsort' => array(
                 'position ASC, label ASC'
             ),
             'tabfield' => array(
-                'code,label,position'
+                'code,label,blocked_status_code,position'
             ),
             'tabfieldvalue' => array(
-                'code,label,position,entity'
+                'code,label,blocked_status_code,position,entity'
             ),
             'tabfieldinsert' => array(
-                'code,label,position,entity'
+                'code,label,blocked_status_code,position,entity'
             ),
             'tabrowid' => array(
                 'rowid'
@@ -414,6 +414,22 @@ class modOperationOrder extends DolibarrModules
         $this->menu[$r]=array(
             'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
+            'titre'=>$langs->trans('LeftMenuOperationOrderORPlanning'),
+            'mainmenu'=>'operationorder',
+            'leftmenu'=>'operationorder_left_orplanning',
+            'url'=>'/operationorder/operationorder_orplanning.php',
+            'langs'=>'operationorder@operationorder',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+            'position'=>1000+$r,
+            'enabled'=> '$conf->operationorder->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+            'perms'=> '$user->rights->operationorder->planning->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+            'target'=>'',
+            'user'=>0
+        );				                // 0=Menu for internal users, 1=external users, 2=both
+        $r++;
+
+        $this->menu[$r]=array(
+            'fk_menu'=>'fk_mainmenu=operationorder,fk_leftmenu=operationorder_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+            'type'=>'left',			                // This is a Left menu entry
             'titre'=>$langs->trans('LeftMenuOperationOrderManager'),
             'mainmenu'=>'operationorder',
             'leftmenu'=>'operationorder_left_manager',
@@ -545,6 +561,14 @@ class modOperationOrder extends DolibarrModules
 		$e = new ExtraFields($this->db);
 		$res = $e->addExtraField('efficiency', "Efficiency", 'int', 0, 3, 'user', 0, 0, '100', 'a:1:{s:7:"options";a:1:{s:0:"";N;}}', 1, 1, 1, "ProductionCapacityRate", "", 1, 'operationorder@operationorder');
 
+		// product
+		$e = new ExtraFields($this->db);
+		$res = $e->addExtraField('oorder_ventilation_produit', "oorder_ventilation_produit", 'select', 0, 1, 'product', 0, 0, '',  array("options" => array(1=>"Refacturation casse",2=>"Refacturation diverse",3=>"Refacturation extérieure")), 1, 1, 1, "", "", 0, 'operationorder@operationorder');
+
+		// Pointable sur ordre de réparation
+		$e=new ExtraFields($this->db);
+		$param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
+		$e->addExtraField('or_scan', 'OrScan', 'boolean', 0, '1', 'product'   ,0,0,'',$param, 1, '', 1, 'OrScanHelp', '', 0, 'operationorder@operationorder');
 
 		return $this->_init($sql, $options);
 	}

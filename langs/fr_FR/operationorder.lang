@@ -11,6 +11,8 @@ AbricotNeedUpdate=Le module abricot doit être mis à jour
 LinkToThirparty=Lien vers le tiers
 
 OperationOrderDictTypeLabel=Ordre de Réparation - Type d'ordre de réparation
+Blocked_status_code=Statut inaccessible si aucune ligne "ventilation produit" négative n'est présente
+MissingNegativeProductVentilationLine=Ligne "Ventilation produit" négative manquante
 
 # SETUP
 ParamLabel=Nom du paramètre
@@ -38,6 +40,11 @@ OPORDER_CHANGE_OR_STATUS_ON_STOP=A l'arrêt d'une tâche, changer le statut de l
 OPODER_STATUS_ON_STOP=Statut à utiliser lors de l'arrêt de tâches sur l'OR
 OPODER_STATUS_ON_STOP_help=Attention ce statut doit être accessible par le statut précédent de l'OR<br />ex.: statut précédent "en cours à l'atelier" => statut à utiliser "planifié"
 OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
+OR_ACTIVITYPLANNING_IMPROD_COLOR=Couleur utilisée dans l'écran "Activités journalières" pour afficher les activités improductives
+OR_ACTIVITYPLANNING_INTIME_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche a été effectuée dans les temps
+OR_ACTIVITYPLANNING_LATE_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en dépassement (temps passé > temps prévu)
+OORDER_HIDE_TIME_SPENT=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes
+OORDER_HIDE_TIME_PLANNED_IF_CHILD=Cacher le champs "Temps planifié" sur l'ajout ou l'édition de lignes
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
@@ -70,6 +77,9 @@ OperationOrderSetStatus=Changement statut %s de l'ordre de fabrication %s
 oorder_available_for_supplier_order=Ordre de réparation : ouvre une creation de commande fournisseur
 oorder_available_for_supplier_order_help=Lors de l'ajout de ce produit/service dans un ordre de réparation proposer de créer une commande fournisseur
 ProductionCapacityRate=Taux de capacité de production de l'utilisateur (en pourcentage)
+oorder_ventilation_produit=Ventilation produit
+OrScan=Pointable OR
+OrScanHelp=Si coché, alors c'est le code barre qui sera affiché à la place de la référence dans le document Thor des ordres de réparations
 
 # STATUS
 OperationOrderStatusActivated=Activé
@@ -200,6 +210,12 @@ OperationOrderCloned=Ordre de réparation cloné
 OperationOrderCloneError=Clônage en échec
 OperationOrderNotFound=Ordre de réparation non trouvé
 OperationOrderDeleteError=Erreur lors de la suppression de l'ordre de réparation %s
+TotalHTReimbursement=Total HT Remboursement
+TotalHTPart=Total HT Pièce
+TotalHTExternal=Total HT Externe
+TotalHTMO = Total HT Main d'oeuvre
+TotalHT = Total HT
+
 
 # AJAX
 UnitCodeNotFound=Code %s non trouvé dans le dictionnaire des unitées
@@ -253,6 +269,7 @@ OODelete = Suppression de l'ordre de réparation %s
 OOLineDelete = Suppression de ligne dans l'ordre de réparation %s, produit %s
 OOCreate = Création de l'ordre de réparation %s
 OOLineCreate = Création de ligne dans l'ordre de réparation %s, produit %s
+errNoPlanning=Pas de planning défini pour l'utilisateur ou le groupe
 
 
 OperationOrderHistoryList=Historique
@@ -289,3 +306,6 @@ OperationOrderStatusExtrafieldPage=Attributs supplémentaires (Status)
 
 
 OperationOrderRelated = Ordres de réparations liés
+LeftMenuOperationOrderORPlanning=Activités journalières
+
+ErrorNoUserInGroupOrNoGroup=Pas d'utilisateur dans le "Groupe d'utilisateurs à prendre en compte pour le planning OR" ou pas de groupe configuré

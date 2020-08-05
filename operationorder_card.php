@@ -378,6 +378,7 @@ if (empty($reshook))
                         $ret = $object->fetch($object->id); // Reload to get new records
                         $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
                     }
+                    $object->setTimePlannedT();
 
                     header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
                     exit;
@@ -1219,7 +1220,8 @@ else
 							$statusAllowed = new OperationOrderStatus($db);
 							$res = $statusAllowed->fetch($fk_status);
 							if($res>0){
-								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $statusAllowed->userCan($user, 'changeToThisStatus'));
+								$userCan = $object->checkNegativeProductVentilation($statusAllowed->code) ? $statusAllowed->userCan($user, 'changeToThisStatus') : false;
+								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $userCan);
 							}
 						}
 					}
