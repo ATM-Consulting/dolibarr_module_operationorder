@@ -11,6 +11,7 @@ AbricotNeedUpdate=Le module abricot doit être mis à jour
 LinkToThirparty=Lien vers le tiers
 
 OperationOrderDictTypeLabel=Type d'ordre de réparation
+Blocked_status_code=Statut inaccessible si aucune ligne "ventilation produit" négative n'est présente
 
 # SETUP
 ParamLabel=Nom du paramètre

@@ -1219,7 +1219,8 @@ else
 							$statusAllowed = new OperationOrderStatus($db);
 							$res = $statusAllowed->fetch($fk_status);
 							if($res>0){
-								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $statusAllowed->userCan($user, 'changeToThisStatus'));
+								$userCan = $object->checkNegativeProductVentilation($statusAllowed->code) ? $statusAllowed->userCan($user, 'changeToThisStatus') : false;
+								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $userCan);
 							}
 						}
 					}

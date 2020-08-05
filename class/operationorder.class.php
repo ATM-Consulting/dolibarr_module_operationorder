@@ -444,6 +444,33 @@ class OperationOrder extends SeedObject
 //		}
 //	}
 
+	public function checkNegativeProductVentilation($code) {
+    	global $langs;
+    	$ok = false;
+
+    	if(!empty($this->fk_c_operationorder_type) && !empty($code)) {
+			$oOrderType = new OperationOrderDictType($this->db);
+			$res = $oOrderType->fetch($this->fk_c_operationorder_type);
+			if($res > 0 && !empty($oOrderType->blocked_status_code) && $oOrderType->blocked_status_code == $code) {
+				if(empty($this->lines)) $this->fetchLines();
+				if(!empty($this->lines)) {
+					foreach($this->lines as $line) {
+						if(empty($line->product)) $line->fetch_product();
+						if(empty($line->product->array_options)) $line->product->fetch_optionals();
+						if(!empty($line->product->array_options['options_oorder_ventilation_produit']) && $line->total_ht < 0) {
+							$ok = true;
+						}
+					}
+				}
+			}
+			else $ok = true;
+	    }
+	    else $ok = true;
+
+		if(!$ok) setEventMessage($langs->trans());
+
+    	return $ok;
+	}
 
 	/**
 	 * Load object in memory from database
@@ -2474,6 +2501,7 @@ class OperationOrderDictType extends SeedObject
     public $fields = array(
         'code' => array('varchar(30)', 'length' => 30),
         'label' => array('varchar(255)', 'length' => 255, 'showoncombobox' => 1),
+        'blocked_status_code' => array('varchar(255)', 'length' => 255),
         'position' => array('integer'),
         'active' => array('integer'),
         'entity' => array('integer', 'index' => true)
