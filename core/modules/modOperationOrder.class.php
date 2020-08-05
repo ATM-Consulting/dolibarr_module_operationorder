@@ -165,19 +165,19 @@ class modOperationOrder extends DolibarrModules
                 'OperationOrderDictTypeLabel'
             ),                                                    // Label of tables
             'tabsql' => array(
-                'SELECT f.rowid, f.code, f.label, f.position, f.active, f.entity FROM '.MAIN_DB_PREFIX.'c_operationorder_type as f WHERE f.entity IN (0, '.$conf->entity.')'
+                'SELECT f.rowid, f.code, f.label, f.blocked_status_code, f.position, f.active, f.entity FROM '.MAIN_DB_PREFIX.'c_operationorder_type as f WHERE f.entity IN (0, '.$conf->entity.')'
             ),
             'tabsqlsort' => array(
                 'position ASC, label ASC'
             ),
             'tabfield' => array(
-                'code,label,position'
+                'code,label,blocked_status_code,position'
             ),
             'tabfieldvalue' => array(
-                'code,label,position,entity'
+                'code,label,blocked_status_code,position,entity'
             ),
             'tabfieldinsert' => array(
-                'code,label,position,entity'
+                'code,label,blocked_status_code,position,entity'
             ),
             'tabrowid' => array(
                 'rowid'
