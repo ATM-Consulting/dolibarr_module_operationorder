@@ -471,7 +471,7 @@ function OperationOrderObjectAutoLoad($objecttype, &$db)
  */
 function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn = true, $actionURL = false)
 {
-    global $langs, $db, $form, $hookmanager;
+    global $langs, $db, $form, $hookmanager, $conf;
 
     $outForm = '';
 
@@ -544,12 +544,14 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 
 		// Display each line fields
 		foreach($line->fields as $key => $val){
-			$outForm.= getFieldCardOutputByOperationOrder($line, $key);
+			if(!empty($conf->global->OORDER_HIDE_TIME_SPENT) && $key == 'time_spent') continue;
+			if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) && $key == 'time_planned') $outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
+			else $outForm.= getFieldCardOutputByOperationOrder($line, $key);
 		}
 
-		if($showSubmitBtn){
+	    if($showSubmitBtn){
 
-			$outForm.=  '<tr>';
+		    $outForm.=  '<tr>';
 			$outForm.=  '	<td colspan="2"><hr/></td>';
 			$outForm.=  '</tr>';
 
@@ -588,7 +590,7 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
  * @param  int	   $nonewbutton   Force to not show the new button on field that are links to object
  * @return string
  */
-function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array()){
+function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = '', $nonewbutton = 0, $params = array(), $trClass=''){
 
     global $langs, $form;
 
@@ -606,7 +608,7 @@ function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $key
 
     if (array_key_exists('enabled', $val) && isset($val['enabled']) && ! verifCond($val['enabled'])) return;	// We don't want this field
 
-    $outForm=  '<tr id="field_'.$key.'">';
+    $outForm=  '<tr id="field_'.$key.'" class="'.$trClass.'">';
     $outForm.=  '<td';
     $outForm.=  ' class="titlefieldcreate';
     if ($val['notnull'] > 0) $outForm.=  ' fieldrequired';
@@ -1391,7 +1393,7 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
                 {
                     $userplanning = new OperationOrderUserPlanning($db);
                     $res = $userplanning->fetchByObject($user->id, 'user');
-                    
+
                     //si l'utilisateur a un planning actif alors on utilise son planning
                     if ($res > 0 && $userplanning->active > 0)
                     {
@@ -1410,9 +1412,9 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
                 }
 
             }
-            
+
         }
-		
+
 	}
 
 	return $TSchedulesByUser;

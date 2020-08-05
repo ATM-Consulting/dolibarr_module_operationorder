@@ -234,6 +234,8 @@ setup_print_on_off('OPODER_DISPLAY_STOCK_ON_PLANNING', false, '', 'OPODER_DISPLA
 setup_print_on_off('OPODER_CANT_EXCEED_SENT_QTY', false, '', 'OPODER_CANT_EXCEED_SENT_QTY_help');
 
 setup_print_on_off('OPODER_ADD_PRODUCT_IN_OR_IF_MISSING');
+setup_print_on_off('OORDER_HIDE_TIME_SPENT');
+setup_print_on_off('OORDER_HIDE_TIME_PLANNED_IF_CHILD');
 
 $formother = new FormOther($db);
 $confKey = 'OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR';
