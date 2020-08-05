@@ -262,7 +262,7 @@ foreach ($object->fields as $key => $field){
 		$field['enabled'] = 0;
 	}
 
-    if(!empty($field['enabled']) && !isset($listViewConfig['title'][$key]) && !empty($field['visible']) && in_array($field['visible'], array(1,2,4)) ) {
+    if(!empty($field['enabled']) && !isset($listViewConfig['title'][$key]) && !empty($field['visible']) && in_array($field['visible'], array(1, 2, 4)) ) {
         $listViewConfig['title'][$key] = $langs->trans($field['label']);
     }
 
