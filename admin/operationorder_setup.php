@@ -242,6 +242,10 @@ setup_print_input_form_part($confKey, $langs->trans('OPERATION_ORDER_PERCENTAGEC
 
 setup_print_title("LeftMenuOperationOrderORPlanning");
 
+if (empty($conf->global->OR_ACTIVITYPLANNING_IMPROD_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_IMPROD_COLOR', '4f93d6');
+if (empty($conf->global->OR_ACTIVITYPLANNING_INTIME_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_INTIME_COLOR', '008000');
+if (empty($conf->global->OR_ACTIVITYPLANNING_LATE_COLOR)) dolibarr_set_const($db, 'OR_ACTIVITYPLANNING_LATE_COLOR', 'ff0000');
+
 $formother = new FormOther($db);
 $confKey = 'OR_ACTIVITYPLANNING_IMPROD_COLOR';
 $customInputHtml = $formother->selectColor($conf->global->{$confKey}, $confKey, $confKey);

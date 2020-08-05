@@ -92,8 +92,15 @@ if (!empty($TSchedules))
 			continue;
 		}
 
+		$date_min = strtotime(date("Y-m-d ".$minHour.":00", $date));
+		$date_max = strtotime(date("Y-m-d ".$maxHour.":00", $date));
+		$dated_matin = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"}.":00", $date));
+		$datef_matin = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"}.":00", $date));
+		$dated_aprem = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"}.":00", $date));
+		$datef_aprem = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"}.":00", $date));
+
 		// planning journalier débute après l'heure début affichée
-		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"} > $minHour)
+		if ($dated_matin > $date_min)
 		{
 			$tempTT = new stdClass;
 			$tempTT->start = $minHour;
@@ -106,8 +113,9 @@ if (!empty($TSchedules))
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
 
-		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"} < $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"})
+		if ($datef_matin < $dated_aprem)
 		{
+	
 			$tempTT = new stdClass;
 			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
 			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
@@ -118,8 +126,21 @@ if (!empty($TSchedules))
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
+		else // fin de matinée > début aprem = ne travaille pas l'aprem...
+		{
+			$tempTT = new stdClass;
+			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+			$tempTT->end = $maxHour;
+			$tempTT->text = "indispo";
+			$tempTT->data = new stdClass;
+			$tempTT->data->title = "plage non-travaillé";
+			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
-		if ($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"} < $maxHour)
+			$TSchedules[$id_user]->schedule[] = $tempTT;
+			continue;
+		}
+
+		if ($datef_aprem < $date_max)
 		{
 			$tempTT = new stdClass;
 			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"};
