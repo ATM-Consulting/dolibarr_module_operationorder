@@ -1377,21 +1377,21 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
 
 	if(!empty($fk_groupuser))
 	{
-		$userGroupPlanning->fetchByObject($fk_groupuser, 'usergroup');
+        $userGroupPlanning->fetchByObject($fk_groupuser, 'usergroup');
 
 		$usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
         if ($res > 0)
         {
             $TUsers = $usergroup->listUsersForGroup();
-            if (!empty($TUser))
+            if (!empty($TUsers))
             {
                 //userplanning en fonction des utilisateurs
                 foreach ($TUsers as $user)
                 {
                     $userplanning = new OperationOrderUserPlanning($db);
                     $res = $userplanning->fetchByObject($user->id, 'user');
-
+                    
                     //si l'utilisateur a un planning actif alors on utilise son planning
                     if ($res > 0 && $userplanning->active > 0)
                     {
