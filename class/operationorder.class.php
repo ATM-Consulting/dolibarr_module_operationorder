@@ -478,7 +478,7 @@ class OperationOrder extends SeedObject
 	    }
 	    else $ok = true;
 
-		if(!$ok) setEventMessage($langs->trans());
+		if(!$ok) setEventMessage($langs->trans('MissingNegativeProductVentilationLine'), 'warnings');
 
     	return $ok;
 	}

@@ -12,6 +12,7 @@ LinkToThirparty=Lien vers le tiers
 
 OperationOrderDictTypeLabel=Type d'ordre de réparation
 Blocked_status_code=Statut inaccessible si aucune ligne "ventilation produit" négative n'est présente
+MissingNegativeProductVentilationLine=Ligne "Ventilation produit" négative manquante
 
 # SETUP
 ParamLabel=Nom du paramètre
