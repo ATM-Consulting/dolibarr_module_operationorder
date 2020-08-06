@@ -541,11 +541,13 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 
 
 		$outForm.= '<table class="table-full">';
-
+	    if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD)) {
+	    	$TChildLines = $line->fetch_all_children_lines();
+	    }
 		// Display each line fields
 		foreach($line->fields as $key => $val){
 			if(!empty($conf->global->OORDER_HIDE_TIME_SPENT) && $key == 'time_spent') continue;
-			if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) && $key == 'time_planned') $outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
+			if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) && $key == 'time_planned' && count($TChildLines) > 0) $outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
 			else $outForm.= getFieldCardOutputByOperationOrder($line, $key);
 		}
 
