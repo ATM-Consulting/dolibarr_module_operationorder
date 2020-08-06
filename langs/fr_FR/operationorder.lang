@@ -303,6 +303,9 @@ UpdateTasktime=Modifier l'activité
 ErrorFetchingCounter=Erreur de récupération de l'activité
 DateD=début
 DateF=fin
+ErrorInvertedDates=la date de début ne peut pas être inférieure à la date de fin
+ErrorDateToLow=la date de début ne peut pas être inférieure à : %s
+ErrorDateToHigh=la date de fin ne peut pas être supérieure à : %s
 
 ORRef=Ref OR
 

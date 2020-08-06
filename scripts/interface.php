@@ -172,13 +172,51 @@ if(GETPOST('action'))
 	}
 	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
-	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det']);
+	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
+	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
 
 }
 
 echo json_encode($data);
 
-function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet)
+function _updateSchedule($scheduleId, $startTime, $endTime)
+{
+	global $db, $langs, $user;
+
+	$out = false;
+
+	$schedule = new OperationOrderTaskTime($db);
+	$ret = $schedule->fetch($scheduleId);
+	if ($ret > 0)
+	{
+		$oldDuration = $schedule->task_duration;
+
+		$schedule->task_datehour_d = $startTime;
+		$schedule->task_datehour_f = $endTime;
+		$schedule->task_duration = $endTime - $startTime;
+
+		$ret = $schedule->save($user);
+		if ($ret > 0) {
+
+			if ($schedule->fk_orDet)
+			{
+				$addTime = $schedule->task_duration - $oldDuration;
+				$det = new OperationOrderDet($db);
+				$det->fetch($schedule->fk_orDet);
+
+				$det->time_spent += $addTime;
+
+				$det->update($user);
+			}
+
+			$out = true;
+		}
+	}
+
+	return $out;
+}
+
+function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 {
 	global $db, $langs;
 
@@ -213,14 +251,88 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet)
 		$TFieldToDisplay = array('task_datehour_d', 'task_datehour_f');
 		$T = array();
 
+		$out.= '<br /><br /><div id="alert"></div>';
+		$out.= '<input type="hidden" id="minHour" value="'.$minHour.'">';
+		$out.= '<input type="hidden" id="minDate" value="'.date("Y-m-d\T".$minHour.":00", $schedule->task_datehour_d).'">';
+		$out.= '<input type="hidden" id="maxHour" value="'.$maxHour.'">';
+		$out.= '<input type="hidden" id="maxDate" value="'.date("Y-m-d\T".$maxHour.":00", $schedule->task_datehour_f).'">';
+
 		foreach ($schedule->fields as $fieldKey => $field){
 			if(!in_array($fieldKey, $TFieldToDisplay)) continue;
 
 			$T[$fieldKey] = $langs->trans($field['label']) .' : '.$schedule->showInputField($schedule->fields[$fieldKey], $fieldKey, $schedule->{$fieldKey});//$schedule->showOutputFieldQuick($fieldKey);
 		}
 
-		$out.= '<br /><br />'.implode('<br />', $T);
+		$out.= '<br />'.implode('<br />', $T).'<br />';
 
+		$out.= '<br /><div align="center"><button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;<button id="cancel" class="button">'.$langs->trans('Cancel').'</button></div>';
+
+		$out.= '<script type="text/javascript">
+					$(function() {
+						$("#cancel").on("click", function() {
+							$("#schedulePopin").dialog("close")
+						});
+
+						$("#save").on("click", function() {
+							var errorMsg ="";
+							$("#alert")
+								.hide()
+								.css("color","#721c24")
+								.css("background-color","#f8d7da")
+								.css("border-color","#f5c6cb");
+
+							let minDate = new Date($("#minDate").val());
+							let maxDate = new Date($("#maxDate").val());
+
+							let startDate = new Date(
+								$("#task_datehour_dyear").val()+"-"+
+								$("#task_datehour_dmonth").val()+"-"+
+								$("#task_datehour_dday").val()+"T"+
+								$("#task_datehour_dhour").val()+":"+
+								$("#task_datehour_dmin").val()+":00"
+							);
+							let endDate = new Date(
+								$("#task_datehour_fyear").val()+"-"+
+								$("#task_datehour_fmonth").val()+"-"+
+								$("#task_datehour_fday").val()+"T"+
+								$("#task_datehour_fhour").val()+":"+
+								$("#task_datehour_fmin").val()+":00"
+							);
+							//console.log(minDate.getTime() >  startDate.getTime(), maxDate.getTime() < endDate.getTime());
+
+							if (startDate.getTime() > endDate.getTime())
+							{
+								errorMsg += "<p>'.$langs->trans('ErrorInvertedDates').'</p>";
+							}
+
+							if (startDate.getTime() < minDate.getTime())
+							{
+								errorMsg += "<p>'.$langs->trans('ErrorDateToLow', date('d/m/Y '.$minHour, $schedule->task_datehour_d)).'</p>";
+							}
+
+							if (endDate.getTime() > maxDate.getTime())
+							{
+								errorMsg += "<p>'.$langs->trans('ErrorDateToHigh', date('d/m/Y '.$maxHour, $schedule->task_datehour_f)).'</p>";
+							}
+
+							if (errorMsg.length) $("#alert").html(errorMsg).show();
+							else
+							{
+								$.ajax({
+									url:"'.dol_buildpath('/operationorder/scripts/interface.php', 1).'",
+									method:"POST",
+									data: {
+										action: "updateSchedule",
+										scheduleId: '.$schedule->id.',
+										startTime: startDate.getTime() / 1000,
+										endTime: endDate.getTime() / 1000
+									}
+								}).done(function(data){
+									$("#schedulePopin").dialog("close")
+								});
+							}
+						});
+					});</script>';
 	}
 	else $out = $langs->trans('ErrorFetchingCounter');
 

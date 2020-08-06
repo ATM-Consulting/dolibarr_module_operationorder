@@ -246,6 +246,7 @@ if (!empty($TSchedules))
 					$('form[name="filters"]').submit();
 				}
 			});
+
 			var $sc = $("#schedule").timeSchedule({
 				startTime: "<?php echo $minHour; ?>", // schedule start time(HH:ii)
 				endTime: "<?php echo $maxHour; ?>",   // schedule end time(HH:ii)
@@ -266,8 +267,8 @@ if (!empty($TSchedules))
 				},
 				onClick: function(node, data){ // quand on clique sur un événement
 					// addLog('onClick', data);
-					// pour plus tard redirection vers la card de l'OR si possible
-					console.log(data);
+
+					// console.log(data);
 					// console.log($sc.timeSchedule('scheduleData'));
 					let counterID 	= data.data.counterID;
 					let fk_ordet 	= data.data.fk_orDet;
@@ -290,14 +291,23 @@ if (!empty($TSchedules))
 					if (counterID)
 					{
 						var minDate = '';
-						let maxDate = '';
+						var minDateTime = 0;
+						var maxDate = '';
+						var maxDateTime = 0;
 
 						for (i in schedulesByUser[fk_user].schedule)
 						{
-							let temptt = schedulesByUser[fk_user].schedule[i]
-							console.log(temptt);
-							if (temptt.endTime <= data.startTime) minDate = temptt.end;
-							if (temptt.startTime >= data.endTime) maxDate = temptt.start;
+							let temptt = schedulesByUser[fk_user].schedule[i];
+							if (temptt.endTime <= data.startTime && temptt.endTime > minDateTime)
+							{
+								minDate = temptt.end;
+								minDateTime = temptt.endTime
+							}
+							if (temptt.startTime >= data.endTime)
+							{
+								maxDate = temptt.start;
+								maxDateTime = temptt.startTime;
+							}
 						}
 
 						$.ajax({
