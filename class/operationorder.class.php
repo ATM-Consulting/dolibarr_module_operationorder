@@ -1706,6 +1706,7 @@ class OperationOrder extends SeedObject
     }
 
     public function updateOperationOrderActions() {
+		dol_include_once('/operationorder/lib/operationorder.lib.php');
 
         global $user;
 
