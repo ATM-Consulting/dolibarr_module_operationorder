@@ -299,6 +299,10 @@ ErrorCannotAddProductNoDefaultWarehouse=Impossible d'ajouter le produit %s à l'
 ErrorProductMissingInOR=Le produit %s n'est pas présent dans l'ordre de réparation %s. Pas de sortie de stock.
 ProductAddedToOR=Le produit %s a été ajouté à l'ordre de réparation %s.
 ErrorAddProductInOR=Une erreur s'est produite pendant l'ajout du produit %s à l'ordre de réparation %s.
+UpdateTasktime=Modifier l'activité
+ErrorFetchingCounter=Erreur de récupération de l'activité
+DateD=début
+DateF=fin
 
 ORRef=Ref OR
 

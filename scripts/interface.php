@@ -11,6 +11,7 @@ require_once __DIR__ . '/../class/unitstools.class.php';
 require_once __DIR__ . '/../lib/operationorder.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 dol_include_once('/operationorder/class/operationorder.class.php');
+dol_include_once('/operationorder/class/operationordertasktime.class.php');
 global $db;
 $hookmanager->initHooks(array('oorderinterface'));
 
@@ -171,11 +172,60 @@ if(GETPOST('action'))
 	}
 	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
+	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det']);
+
 }
 
 echo json_encode($data);
 
+function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet)
+{
+	global $db, $langs;
 
+	$out = '';
+
+	$schedule = new OperationOrderTaskTime($db);
+	$or = new OperationOrder($db);
+	$or->fetch($fk_or);
+	$orDet = new OperationOrderDet($db);
+	$orDet->fetch($fk_ordet);
+
+	$ret = $schedule->fetch($scheduleId);
+	if ($ret > 0)
+	{
+		if (!empty($or->id))
+		{
+			$out.= $or->getNomUrl(1);
+		}
+		if (!empty($orDet->id))
+		{
+			$TFieldToDisplay = array('fk_product', 'price', 'qty', 'time_planned', 'time_spent');
+
+			foreach ($orDet->fields as $fieldKey => $field){
+				if(!in_array($fieldKey, $TFieldToDisplay)) continue;
+
+				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$orDet->showOutputFieldQuick($fieldKey);
+			}
+
+			$out.= '<br /><br />'.implode('<br />', $T);
+		}
+
+		$TFieldToDisplay = array('task_datehour_d', 'task_datehour_f');
+		$T = array();
+
+		foreach ($schedule->fields as $fieldKey => $field){
+			if(!in_array($fieldKey, $TFieldToDisplay)) continue;
+
+			$T[$fieldKey] = $langs->trans($field['label']) .' : '.$schedule->showInputField($schedule->fields[$fieldKey], $fieldKey, $schedule->{$fieldKey});//$schedule->showOutputFieldQuick($fieldKey);
+		}
+
+		$out.= '<br /><br />'.implode('<br />', $T);
+
+	}
+	else $out = $langs->trans('ErrorFetchingCounter');
+
+	return $out;
+}
 
 function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action', $beginOfWeek=0, $endOfWeek=0) {
     global $db, $langs, $hookmanager;
