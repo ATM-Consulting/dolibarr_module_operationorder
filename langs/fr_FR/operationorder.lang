@@ -306,6 +306,8 @@ DateF=fin
 ErrorInvertedDates=la date de début ne peut pas être inférieure à la date de fin
 ErrorDateToLow=la date de début ne peut pas être inférieure à : %s
 ErrorDateToHigh=la date de fin ne peut pas être supérieure à : %s
+ErrorUpdateSchedule=Erreur la sauvegarde
+ErrorOrDetNotUpdated=Erreur lors de la mise à jour de la ligne d'OR
 
 ORRef=Ref OR
 

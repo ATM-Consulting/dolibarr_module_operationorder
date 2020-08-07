@@ -194,7 +194,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 		$schedule->task_datehour_d = $startTime;
 		$schedule->task_datehour_f = $endTime;
 		$schedule->task_duration = $endTime - $startTime;
-
+		$db->begin();
 		$ret = $schedule->save($user);
 		if ($ret > 0) {
 
@@ -206,11 +206,20 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 
 				$det->time_spent += $addTime;
 
-				$det->update($user);
+				$res = $det->update($user);
 			}
+			if ($res > 0)
+			{
+				setEventMessage($langs->trans('Saved'));
+				$db->commit();
+				$out = true;
+			}
+			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'));
 
-			$out = true;
 		}
+		else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");
+
+		if (!$out) $db->rollback();
 	}
 
 	return $out;
