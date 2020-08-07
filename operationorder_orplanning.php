@@ -115,7 +115,7 @@ if (!empty($TSchedules))
 
 		if ($datef_matin < $dated_aprem)
 		{
-	
+
 			$tempTT = new stdClass;
 			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
 			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
@@ -238,6 +238,15 @@ if (!empty($TSchedules))
 			// $("#logs").append('<table class="table">');
 			var isDraggable = false;
 			var isResizable = false;
+			var popin = $("#schedulePopin");
+			popin.dialog({
+				autoOpen: false,
+				autoResize:true,
+				close: function( event, ui ) {
+					$('form[name="filters"]').submit();
+				}
+			});
+
 			var $sc = $("#schedule").timeSchedule({
 				startTime: "<?php echo $minHour; ?>", // schedule start time(HH:ii)
 				endTime: "<?php echo $maxHour; ?>",   // schedule end time(HH:ii)
@@ -258,7 +267,71 @@ if (!empty($TSchedules))
 				},
 				onClick: function(node, data){ // quand on clique sur un événement
 					// addLog('onClick', data);
-					console.log(node, data); // pour plus tard redirection vers la card de l'OR si possible
+
+					// console.log(data);
+					// console.log($sc.timeSchedule('scheduleData'));
+					let counterID 	= data.data.counterID;
+					let fk_ordet 	= data.data.fk_orDet;
+					let fk_or		= data.data.fk_or;
+					let fk_user		= data.data.fk_user;
+
+					let scheduleData = $sc.timeSchedule('scheduleData');
+					let schedulesByUser = $sc.timeSchedule('timelineData');
+
+					oldTL = 0;
+					for (i in schedulesByUser)
+					{
+						for (j in scheduleData)
+						{
+							if (parseInt(scheduleData[j].timeline) < oldTL) break;
+							else schedulesByUser[i].schedule.push(scheduleData.shift());
+						}
+					}
+
+					if (counterID)
+					{
+						var minDate = '';
+						var minDateTime = 0;
+						var maxDate = '';
+						var maxDateTime = 0;
+
+						for (i in schedulesByUser[fk_user].schedule)
+						{
+							let temptt = schedulesByUser[fk_user].schedule[i];
+							if (temptt.endTime <= data.startTime && temptt.endTime > minDateTime)
+							{
+								minDate = temptt.end;
+								minDateTime = temptt.endTime
+							}
+							if (temptt.startTime >= data.endTime)
+							{
+								maxDate = temptt.start;
+								maxDateTime = temptt.startTime;
+							}
+						}
+
+						$.ajax({
+							url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getScheduleInfos',
+							method: 'POST',
+							data: {
+								scheduleId: counterID,
+								det: fk_ordet,
+								oOrder: fk_or,
+								minHour: minDate,
+								maxHour: maxDate
+							},
+							dataType: 'json',
+							// La fonction à apeller si la requête aboutie
+							success: function (response) {
+								// console.log(response);
+								popin.html(response.result);
+								popin.dialog("open");
+								popin.dialog({height: 'auto', width: 'auto'}); // resize to content
+								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"200px"});
+							}
+						});
+					}
+
 				},
 				onScheduleClick: function(node, data){ // quand on clique sur un endroit vide
 					console.log(node, data);
@@ -339,6 +412,7 @@ if (!empty($TSchedules))
 	</script>
 
 <?php
+	print '<div id="schedulePopin" title="'.$langs->trans('UpdateTasktime').'"></div>';
 }
 else
 {

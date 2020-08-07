@@ -2077,15 +2077,20 @@ class OperationOrderDet extends SeedObject
 		}
 		elseif ($key == 'time_planned' || $key == 'time_spent')
 		{
-			if (!empty($this->time_planned)){
+			if ($key == 'time_planned' && !empty($this->time_planned)){
 				if(!function_exists('convertSecondToTime')){
 					include_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 				}
 
 				$out.= convertSecondToTime(intval($this->time_planned), 'allhourmin') ;
-			}else{
-				$out .= ' -- ';
+			}else if ($key == 'time_spent'){
+				if(!function_exists('convertSecondToTime')){
+					include_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+				}
+
+				$out.= convertSecondToTime(intval($this->time_spent), 'allhourmin') ;
 			}
+			else $out .= ' -- ';
 		}
 		else{
 			$out.= parent::showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);

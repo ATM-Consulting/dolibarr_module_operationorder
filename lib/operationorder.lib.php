@@ -2182,6 +2182,13 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 							$tempTT->data = new stdClass;
 							$tempTT->data->title = $title;
 							$tempTT->data->class = $class;
+							$tempTT->data->counterID = $tt->id;
+							$tempTT->data->fk_user = $u->id;
+							if (!empty($tt->fk_orDet))
+							{
+								$tempTT->data->fk_orDet = $TOrDet[$tt->fk_orDet]->id;
+								$tempTT->data->fk_or = $TOrDet[$tt->fk_orDet]->fk_operation_order;
+							}
 
 							$TSchedules[$u->id]->schedule[] = $tempTT;
 						}
