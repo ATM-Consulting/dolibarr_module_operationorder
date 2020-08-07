@@ -210,7 +210,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 			}
 			if ($res > 0)
 			{
-				setEventMessage($langs->trans('Saved'));
+				setEventMessage($langs->trans('RecordSaved'));
 				$db->commit();
 				$out = true;
 			}
