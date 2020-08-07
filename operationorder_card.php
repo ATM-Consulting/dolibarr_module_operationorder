@@ -918,7 +918,7 @@ else
             $morehtmlref.='</div>';
 
 
-            $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
+            $morehtmlstatus=''; //$object->getLibStatut(2); // pas besoin fait doublon
             dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
 
             print '<div class="fichecenter">';
@@ -931,7 +931,7 @@ else
             // Common attributes
 //            $keyforbreak='total_ht';
 //            include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
-            include dol_buildpath('operationorder/core/tpl/commonfields_view.tpl.php');
+            include dol_buildpath('/operationorder/core/tpl/commonfields_view.tpl.php');
 
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';

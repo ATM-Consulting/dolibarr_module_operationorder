@@ -347,6 +347,17 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 	return $out;
 }
+/**
+ * Retourne le tableau des OR plannifiables dans une boite de dialogue
+ * @param timestamp $startTime
+ * @param timestamp $endTime
+ * @param int $allDay
+ * @param string $url
+ * @param string $id
+ * @param timestamp $beginOfWeek
+ * @param timestamp $endOfWeek
+ * @return string $out
+ */
 
 function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'create-operation-order-action', $action = 'create-operation-order-action', $beginOfWeek=0, $endOfWeek=0) {
     global $db, $langs, $hookmanager;
@@ -440,6 +451,16 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
 
     return $out;
 }
+
+/**
+ * Met à jour l'événement OR en fonction de l'action effectuée (drop ou resize)
+ * @param timestamp $startTime
+ * @param timestamp $endTime
+ * @param int $fk_action
+ * @param string $action
+ * @param int $allDay
+ * @return  int             	1 if OK, 0 if KO, -1 if error
+ */
 
 function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
     global $db, $user;
@@ -667,10 +688,11 @@ function _statusRank(&$data)
 
 
 /**
- * @param int $start
- * @param int $end
- * @param string $agendaType not used yet for multiple source type
- * @return array
+ * Retourne les événements OR sur une période donnée
+ * @param timestamp $start
+ * @param timestamp $end
+ * @param string $agendaType
+ * @return  array $TRes
  */
 function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanned'){
 
@@ -810,10 +832,10 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 
 
 /**
- * @param int $start
- * @param int $end
- * @param string $agendaType not used yet for multiple source type
- * @return array
+ * Retourne les jours fériées sur une période donnée
+ * @param timestamp $start
+ * @param timestamp $end
+ * @return  array $TRes
  */
 function  _getJourOff($start = 0, $end = 0){
 
@@ -870,6 +892,13 @@ function  _getJourOff($start = 0, $end = 0){
 	return $TRes;
 }
 
+/**
+ * Retourne la liste d'événements par jour surchargés sur une période donnée
+ * @param timestamp $start
+ * @param timestamp $end
+ * @return  array $TRes
+ */
+
 function _getJourFull($start = 0, $end = 0){
 
     global $conf;
@@ -925,6 +954,13 @@ function _getJourFull($start = 0, $end = 0){
     return $TRes;
 
 }
+
+/**
+ * Retourne un événement de surcharge pour le semaine donnée
+ * @param timestamp $start
+ * @param timestamp $end
+ * @return  array $TRes
+ */
 
 function _getWeekFull($start = 0, $end = 0){
 

@@ -10,7 +10,7 @@ OperationOrder=Ordre de réparation
 AbricotNeedUpdate=Le module abricot doit être mis à jour
 LinkToThirparty=Lien vers le tiers
 
-OperationOrderDictTypeLabel=Type d'ordre de réparation
+OperationOrderDictTypeLabel=Ordre de Réparation - Type d'ordre de réparation
 Blocked_status_code=Statut inaccessible si aucune ligne "ventilation produit" négative n'est présente
 MissingNegativeProductVentilationLine=Ligne "Ventilation produit" négative manquante
 

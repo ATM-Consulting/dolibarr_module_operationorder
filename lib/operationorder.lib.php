@@ -919,6 +919,14 @@ function getTHoraire()
 	return $THoraire;
 }
 
+/**
+ * Création d'un événement OR en fonction d'une date de début, d'une date de fin et d'un ordre de réparation
+ * @param timestamp $startTime
+ * @param timestamp $endTime
+ * @param int $allDay
+ * @param int $id_operationorder
+ * @return  int         1 if OK, -1 if KO
+ */
 function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
 
     global $langs, $db, $user, $conf;
@@ -993,7 +1001,6 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
  * @param integer $usercanmodify
  * @return string $out
  */
-
 function getOperationOrderUserPlanningToDisplay($object, $object_type, $action = '', $usercanmodify = 0){
 
     global $langs, $db;
@@ -1127,10 +1134,11 @@ function getOperationOrderUserPlanningToDisplay($object, $object_type, $action =
 }
 
 /**
- * Renvoie le planning utilisateur / groupe utilisateur à appliquer si il existe en fonction de l'utilisateur et de l'entité (alias BusinessHours)
+ * Renvoie les créneaux disponobles en fonction de l'utilisateur, du groupe d'utilisateurs, des absences, des jours fériés et de l'entité (alias BusinessHours)
+ * @param timestamp $startTimeWeek
+ * @param timestamp $endTimeWeek
  * @return array si planning existe, 0 si inexistant, -1 si erreur
  */
-
 function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek = 0){
 
     require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
@@ -1552,7 +1560,7 @@ function getNextSchedules ($startTime)
 }
 
 /**
- * Trie le tableau BusinessHours
+ * Trie le tableau des créneaux disponibles du planning
  * @param array $TBusinessHours
  * @return array $TBusinessHours
  */
