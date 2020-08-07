@@ -32,7 +32,7 @@ $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
 
 
-$contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationordercard';   // To manage different context of search
+$contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'operationorderstatuscard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
 
 $object = new Operationorderstatus($db);
@@ -60,7 +60,7 @@ $TStatusAllowed = GETPOST('TStatusAllowed','array');
 $TStatusAllowed = array_map('intval', $TStatusAllowed);
 
 
-$hookmanager->initHooks(array('operationordercard', 'globalcard'));
+$hookmanager->initHooks(array('operationorderstatuscard', 'globalcard'));
 
 
 if ($object->isextrafieldmanaged)

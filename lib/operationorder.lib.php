@@ -283,9 +283,9 @@ function operationOrderStatusPrepareHead(OperationOrderStatus $object)
 	$head[$h][2] = 'card';
 	$h++;
 
-	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder');
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorderstatus@operationorder');
 
-	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorder@operationorder', 'remove');
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'operationorderstatus@operationorder', 'remove');
 
 	return $head;
 }
