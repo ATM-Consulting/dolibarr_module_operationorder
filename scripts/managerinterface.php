@@ -419,11 +419,12 @@ if (empty($reshook) && !empty($action))
 							0,
 							$ordet->date_start,
 							$ordet->date_end ,
-							$ordet->type, $ordet->fk_parent_line ,
+							$ordet->type,
+							$ordet->fk_parent_line ,
 							$ordet->label,
 							$ordet->special_code ,
 							$ordet->array_options);
-				}
+					}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne
@@ -495,7 +496,7 @@ if (empty($reshook) && !empty($action))
 					// mise à jour du temps passé sur la ligne pointable
 					$ordet = new OperationOrderDet($db);
 					$ordet->fetch($counter->fk_orDet);
-					$or= new OperationOrder($db);
+					$or = new OperationOrder($db);
 					if (!empty($ordet->fk_operation_order)) {
 						$or->fetch($ordet->fk_operation_order);
 						$or->updateline($ordet->id,
@@ -510,11 +511,12 @@ if (empty($reshook) && !empty($action))
 							0,
 							$ordet->date_start,
 							$ordet->date_end ,
-							$ordet->type, $ordet->fk_parent_line ,
+							$ordet->type,
+							$ordet->fk_parent_line ,
 							$ordet->label,
 							$ordet->special_code ,
 							$ordet->array_options);
-				}
+					}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne

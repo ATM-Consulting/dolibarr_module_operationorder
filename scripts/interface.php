@@ -202,9 +202,27 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 				$det = new OperationOrderDet($db);
 				$det->fetch($schedule->fk_orDet);
 
-				$det->time_spent += $addTime;
-
-				$res = $det->update($user);
+				$or = new OperationOrder($db);
+				if (!empty($det->fk_operation_order)) {
+					$or->fetch($det->fk_operation_order);
+					$res = $or->updateline($det->id,
+						$det->description,
+						$det->qty,
+						$det->price,
+						$det->fk_warehouse,
+						$det->pc,
+						$det->time_planned,
+						($det->time_spent + $addTime),
+						$det->fk_product,
+						0,
+						$det->date_start,
+						$det->date_end,
+						$det->type,
+						$det->fk_parent_line,
+						$det->label,
+						$det->special_code,
+						$det->array_options);
+				}
 			} else {
 				$out = true;
 			}
