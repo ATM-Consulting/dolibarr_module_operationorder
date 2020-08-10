@@ -313,9 +313,27 @@ if (empty($reshook) && !empty($action))
 				// mise à jour du temps passé sur la ligne pointable
 				$ordet = new OperationOrderDet($db);
 				$ordet->fetch($counter->fk_orDet);
-
-				$ordet->time_spent += $counter->task_duration;
-				$ordet->update($usr);
+				$or= new OperationOrder($db);
+				if (!empty($ordet->fk_operation_order)) {
+					$or->fetch($ordet->fk_operation_order);
+					$or->updateline($ordet->id,
+						$ordet->description,
+						$ordet->qty,
+						$ordet->price,
+						$ordet->fk_warehouse,
+						$ordet->pc,
+						$ordet->time_planned,
+						($ordet->time_spent + $counter->task_duration),
+						$ordet->fk_product,
+						0,
+						$ordet->date_start,
+						$ordet->date_end ,
+						$ordet->type,
+						$ordet->fk_parent_line ,
+						$ordet->label,
+						$ordet->special_code ,
+						$ordet->array_options);
+				}
 
 				$remaining = $counter->remainingCountersForOR($ordet->id);
 				// changement de statut de l'OR de la ligne
@@ -386,9 +404,26 @@ if (empty($reshook) && !empty($action))
 					// mise à jour du temps passé sur la ligne pointable
 					$ordet = new OperationOrderDet($db);
 					$ordet->fetch($counter->fk_orDet);
-
-					$ordet->time_spent += $counter->task_duration;
-					$ordet->update($usr);
+					$or= new OperationOrder($db);
+					if (!empty($ordet->fk_operation_order)) {
+						$or->fetch($ordet->fk_operation_order);
+						$or->updateline($ordet->id,
+							$ordet->description,
+							$ordet->qty,
+							$ordet->price,
+							$ordet->fk_warehouse,
+							$ordet->pc,
+							$ordet->time_planned,
+							($ordet->time_spent + $counter->task_duration),
+							$ordet->fk_product,
+							0,
+							$ordet->date_start,
+							$ordet->date_end ,
+							$ordet->type, $ordet->fk_parent_line ,
+							$ordet->label,
+							$ordet->special_code ,
+							$ordet->array_options);
+				}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne
@@ -460,9 +495,26 @@ if (empty($reshook) && !empty($action))
 					// mise à jour du temps passé sur la ligne pointable
 					$ordet = new OperationOrderDet($db);
 					$ordet->fetch($counter->fk_orDet);
-
-					$ordet->time_spent += $counter->task_duration;
-					$ordet->update($usr);
+					$or= new OperationOrder($db);
+					if (!empty($ordet->fk_operation_order)) {
+						$or->fetch($ordet->fk_operation_order);
+						$or->updateline($ordet->id,
+							$ordet->description,
+							$ordet->qty,
+							$ordet->price,
+							$ordet->fk_warehouse,
+							$ordet->pc,
+							$ordet->time_planned,
+							($ordet->time_spent + $counter->task_duration),
+							$ordet->fk_product,
+							0,
+							$ordet->date_start,
+							$ordet->date_end ,
+							$ordet->type, $ordet->fk_parent_line ,
+							$ordet->label,
+							$ordet->special_code ,
+							$ordet->array_options);
+				}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne
