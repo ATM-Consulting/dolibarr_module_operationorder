@@ -113,7 +113,6 @@ if(GETPOST('action'))
 			$data['time_plannedhour'] = 0;
 			$data['time_plannedmin'] = 0;
 
-
 			if(!empty($product->duration_unit))
 			{
 				$fk_duration_unit = UnitsTools::getUnitFromCode($product->duration_unit, 'short_label');
@@ -132,7 +131,6 @@ if(GETPOST('action'))
 					else{
 						$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
 					}
-
 				}
 			}
 
@@ -172,8 +170,8 @@ if(GETPOST('action'))
 	}
 	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
-	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
-	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
+	elseif ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
+	elseif ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
 
 }
 
