@@ -196,7 +196,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 		$ret = $schedule->save($user);
 		if ($ret > 0) {
 
-			if ($schedule->fk_orDet)
+			if (!empty($schedule->fk_orDet))
 			{
 				$addTime = $schedule->task_duration - $oldDuration;
 				$det = new OperationOrderDet($db);
@@ -205,14 +205,17 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 				$det->time_spent += $addTime;
 
 				$res = $det->update($user);
+			} else {
+				$out = true;
 			}
-			if ($res > 0)
+
+			if (($res > 0) || $out)
 			{
 				setEventMessage($langs->trans('RecordSaved'));
 				$db->commit();
 				$out = true;
 			}
-			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'));
+			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
 
 		}
 		else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");

@@ -131,7 +131,6 @@ if (empty($reshook) && !empty($action))
 						if (!empty($obj->ref))
 							$data['courantTask'] .= ' (' . $obj->ref . ')';
 					}
-
 				}
 			}
 		}
@@ -376,7 +375,7 @@ if (empty($reshook) && !empty($action))
 
 		if ($ret > 0)
 		{
-			$counter->task_datehour_f = dol_nstockMouvementow();
+			$counter->task_datehour_f = dol_now();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$retupd = $counter->update($usr);
 
