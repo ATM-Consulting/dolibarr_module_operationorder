@@ -264,6 +264,8 @@ if (!empty($TSchedules))
 				},
 				onInitRow: function(node, data){
 					// addLog('onInitRow', data);
+					console.log("init", node, data);
+					node.attr('data-userId', data.userId);
 				},
 				onClick: function(node, data){ // quand on clique sur un événement
 					// addLog('onClick', data);
@@ -335,6 +337,12 @@ if (!empty($TSchedules))
 				},
 				onScheduleClick: function(node, data){ // quand on clique sur un endroit vide
 					console.log(node, data);
+					console.log($(node).parent().attr('userId') == undefined);
+					if ($(node).parent().attr('userId') == undefined)
+					{
+						console.log($('.sc_data_scroll .timeline'));
+						console.log($(".sc_main .timeline"));
+					}
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);

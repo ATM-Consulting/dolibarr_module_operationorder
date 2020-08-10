@@ -2047,6 +2047,7 @@ function initSchedule($entity = 1)
 				$TSchedules[$u->id] = new stdClass;
 				$TSchedules[$u->id]->title = $u->getFullName($langs);
 				$TSchedules[$u->id]->schedule = array();
+				$TSchedules[$u->id]->userId = $u->id;
 			}
 		}
 	}
