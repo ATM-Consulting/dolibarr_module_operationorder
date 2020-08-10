@@ -113,6 +113,7 @@ if (empty($reshook))
 			$object->display_on_planning = GETPOST('display_on_planning', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 			$object->check_virtual_stock = GETPOST('check_virtual_stock', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 			$object->clean_event = GETPOST('clean_event', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+			$object->save_date_cloture = GETPOST('save_date_cloture', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 			$object->planable = GETPOST('planable', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 
 

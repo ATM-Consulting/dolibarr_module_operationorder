@@ -81,7 +81,7 @@ class OperationOrder extends SeedObject
         'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'help'=>"LinkToThirparty"),
         'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1, 'index'=>1),
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
-        'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
+        'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2),
         'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 0),
         'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>1, 'position'=>61, 'notnull'=>0, 'visible'=>0),
         'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>0),
@@ -192,7 +192,7 @@ class OperationOrder extends SeedObject
 
 		$this->status = 0;
 		$this->entity = $conf->entity;
-
+		$this->date_cloture = null;
 		$this->lines = &$this->TOperationOrderDet;
 		$this->modelpdf = &$this->model_pdf;
 		$this->socid = &$this->fk_soc; // Compatibility with select ajax on formadd product
@@ -775,7 +775,10 @@ class OperationOrder extends SeedObject
 					$this->planned_date = '';
 					$sql .= " , planned_date = NULL ";
 				}
-
+				if(!empty($newStatus->save_date_cloture)){
+					$this->date_cloture = time();
+					$sql .= " , date_cloture = '".$this->db->idate($this->date_cloture)."'";
+				}
 				$sql .= " WHERE rowid = ".$this->id;
 
 				if ($this->db->query($sql))
