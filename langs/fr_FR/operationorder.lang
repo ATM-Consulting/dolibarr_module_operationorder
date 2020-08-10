@@ -318,3 +318,4 @@ OperationOrderRelated = Ordres de réparations liés
 LeftMenuOperationOrderORPlanning=Activités journalières
 
 ErrorNoUserInGroupOrNoGroup=Pas d'utilisateur dans le "Groupe d'utilisateurs à prendre en compte pour le planning OR" ou pas de groupe configuré
+ClotureEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, le champ date de clôture est peuplé

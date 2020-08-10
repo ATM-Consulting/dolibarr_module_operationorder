@@ -193,6 +193,16 @@ class OperationOrderStatus extends SeedObject
 				1 => 'OperationOrderStatusStatusShortValidated'
 			)
 		),
+		'save_date_cloture' => array(
+			'type'=>'boolean',
+			'label'=>'ClotureEventOnThisStatus',
+			'enabled'=>1,
+			'position'=>100,
+			'visible'=> -1,
+			'required'=>0,
+			'default'=>0,
+			'help'=>''
+		),
 		'entity' => array(
 			'type'=>'integer',
 			'label'=>'Entity',
