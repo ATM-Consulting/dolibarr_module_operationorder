@@ -853,7 +853,7 @@ function  _getJourOff($start = 0, $end = 0){
 			'operator' => '<=',
 			'value' => date('Y-m-d H:i:s', $end),
 			'field' => 'date',
-		)
+		),
 	);
 
 	$TDayOff = $dayOff->fetchAll(0, false, $TFilter);
