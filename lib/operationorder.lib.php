@@ -1172,7 +1172,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $TDates[] = $i;
     }
 
-
     //recherche des jours fériés dans la semaine
     foreach ($TDates as $date){
 
@@ -1382,7 +1381,6 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
 	global $db;
 
 	$TSchedulesByUser = array();
-
 
 	$userGroupPlanning = new OperationOrderUserPlanning($db);
 	// TODO générer un planning par défaut avec la conf générale du module
