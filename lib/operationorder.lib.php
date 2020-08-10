@@ -1179,10 +1179,9 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
         $res = $jourOff->isOff($currentDate);
 
-        if($res){
+        if($res && !in_array($date,$TDaysOff)){
             $TDaysOff[] = $date;
         }
-
     }
 
     //suppression des jours fériés dans les jours à traiter
@@ -1368,9 +1367,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                     $i++;
                 }
             }
-
         }
-
     }
 
     return $TSchedules;
@@ -1415,14 +1412,10 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
                         {
                             $TSchedulesByUser[$user->id] = $userGroupPlanning;
                         }
-
                     }
                 }
-
             }
-
         }
-
 	}
 
 	return $TSchedulesByUser;

@@ -173,7 +173,7 @@ class OperationOrderJoursOff extends SeedObject
 	function isOff($date) {
 		global $conf, $TCacheTFerie;
 
-		if(empty($TCacheTFerie))$TCacheTFerie=array();
+		if(empty($TCacheTFerie)) $TCacheTFerie=array();
 
 		if(!empty($TCacheTFerie[$date])) return $TCacheTFerie[$date];
 
