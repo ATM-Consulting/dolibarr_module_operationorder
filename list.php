@@ -218,6 +218,7 @@ $listViewConfig = array(
 		,'massactions'=>array(
 			'delete'  => $langs->trans('Delete')
 		)
+		,'param_url' => '&limit='.$nbLine
 	)
 	,'subQuery' => array()
 	,'link' => array()
