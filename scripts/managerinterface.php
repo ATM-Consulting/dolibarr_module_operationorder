@@ -612,9 +612,7 @@ if (empty($reshook) && !empty($action))
 										$data['errorMsg'] = $langs->trans('ErrorStockMVT');
 									}
 								}
-
 							}
-
 						}
 					}
 					else
