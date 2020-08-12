@@ -203,28 +203,10 @@ if (empty($reshook) && !empty($action))
 			$TPointable = $ProdErrors = $TLastLines = array();
 
 			$alreadyUsed = array();
-			$sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
-			$sql.= " WHERE mvt.origintype = 'operationorder'";
-			$sql.= " AND mvt.fk_origin = ".$OR->id;
-			$sql.= " GROUP BY mvt.fk_product";
-
-			$resql = $db->query($sql);
-			if ($resql)
-			{
-				while ($obj = $db->fetch_object($resql))
-				{
-					$alreadyUsed[$obj->fk_product] = abs($obj->total);
-				}
-			}
+			$alreadyUsed = $OR->getAlreadyUsedQtyLines();
 
 			// récupération de la dernière ligne de chaque produit pour affichage sortie de stock
-			foreach ($OR->lines as $line)
-			{
-				if ($line->fk_product)
-				{
-					$TLastLines[$line->fk_product] = $line->id;
-				}
-			}
+			$TLastLines = $OR->getLastLinesByProduct();
 
 			foreach ($OR->lines as $line)
 			{
@@ -254,28 +236,7 @@ if (empty($reshook) && !empty($action))
 
 				}
 
-				$used = 0;
-				if (isset($alreadyUsed[$line->fk_product]))
-				{
-					if ($alreadyUsed[$line->fk_product] > $line->qty)
-					{
-						if ($TLastLines[$line->fk_product] != $line->id)
-						{
-							$used = $line->qty;
-							$alreadyUsed[$line->fk_product] -= $line->qty;
-						}
-						else
-						{
-							$used = $alreadyUsed[$line->fk_product];
-							unset($alreadyUsed[$line->fk_product]);
-						}
-					}
-					else
-					{
-						$used = $alreadyUsed[$line->fk_product];
-						unset($alreadyUsed[$line->fk_product]);
-					}
-				}
+				$used = $line->getQtyUsed($alreadyUsed, $TLastLines);
 
 				$data['oOrderLines'][] = array(
 					'ref' 		=> $line->product_ref

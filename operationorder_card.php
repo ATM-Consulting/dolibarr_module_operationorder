@@ -1430,6 +1430,8 @@ function _displayDialogSupplierOrder($lineid){
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planned_date = ''){
 	global $langs, $user, $extrafields, $conf, $object;
 	if(!empty($TNested) && is_array($TNested)){
+		$TLineQtyUsed = $object->getAlreadyUsedQtyLines();
+		$TLastLinesByProduct = $object->getLastLinesByProduct();
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
 		foreach ($TNested as $k => $v) {
 			$line = $v['object'];
@@ -1488,9 +1490,13 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$out .= '		</div>';
 
 			// QTY ORDERED
+			//Repris d'interface manager
+			$qtyUsed = $line->getQtyUsed($TLineQtyUsed, $TLastLinesByProduct);
+
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
 			$out .= '			<span class="classfortooltip" title="' . $langs->trans("QtyOrdered") . '" >';
-			$out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
+			if(empty($qtyUsed)) $out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
+			else $out .= '				<i class="fas fa-box-open"></i> '.$qtyUsed.' / ' . $line->qty;
 			$out .= '			</span>';
 			$out .= '		</div>';
 

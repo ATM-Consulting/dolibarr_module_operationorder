@@ -848,6 +848,35 @@ class OperationOrder extends SeedObject
         return 0;
     }
 
+    public function getAlreadyUsedQtyLines() {
+	    $alreadyUsed = array();
+	    $sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
+	    $sql.= " WHERE mvt.origintype = 'operationorder'";
+	    $sql.= " AND mvt.fk_origin = ".$this->id;
+	    $sql.= " GROUP BY mvt.fk_product";
+
+	    $resql = $this->db->query($sql);
+	    if ($resql)
+	    {
+		    while ($obj = $this->db->fetch_object($resql))
+		    {
+			    $alreadyUsed[$obj->fk_product] = abs($obj->total);
+		    }
+	    }
+	    return $alreadyUsed;
+    }
+	public function getLastLinesByProduct() {
+		$TLastLines = array();
+		foreach ($this->lines as $line)
+		{
+			if ($line->fk_product)
+			{
+				$TLastLines[$line->fk_product] = $line->id;
+			}
+		}
+		return $TLastLines;
+	}
+
 
     /**
      * @param int    $withpicto     Add picto into link
@@ -1979,6 +2008,32 @@ class OperationOrderDet extends SeedObject
             return $obj->ref;
         }
         return '';
+    }
+
+    public function getQtyUsed(&$TLineQtyUsed, &$TLastLinesByProduct) {
+    	$qtyUsed = 0;
+	    if (isset($TLineQtyUsed[$this->fk_product]))
+	    {
+		    if ($TLineQtyUsed[$this->fk_product] > $this->qty) //s'il y a plus de quantité utilisé que ce qu'il y a dans la ligne
+		    {
+			    if ($TLastLinesByProduct[$this->fk_product] != $this->id) //Si on n'est pas sur la dernière ligne mais que tout ne rentre pas
+			    {
+				    $qtyUsed = $this->qty;
+				    $TLineQtyUsed[$this->fk_product] -= $this->qty;
+			    }
+			    else // Si on est sur la dernière ligne on met tout
+			    {
+				    $qtyUsed = $TLineQtyUsed[$this->fk_product];
+				    unset($TLineQtyUsed[$this->fk_product]);
+			    }
+		    }
+		    else // Si ça rentre on met dans la ligne actuelle
+		    {
+			    $qtyUsed = $TLineQtyUsed[$this->fk_product];
+			    unset($TLineQtyUsed[$this->fk_product]);
+		    }
+	    }
+	    return $qtyUsed;
     }
 
     function calcPrices(){
