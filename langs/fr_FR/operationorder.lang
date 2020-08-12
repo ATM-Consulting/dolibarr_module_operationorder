@@ -43,7 +43,7 @@ OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
 OR_ACTIVITYPLANNING_IMPROD_COLOR=Couleur utilisée dans l'écran "Activités journalières" pour afficher les activités improductives
 OR_ACTIVITYPLANNING_INTIME_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche a été effectuée dans les temps
 OR_ACTIVITYPLANNING_LATE_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en dépassement (temps passé > temps prévu)
-OORDER_HIDE_TIME_SPENT=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes
+OORDER_HIDE_TIME_SPENT_IF_CHILD=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes si la ligne à des lignes enfants
 OORDER_HIDE_TIME_PLANNED_IF_CHILD=Cacher le champs "Temps planifié" sur l'ajout ou l'édition de lignes si la ligne a des lignes enfants
 
 # MENU

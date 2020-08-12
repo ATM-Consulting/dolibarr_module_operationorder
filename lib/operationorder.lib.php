@@ -541,14 +541,23 @@ function displayFormFieldsByOperationOrder($object, $line= false, $showSubmitBtn
 
 
 		$outForm.= '<table class="table-full">';
-	    if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD)) {
+	    if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) || ! empty($conf->global->OORDER_HIDE_TIME_SPENT_IF_CHILD)) {
 	    	$TChildLines = $line->fetch_all_children_lines();
 	    }
 		// Display each line fields
-		foreach($line->fields as $key => $val){
-			if(!empty($conf->global->OORDER_HIDE_TIME_SPENT) && $key == 'time_spent') continue;
-			if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) && $key == 'time_planned' && count($TChildLines) > 0) $outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
-			else $outForm.= getFieldCardOutputByOperationOrder($line, $key);
+		foreach($line->fields as $key => $val) {
+			$outputTime=true;
+			if(!empty($conf->global->OORDER_HIDE_TIME_SPENT_IF_CHILD) && $key == 'time_spent'  && count($TChildLines) > 0) {
+				$outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
+				$outputTime=false;
+			}
+			if(!empty($conf->global->OORDER_HIDE_TIME_PLANNED_IF_CHILD) && $key == 'time_planned' && count($TChildLines) > 0) {
+				$outForm.= getFieldCardOutputByOperationOrder($line, $key,'', '','', '',0, array(),'hideobject');
+				$outputTime=false;
+			}
+			if ($outputTime) {
+				$outForm.= getFieldCardOutputByOperationOrder($line, $key);
+			}
 		}
 
 	    if($showSubmitBtn){
