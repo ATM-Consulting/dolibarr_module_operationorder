@@ -2038,25 +2038,28 @@ class OperationOrderDet extends SeedObject
 
     function calcPrices(){
 
-    	/* Sur spéc
-    	 * Règle de calcul du Total HT
-    	 * Si Quantité/Temps utilisé = 0(vide)
-    	 * Total HT = Quantité commandée * P.U. H.T.
-    	 * Sinon
-    	 * Total HT = Quantité/Temps utilisé * P.U. H.T.
+    	/* Si je n'ai pas d'enfant et que j'ai un temps saisie
+    	    total HT = temps saisie * PU HT
+    	    Sinon total HT  = Somme des totaux HT des enfants
     	 */
-		$hours = 0;
-		if(!empty($this->time_spent)) {
-			$hours = round($this->time_spent / 3600, 2);
-		}
 
-		if($hours>0){
-
-			$this->total_ht = $hours * $this->price;
-		}
-		else{
-			$this->total_ht = $this->qty * $this->price;
-		}
+	    $Tlines = $this->fetch_all_children_lines(0,1,1);
+	    if (empty($Tlines)) {
+		    $hours = 0;
+		    if (!empty($this->time_spent)) {
+			    $hours = round($this->time_spent / 3600, 2);
+		    }
+		    if ($hours > 0) {
+			    $this->total_ht = $hours * $this->price;
+		    } else {
+			    $this->total_ht = $this->qty * $this->price;
+		    }
+	    } else {
+		    $this->total_ht=0;
+	    	foreach($Tlines  as $line) {
+			    $this->total_ht += $line->total_ht;
+		    }
+	    }
 	}
 
 

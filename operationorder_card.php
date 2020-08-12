@@ -1438,7 +1438,8 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			/**
 			 * @var $line OperationOrderDet
 			 */
-			$line->calcPrices();
+			//Comment because already done into class fetch call...
+			//$line->calcPrices();
 
 			if (empty($line->id)) $line->id = $line->rowid;
 
