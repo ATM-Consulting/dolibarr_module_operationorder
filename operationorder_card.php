@@ -630,7 +630,7 @@ if (empty($reshook))
 										}
 
 										$ret = $supplieroder->fetch($supplieroder->id); // Reload to get new records
-										$supplieroder->generateDocument($supplieroder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+										$supplieroder->generateDocument($supplieroder->modelpdf, $outputlangs);
 							}
 						}
 					}
@@ -1492,11 +1492,15 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			// QTY ORDERED
 			//Repris d'interface manager
 			$qtyUsed = $line->getQtyUsed($TLineQtyUsed, $TLastLinesByProduct);
-
+			if ($qtyUsed > $line->qty) {
+				$textClass = "text-danger paddingrightonly";
+			} else {
+				$textClass = "";
+			}
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
-			$out .= '			<span class="classfortooltip" title="' . $langs->trans("QtyOrdered") . '" >';
-			if(empty($qtyUsed)) $out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
-			else $out .= '				<i class="fas fa-box-open"></i> '.$qtyUsed.' / ' . $line->qty;
+			$out .= '			<span class="'.$textClass.'classfortooltip" title="' . $langs->trans("Qty") . '" ><i class="fas fa-box-open"></i>';
+			if(empty($qtyUsed)) $out .= $line->qty;
+			else $out .= '<i class="fa fa-caret-up"></i>'.$qtyUsed.' / ' . $line->qty;
 			$out .= '			</span>';
 			$out .= '		</div>';
 
