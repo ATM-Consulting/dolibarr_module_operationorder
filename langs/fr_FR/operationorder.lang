@@ -131,11 +131,13 @@ WarningORStatusCode=Lors de la définition de statut sur plusieurs entités, vei
 # RIGHTS
 operationorder_read=Peut voir les ordres de réparation
 operationorder_write=Peut créer et modifier les ordres de réparations
+operationorder_delete = Suppression les ordres de réparations
 operationorder_status_read=Peut consulter les différents status d'ordres de réparation
 operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
 operationorder_planning_read=Peut consulter le planning des ordres de réparations
 operationorder_userplanning_write=Peut modifier les planning utilisateur
 operationorder_usergroupplanning_write=Peut modifier les planning groupe d'utilisateurs
+operationorder_manager_read=Accéder au manager d'atelier
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -275,7 +277,6 @@ errNoPlanning=Pas de planning défini pour l'utilisateur ou le groupe
 OperationOrderHistoryList=Historique
 OperationOrderHistory=Historique
 #manager
-operationorder_manager_read=Accéder au manager d'atelier
 productUsedForOorder=Produit utilisé pour Ordre de réparation %s
 ErrorNoGroupForPlanning=Aucun groupe d'utilisateur n'est défini pour l'atelier
 ErrorNoUserInGroupForPlanning=Aucun utilisateur présent dans le groupe atelier sur cette entité
