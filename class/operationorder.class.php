@@ -1545,13 +1545,19 @@ class OperationOrder extends SeedObject
 
     public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
     {
-
+		global $user;
         if ($key == 'time_planned_f')
         {
             $out = '<input  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.convertSecondToTime($value).'" >';
         }
         else
         {
+        	if ($key == 'fk_c_operationorder_type') {
+		        $nonewbutton=!($user->admin);
+	        }
+	        if ($key == 'fk_soc') {
+		        $nonewbutton=!($user->rights->societe->creer);
+	        }
             $out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
         }
 
@@ -2043,7 +2049,7 @@ class OperationOrderDet extends SeedObject
     	    Sinon total HT  = Somme des totaux HT des enfants
     	 */
 
-	    $Tlines = $this->fetch_all_children_lines(0,1,1);
+	    $Tlines = $this->fetch_all_children_lines(0,0,1);
 	    if (empty($Tlines)) {
 		    $hours = 0;
 		    if (!empty($this->time_spent)) {
