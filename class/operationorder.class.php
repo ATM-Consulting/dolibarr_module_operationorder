@@ -2310,7 +2310,7 @@ class OperationOrderDet extends SeedObject
 				/**
 				 * @var $line OperationOrderDet
 				 */
-				if(!empty($this->parent))$line->parent = $this->parent;
+				if(!empty($this->parent)) $line->parent = $this->parent;
 				$res = $line->delete($user, $notrigger);
 				if($res < 0){
 					return -2;
