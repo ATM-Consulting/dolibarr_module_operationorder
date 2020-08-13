@@ -2201,7 +2201,7 @@ class OperationOrderDet extends SeedObject
 				$out.= $this->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
 			}
 			else{
-				$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+				$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, !$user->rights->produit->creer);
 
 				$out.= '<script type="text/javascript">
 					$(function()
@@ -2232,8 +2232,6 @@ class OperationOrderDet extends SeedObject
 										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timehour\' value=\'"+data.time_plannedhour+"\' />");
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val(data.time_plannedmin);
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timemin\' value=\'"+data.time_plannedmin+"\' />");
-
-
 										}
 										else{
 										   // nothing to do ?
