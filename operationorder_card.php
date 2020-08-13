@@ -1495,16 +1495,15 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$qtyUsed = $line->getQtyUsed($TLineQtyUsed, $TLastLinesByProduct);
 			if ($qtyUsed > $line->qty) {
 				$textClass = "text-danger paddingrightonly";
+				$iconInfo= '<i class="fa fa-caret-up"></i>';
 			} else {
 				$textClass = "";
+				$iconInfo="";
 			}
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
-			$out .= '			<span class="'.$textClass.'classfortooltip" title="' . $langs->trans("Qty") . '" ><i class="fas fa-box-open"></i>';
-			if(empty($qtyUsed)) $out .= $line->qty;
-			else $out .= '<i class="fa fa-caret-up"></i>'.$qtyUsed.' / ' . $line->qty;
-			$out .= '			</span>';
+			if(!empty($qtyUsed))  $out .= '<span class="'.$textClass.'classfortooltip" title="' . $langs->trans("QtyUsed") . '" >'.$iconInfo.'<i class="fas fa-box-open"></i>'.$qtyUsed.'</span> / ';
+			$out .= '		<span class=" classfortooltip" title="' . $langs->trans("QtyPlanned") . '" ><i class="fas fa-box-open"></i>'.$line->qty.'</span>';
 			$out .= '		</div>';
-
 
 			// TIME SPENT AND PLANNED
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -time-spent">';

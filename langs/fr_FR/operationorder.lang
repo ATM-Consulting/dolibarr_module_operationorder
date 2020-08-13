@@ -187,6 +187,8 @@ OperationOrderLineAdded=ligne ajoutée l'ordre de réparation
 LineNotFound=Ligne introuvable
 
 QtyOrdered=Quantité commandé
+QtyPlanned=Quantité prévue
+QtyUsed=Quantité utilisé
 ExpectedWorkload=Charge de travail prévue
 HoursPlanned=Temps Plannifié
 HoursSpent=Temps consommé
