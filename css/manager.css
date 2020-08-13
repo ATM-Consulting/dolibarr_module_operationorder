@@ -12,6 +12,7 @@ body {
 .row table {
 	border: 1px solid #6e9494;
 	margin: auto;
+	margin-top: 10px;
 	max-width: 100%;
 	margin-bottom: 10px;
 }

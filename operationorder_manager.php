@@ -22,7 +22,7 @@ $hookmanager->initHooks(array('OOmanagercard'));
 <!--	<link rel="stylesheet" href="css/normalize.css"/>-->
 	<link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.10.4.custom.min.css" />
-	<link rel="stylesheet" href="css/manager.css"/>
+	<link rel="stylesheet" type="text/css" href="css/manager.css"/>
 
 	<script src="js/jquery-1.9.1.min.js" type="text/javascript"></script>
 	<!-- Il faut mettre le js bootstrap avant jquery ui sinon il y a certains bugs jquery (exemple : il n'y a plus de croix sur les dialogs) -->
