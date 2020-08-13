@@ -1735,7 +1735,7 @@ function getTimePlannedByDate($date_timestamp, $forWeek=false){
 
     foreach($TDates as $date_timestamp)
     {
-        $date= date('Y-m-d', $date_timestamp);
+        $date = date('Y-m-d', $date_timestamp);
 
         //on récupère tous les événement OR planifiés sur la journée
         $sql = "SELECT rowid as id FROM ".MAIN_DB_PREFIX."operationorderaction WHERE dated <= '".$date." 23:59:59' AND datef >= '".$date." 00:00:00'";
@@ -1758,7 +1758,7 @@ function getTimePlannedByDate($date_timestamp, $forWeek=false){
                 if (!$error)
                 {
                     $operationOrder = new OperationOrder($db);
-                    $res = $operationOrder->fetch($or_action->fk_operationorder);
+                    $res = $operationOrder->fetch($or_action->fk_operationorder, false);
 
                     if ($res < 0) $error++;
                 }
@@ -1849,7 +1849,6 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
 
             if ($res > 0 && $userplanning->active)
             {
-
                 //absence
                 if ($conf->absence->enabled)
                 {

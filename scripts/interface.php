@@ -732,7 +732,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	$TRes = array();
 
 	$sql = 'SELECT o.rowid id, oa.dated, oa.datef, oa.rowid actionid  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
-	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
+	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
 	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
 
 	$sql.= ' WHERE 1 = 1 ';
@@ -758,7 +758,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
             $event->title	= '';
             $event->msg = '';
 			$operationOrder = new OperationOrder($db);
-			$operationOrder->fetch($obj->id);
+			$operationOrder->fetch($obj->id, false);
 			$operationOrder->loadStatusObj();
             if($conf->stock->enabled && !empty($conf->global->OPODER_DISPLAY_STOCK_ON_PLANNING)) {
                 $isStockAvailable = $operationOrder->isStockAvailable();
@@ -817,9 +817,10 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
 
 			$event->msg.= implode('<br/>',$T);
-			if ($operationOrder->getTimePlannedT() > 0)
+			$ope_planned=$operationOrder->getTimePlannedT();
+			if ($ope_planned > 0)
 			{
-				$event->ope_planned = $operationOrder->getTimePlannedT();
+				$event->ope_planned = $ope_planned;
 				$event->ope_spent = $operationOrder->getTimeSpent();
 				$event->ope_percent = round(($event->ope_spent / $event->ope_planned )*100);
 			}
