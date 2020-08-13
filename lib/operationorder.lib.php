@@ -1152,9 +1152,16 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
     require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
 
-    global $db, $conf;
+    global $db, $conf, $planningSchedulCache;
+	dol_syslog(__METHOD__. ' $startTimeWeek='.dol_print_date($startTimeWeek).' $endTimeWeek='.dol_print_date($endTimeWeek), LOG_DEBUG);
 
-    $TSchedules = array();
+	if (isset($planningSchedulCache)
+		&& is_array($planningSchedulCache)
+		&& array_key_exists($startTimeWeek,$planningSchedulCache)
+		&& array_key_exists($endTimeWeek,$planningSchedulCache[$startTimeWeek])){
+		return $planningSchedulCache[$startTimeWeek][$endTimeWeek];
+	}
+	$TSchedules = array();
     $TSchedulesByUser = array();
     $TDaysOff = array();
     $TDaysConvert = array('Mon' => 'lundi', 'Tue' => 'mardi', 'Wed' => 'mercredi', 'Thu' => 'jeudi', 'Fri' => 'vendredi', 'Sat' => 'samedi', 'Sun' => 'dimanche');
@@ -1214,7 +1221,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
-
             $res = $userplanning->fetchByObject($user->id, 'user');
             //si l'utilisateur a un planning actif alors on utilise son planning
             if ($res > 0 && $userplanning->active > 0)
@@ -1230,9 +1236,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                 {
                     $TSchedulesByUser[] = $userplanning;
                 }
-
             }
-
 
             //On récupère toutes les absences de l'utilisateur pour la semaine
             $TAbsences = array();
@@ -1244,16 +1248,10 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
                 $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, $dateStart->format('Y-m-d'), $dateEnd->format('Y-m-d'));
 
-                foreach ($TPlanning as $t_current => $TAbsence)
-                {
-
-                    foreach ($TAbsence as $fk_user => $TRH_absenceDay)
-                    {
-
-                        foreach ($TRH_absenceDay as $absence)
-                        {
-                            if(!($absence->isPresence))
-                            {
+                foreach ($TPlanning as $t_current => $TAbsence) {
+                    foreach ($TAbsence as $fk_user => $TRH_absenceDay) {
+                        foreach ($TRH_absenceDay as $absence) {
+                            if(!($absence->isPresence)) {
                                 $absenceDateTimestamp = strtotime($absence->date);
 
                                 if (!empty($absence) && $absence->ddMoment == 'matin' && $absence->dfMoment == 'apresmidi')
@@ -1298,7 +1296,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                     && empty($userplanning->{$day.'_heurefpm'}))
                         continue;
 
-
                     if(empty($userplanning->{$day.'_heuredam'}) || !empty(in_array($date.'_am', $TAbsences))) $userplanning->{$day.'_heuredam'} = '00:00';
                     if(empty($userplanning->{$day.'_heurefam'}) || !empty(in_array($date.'_am', $TAbsences))) $userplanning->{$day.'_heurefam'} = '00:00';
                     if(empty($userplanning->{$day.'_heuredpm'}) || !empty(in_array($date.'_pm', $TAbsences))) $userplanning->{$day.'_heuredpm'} = '00:00';
@@ -1339,7 +1336,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                             {
                                 $schedule['max'] = $userplanning->{$day.'_heurefpm'};
                                 $scheduletoaddpm = false;
-
                             }
 
                             //si l'heure de fin est supérieure au maximum et que l'heure de début est inférieure au minimum alors on usurpe le min et le max
@@ -1347,13 +1343,11 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                                 $schedule['min'] = $userplanning->{$day.'_heuredam'};
                                 $schedule['max'] = $userplanning->{$day.'_heurefam'};
                                 $scheduletoaddam = false;
-
                             }
                             elseif($userplanning->{$day.'_heuredpm'} <= $schedule['min'] && $userplanning->{$day.'_heurefpm'} >= $schedule['max']){
                                 $schedule['min'] = $userplanning->{$day.'_heuredpm'};
                                 $schedule['max'] = $userplanning->{$day.'_heurefpm'};
                                 $scheduletoaddpm = false;
-
                             }
 
                             elseif($userplanning->{$day.'_heuredam'} >= $schedule['min'] && $userplanning->{$day.'_heurefam'} <= $schedule['max']){
@@ -1362,7 +1356,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                             elseif($userplanning->{$day.'_heuredpm'} >= $schedule['min'] && $userplanning->{$day.'_heurefpm'} <= $schedule['max']){
                                 $scheduletoaddpm = false;
                             }
-
                         }
 
                         if($scheduletoaddam) {
@@ -1372,13 +1365,12 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                             $TSchedules[$date][] = array('min' => $userplanning->{$day.'_heuredpm'}, 'max' => $userplanning->{$day.'_heurefpm'});
                         }
                     }
-
                     $i++;
                 }
             }
         }
     }
-
+	$planningSchedulCache[$startTimeWeek][$endTimeWeek]=$TSchedules;
     return $TSchedules;
 }
 
@@ -1438,8 +1430,8 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
  */
 function calculateEndTimeEventByBusinessHours($startTime, $duration){
 
-
-    //fin de l'événement
+	dol_syslog(__FILE__.' calculateEndTimeEventByBusinessHours $startTime='.dol_print_date($startTime). ' $duration='.$duration, LOG_DEBUG);
+	//fin de l'événement
     $endTime = $startTime + $duration;
 
     $i = 0;
@@ -1496,6 +1488,7 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
 function getNextSchedules ($startTime)
 {
     $TSchedulesFinal = array();
+	dol_syslog(__FILE__.' getNextSchedules $startTime='.dol_print_date($startTime), LOG_DEBUG);
 
     $toadd = 0;             //compteur du nombre de semaine de créneauxà ajouter
     $i = 0;
@@ -1565,7 +1558,6 @@ function getNextSchedules ($startTime)
  * @return array $TBusinessHours
  */
 function sortBusinessHours ($TBusinessHours){
-
 
     ksort($TBusinessHours);
 
