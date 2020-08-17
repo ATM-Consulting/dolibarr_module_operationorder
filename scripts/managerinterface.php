@@ -130,6 +130,7 @@ if (empty($reshook) && !empty($action))
 						$obj = $db->fetch_object($resql);
 						if (!empty($obj->ref))
 							$data['courantTask'] .= ' (' . $obj->ref . ')';
+							$data['courantOR'] = $obj->ref;
 					}
 				}
 			}
