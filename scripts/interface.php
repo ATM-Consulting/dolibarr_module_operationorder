@@ -126,7 +126,7 @@ if(GETPOST('action'))
 						$durationHours = UnitsTools::unitConverteur($product->duration_value, $fk_duration_unit, $fk_unit_hours);
 
 						$data['time_plannedhour'] = floor($durationHours);
-						$data['time_plannedmin'] = floor(($durationHours-floor($durationHours)) * 60);
+						$data['time_plannedmin'] = round($durationHours-floor($durationHours),2)*60;
 					}
 					else{
 						$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
