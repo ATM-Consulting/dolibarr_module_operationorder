@@ -174,10 +174,21 @@ if(GETPOST('action'))
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
 	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
+	else if ($action == 'getCreateScheduleForm') $data['result'] = _getCreateScheduleForm($data['userid'], $data['dateStart'], $data['hourStart']);
 
 }
 
 echo json_encode($data);
+function _getCreateScheduleForm($userid, $dateStart, $hourStart)
+{
+	global $db, $langs;
+
+	$out = '';
+	$out.= $userid;
+
+
+	return $out;
+}
 
 function _updateSchedule($scheduleId, $startTime, $endTime)
 {
@@ -292,6 +303,7 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 							let minDate = new Date($("#minDate").val());
 							let maxDate = new Date($("#maxDate").val());
+
 
 							let startDate = new Date(
 								$("#task_datehour_dyear").val()+"-"+

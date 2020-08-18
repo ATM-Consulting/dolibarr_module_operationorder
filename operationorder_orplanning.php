@@ -264,7 +264,7 @@ if (!empty($TSchedules))
 				},
 				onInitRow: function(node, data){
 					// addLog('onInitRow', data);
-					console.log("init", node, data);
+					// console.log("init", node, data);
 					node.attr('data-userId', data.userId);
 				},
 				onClick: function(node, data){ // quand on clique sur un événement
@@ -277,8 +277,8 @@ if (!empty($TSchedules))
 					let fk_or		= data.data.fk_or;
 					let fk_user		= data.data.fk_user;
 
-					let scheduleData = $sc.timeSchedule('scheduleData');
-					let schedulesByUser = $sc.timeSchedule('timelineData');
+					let scheduleData = $sc.timeSchedule('scheduleData').slice();
+					let schedulesByUser = $sc.timeSchedule('timelineData').slice();
 
 					oldTL = 0;
 					for (i in schedulesByUser)
@@ -336,13 +336,55 @@ if (!empty($TSchedules))
 
 				},
 				onScheduleClick: function(node, data){ // quand on clique sur un endroit vide
-					console.log(node, data);
-					console.log($(node).parent().attr('userId') == undefined);
-					if ($(node).parent().attr('userId') == undefined)
+					// console.log(node, data);
+
+					// récupération de l'id user au premier clic sur un espace vide
+					if ($(node).parent().data('userid') == undefined)
 					{
-						console.log($('.sc_data_scroll .timeline'));
-						console.log($(".sc_main .timeline"));
+						var scroll = $('.sc_data_scroll .timeline');
+						var main = $(".sc_main .timeline");
+						// console.log(scroll);
+						scroll.each(function (index, el) {
+							$(main[index]).data('userid', $(el).data('userid'))
+						});
+						// console.log(main);
 					}
+
+					let userid = $(node).parent().data('userid');
+					if (userid != undefined)
+					{
+						// appel pour aller chercher le formulaire à foutre dans la popin
+						/*$.ajax({
+							url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getCreateScheduleForm',
+							method: 'POST',
+							data: {
+								userid: userid/!*,
+								minHour: minDate,
+								maxHour: maxDate*!/
+							},
+							dataType: 'json',
+							// La fonction à apeller si la requête aboutie
+							success: function (response) {
+								// console.log(response);
+								popin.html(response.result);
+								popin.dialog("open");
+								popin.dialog({height: 'auto', width: 'auto'}); // resize to content
+								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"200px"});
+							}
+						});*/
+						// création de la popin
+						// input liste des OR affiché sur la planification
+						// input lignes de l'OR séléctionné
+						// heure début / heure fin avec heure de début prérempli par la donné dans la variable "data"
+
+						// retour d'appel => afficher la popin
+
+						// à la fermeture de la popin reload la page
+					}
+					else console.log("userid not found on node")
+
+
+
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);
