@@ -1392,7 +1392,7 @@ class OperationOrder extends SeedObject
 										$durationHours = UnitsTools::unitConverteur($childLineProduct->duration_value, $fk_duration_unit, $fk_unit_hours);
 
 										$time_plannedhour = floor($durationHours);
-										$time_plannedmin = floor(($durationHours-floor($durationHours)) * 60);
+										$time_plannedmin = round($durationHours-floor($durationHours),2) * 60;
 									}
 									else{
 										$this->errors[] = $langs->transnoentities('UnitCodeNotFound', 'H');
