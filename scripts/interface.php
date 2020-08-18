@@ -174,17 +174,26 @@ if(GETPOST('action'))
 	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
 	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
 	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
-	else if ($action == 'getCreateScheduleForm') $data['result'] = _getCreateScheduleForm($data['userid'], $data['dateStart'], $data['hourStart']);
+	else if ($action == 'getCreateScheduleForm') $data['result'] = _getCreateScheduleForm($data['userid'], $data['date'], $data['minHour'], $data['maxHour'], $data['selectedHour'], $data['entity']);
 
 }
 
 echo json_encode($data);
-function _getCreateScheduleForm($userid, $dateStart, $hourStart)
+
+function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHour, $entity)
 {
 	global $db, $langs;
 
+	$or = new OperationOrder($db);
+	$orDet = new OperationOrderDet($db);
+
 	$out = '';
-	$out.= $userid;
+	$out.= $userid."<br />";
+	$out.= $date."<br />";
+	$out.= $minHour."<br />";
+	$out.= $maxHour."<br />";
+	$out.= $selectedHour."<br />";
+	$out.= $entity."<br />";
 
 
 	return $out;
