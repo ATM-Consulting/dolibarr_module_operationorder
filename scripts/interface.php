@@ -182,20 +182,82 @@ echo json_encode($data);
 
 function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHour, $entity)
 {
-	global $db, $langs;
-
-	$or = new OperationOrder($db);
-	$orDet = new OperationOrderDet($db);
+	global $db, $langs, $conf;
 
 	$out = '';
-	$out.= $userid."<br />";
+	$or = new OperationOrder($db);
+	$orDet = new OperationOrderDet($db);
+	$form = new Form($db);
+	$u = new User($db);
+
+	$switchEntity = false;
+	if ($entity != $conf->entity)
+	{
+		$switchEntity = true;
+
+		$oldEntity = $conf->entity;
+		$conf->entity = $entity;
+		$conf->setValues($db);
+	}
+
+	$resUser = $u->fetch($userid);
+	if ($resUser <= 0)
+	{
+		$out.= "utilisateur $userid non trouvé";
+		return $out;
+		exit;
+	}
+	$out.= $langs->trans('User').' : ' . $u->getNomUrl(1)."<br />";
+
+
+	$arrDate = explode('/',$date);
+	$sqlDate = strtotime($arrDate[2].'-'.$arrDate[1].'-'.$arrDate[0].' 00:00:00');
+	$sqlDate = date("Y-m-d 00:00:00", strtotime('-3 months', $sqlDate));
+
+	// liste des OR qui ont un statut dont le champs "Afficher les ordres de réparation sur ce statut dans le planning" à 1
+	// et qui on une date de création > date - 3 mois
+	// de l'entité spécifiée
+	$sql = "SELECT oo.rowid, oo.ref FROM ".MAIN_DB_PREFIX."operationorder oo";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorder_status os ON os.rowid = oo.status";
+	$sql.= " WHERE os.display_on_planning = 1";
+	$sql.= " AND oo.entity = ".$conf->entity;
+	$sql.= " AND oo.date_creation > '".$db->idate($sqlDate)."'";
+	$resql = $db->query($sql);
+	$TOR = array();
+	if ($resql)
+	{
+		while ($obj = $db->fetch_object($resql))
+		{
+			$TOR[$obj->rowid] = $obj->ref;
+		}
+	}
+
+	if (!empty($TOR))
+	{
+		$out.= $langs->trans('OperationOrder').' : '.$form->selectArray('oOrderId', $TOR, "", 1).'<br />';
+
+		// récupération des lignes d'OR concernées
+		$sql = "SELECT ood.fk_operation_order, ood.rowid, ood.fk_parent_line, p.ref, p.label, p2.ref as parent_ref, p2.label as parent_label FROM ".MAIN_DB_PREFIX."operationorderdet ood";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p ON p.rowid = ood.fk_product";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_extrafields pe ON pe.fk_object = p.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet parentDet ON parentDet.rowid=ood.fk_parent_line";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p2 ON p2.rowid = parentDet.fk_product";
+		$sql.= " WHERE pe.or_scan = 1";
+		$sql.= " AND ood.fk_operation_order IN ('".implode("','", array_keys($TOR))."')";
+		$out.=$sql;
+	}
+
 	$out.= $date."<br />";
 	$out.= $minHour."<br />";
 	$out.= $maxHour."<br />";
 	$out.= $selectedHour."<br />";
 	$out.= $entity."<br />";
 
-
+	if ($switchEntity)
+	{
+		$conf->entity = $oldEntity;
+		$conf->setValues($db);
+	}
 	return $out;
 }
 
