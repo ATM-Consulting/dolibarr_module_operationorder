@@ -185,6 +185,7 @@ function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHou
 	global $db, $langs, $conf;
 
 	$out = '';
+	$TOR = $TORDet = array();
 	$or = new OperationOrder($db);
 	$orDet = new OperationOrderDet($db);
 	$form = new Form($db);
@@ -223,7 +224,6 @@ function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHou
 	$sql.= " AND oo.entity = ".$conf->entity;
 	$sql.= " AND oo.date_creation > '".$db->idate($sqlDate)."'";
 	$resql = $db->query($sql);
-	$TOR = array();
 	if ($resql)
 	{
 		while ($obj = $db->fetch_object($resql))
@@ -244,7 +244,20 @@ function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHou
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p2 ON p2.rowid = parentDet.fk_product";
 		$sql.= " WHERE pe.or_scan = 1";
 		$sql.= " AND ood.fk_operation_order IN ('".implode("','", array_keys($TOR))."')";
-		$out.=$sql;
+
+		$resql = $db->query($sql);
+		if ($resql)
+		{
+			while ($obj = $db->fetch_object($resql))
+			{
+				$TORDet[$obj->fk_operation_order][$obj->rowid] = $obj->label." - ".$obj->parent_label;
+			}
+		}
+		if (!empty($TORDet))
+		{
+			// dans une div cachée, créer un select par OR avec ses lignes en option
+			// au changement du champ OR on viendra copier le contenu du bon select dans le selectarray visible
+		}
 	}
 
 	$out.= $date."<br />";
