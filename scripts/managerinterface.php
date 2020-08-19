@@ -130,8 +130,8 @@ if (empty($reshook) && !empty($action))
 						$obj = $db->fetch_object($resql);
 						if (!empty($obj->ref))
 							$data['courantTask'] .= ' (' . $obj->ref . ')';
+							$data['courantOR'] = $obj->ref;
 					}
-
 				}
 			}
 		}
@@ -141,6 +141,7 @@ if (empty($reshook) && !empty($action))
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
 		$sql.= ' AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' as s WHERE or_pointable > 0 ) ';
+		$sql.= ' AND oorder.entity IN ('.getEntity('operationorder', 1).') ';
 
 		$data['oOrders']=array();
 
@@ -204,28 +205,10 @@ if (empty($reshook) && !empty($action))
 			$TPointable = $ProdErrors = $TLastLines = array();
 
 			$alreadyUsed = array();
-			$sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
-			$sql.= " WHERE mvt.origintype = 'operationorder'";
-			$sql.= " AND mvt.fk_origin = ".$OR->id;
-			$sql.= " GROUP BY mvt.fk_product";
-
-			$resql = $db->query($sql);
-			if ($resql)
-			{
-				while ($obj = $db->fetch_object($resql))
-				{
-					$alreadyUsed[$obj->fk_product] = abs($obj->total);
-				}
-			}
+			$alreadyUsed = $OR->getAlreadyUsedQtyLines();
 
 			// récupération de la dernière ligne de chaque produit pour affichage sortie de stock
-			foreach ($OR->lines as $line)
-			{
-				if ($line->fk_product)
-				{
-					$TLastLines[$line->fk_product] = $line->id;
-				}
-			}
+			$TLastLines = $OR->getLastLinesByProduct();
 
 			foreach ($OR->lines as $line)
 			{
@@ -255,28 +238,7 @@ if (empty($reshook) && !empty($action))
 
 				}
 
-				$used = 0;
-				if (isset($alreadyUsed[$line->fk_product]))
-				{
-					if ($alreadyUsed[$line->fk_product] > $line->qty)
-					{
-						if ($TLastLines[$line->fk_product] != $line->id)
-						{
-							$used = $line->qty;
-							$alreadyUsed[$line->fk_product] -= $line->qty;
-						}
-						else
-						{
-							$used = $alreadyUsed[$line->fk_product];
-							unset($alreadyUsed[$line->fk_product]);
-						}
-					}
-					else
-					{
-						$used = $alreadyUsed[$line->fk_product];
-						unset($alreadyUsed[$line->fk_product]);
-					}
-				}
+				$used = $line->getQtyUsed($alreadyUsed, $TLastLines);
 
 				$data['oOrderLines'][] = array(
 					'ref' 		=> $line->product_ref
@@ -314,9 +276,27 @@ if (empty($reshook) && !empty($action))
 				// mise à jour du temps passé sur la ligne pointable
 				$ordet = new OperationOrderDet($db);
 				$ordet->fetch($counter->fk_orDet);
-
-				$ordet->time_spent += $counter->task_duration;
-				$ordet->update($usr);
+				$or= new OperationOrder($db);
+				if (!empty($ordet->fk_operation_order)) {
+					$or->fetch($ordet->fk_operation_order);
+					$or->updateline($ordet->id,
+						$ordet->description,
+						$ordet->qty,
+						$ordet->price,
+						$ordet->fk_warehouse,
+						$ordet->pc,
+						$ordet->time_planned,
+						($ordet->time_spent + $counter->task_duration),
+						$ordet->fk_product,
+						0,
+						$ordet->date_start,
+						$ordet->date_end ,
+						$ordet->type,
+						$ordet->fk_parent_line ,
+						$ordet->label,
+						$ordet->special_code ,
+						$ordet->array_options);
+				}
 
 				$remaining = $counter->remainingCountersForOR($ordet->id);
 				// changement de statut de l'OR de la ligne
@@ -376,7 +356,7 @@ if (empty($reshook) && !empty($action))
 
 		if ($ret > 0)
 		{
-			$counter->task_datehour_f = dol_nstockMouvementow();
+			$counter->task_datehour_f = dol_now();
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$retupd = $counter->update($usr);
 
@@ -387,9 +367,27 @@ if (empty($reshook) && !empty($action))
 					// mise à jour du temps passé sur la ligne pointable
 					$ordet = new OperationOrderDet($db);
 					$ordet->fetch($counter->fk_orDet);
-
-					$ordet->time_spent += $counter->task_duration;
-					$ordet->update($usr);
+					$or= new OperationOrder($db);
+					if (!empty($ordet->fk_operation_order)) {
+						$or->fetch($ordet->fk_operation_order);
+						$or->updateline($ordet->id,
+							$ordet->description,
+							$ordet->qty,
+							$ordet->price,
+							$ordet->fk_warehouse,
+							$ordet->pc,
+							$ordet->time_planned,
+							($ordet->time_spent + $counter->task_duration),
+							$ordet->fk_product,
+							0,
+							$ordet->date_start,
+							$ordet->date_end ,
+							$ordet->type,
+							$ordet->fk_parent_line ,
+							$ordet->label,
+							$ordet->special_code ,
+							$ordet->array_options);
+					}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne
@@ -461,9 +459,27 @@ if (empty($reshook) && !empty($action))
 					// mise à jour du temps passé sur la ligne pointable
 					$ordet = new OperationOrderDet($db);
 					$ordet->fetch($counter->fk_orDet);
-
-					$ordet->time_spent += $counter->task_duration;
-					$ordet->update($usr);
+					$or = new OperationOrder($db);
+					if (!empty($ordet->fk_operation_order)) {
+						$or->fetch($ordet->fk_operation_order);
+						$or->updateline($ordet->id,
+							$ordet->description,
+							$ordet->qty,
+							$ordet->price,
+							$ordet->fk_warehouse,
+							$ordet->pc,
+							$ordet->time_planned,
+							($ordet->time_spent + $counter->task_duration),
+							$ordet->fk_product,
+							0,
+							$ordet->date_start,
+							$ordet->date_end ,
+							$ordet->type,
+							$ordet->fk_parent_line ,
+							$ordet->label,
+							$ordet->special_code ,
+							$ordet->array_options);
+					}
 
 					$remaining = $counter->remainingCountersForOR($ordet->id);
 					// changement de statut de l'OR de la ligne
@@ -598,9 +614,7 @@ if (empty($reshook) && !empty($action))
 										$data['errorMsg'] = $langs->trans('ErrorStockMVT');
 									}
 								}
-
 							}
-
 						}
 					}
 					else

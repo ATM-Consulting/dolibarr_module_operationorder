@@ -43,15 +43,15 @@ OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
 OR_ACTIVITYPLANNING_IMPROD_COLOR=Couleur utilisée dans l'écran "Activités journalières" pour afficher les activités improductives
 OR_ACTIVITYPLANNING_INTIME_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche a été effectuée dans les temps
 OR_ACTIVITYPLANNING_LATE_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en dépassement (temps passé > temps prévu)
-OORDER_HIDE_TIME_SPENT=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes
+OORDER_HIDE_TIME_SPENT_IF_CHILD=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes si la ligne à des lignes enfants
 OORDER_HIDE_TIME_PLANNED_IF_CHILD=Cacher le champs "Temps planifié" sur l'ajout ou l'édition de lignes si la ligne a des lignes enfants
 
 # MENU
 LeftMenuOperationOrder=Ordre de réparation
 LeftMenuOperationOrderCreate=Nouvel ordre de réparation
-LeftMenuOperationOrderList=Liste
+LeftMenuOperationOrderList=Liste des OR
 LeftMenuOperationOrderListHistory=Historique
-OperationOrderTopMenu=Réparations
+OperationOrderTopMenu=Atelier
 LeftMenuOperationOrderStatusMenu=Gestion des statuts
 LeftMenuOperationOrderStatusCreate=Nouveau statut
 LeftMenuOperationOrderStatusList=Liste
@@ -131,11 +131,13 @@ WarningORStatusCode=Lors de la définition de statut sur plusieurs entités, vei
 # RIGHTS
 operationorder_read=Peut voir les ordres de réparation
 operationorder_write=Peut créer et modifier les ordres de réparations
+operationorder_delete = Suppression les ordres de réparations
 operationorder_status_read=Peut consulter les différents status d'ordres de réparation
 operationorder_status_write=Peut créer/modifier les différents status d'ordres de réparation
 operationorder_planning_read=Peut consulter le planning des ordres de réparations
 operationorder_userplanning_write=Peut modifier les planning utilisateur
 operationorder_usergroupplanning_write=Peut modifier les planning groupe d'utilisateurs
+operationorder_manager_read=Accéder au manager d'atelier
 
 # LIST
 OperationOrderList=Liste ordre de réparation
@@ -159,7 +161,7 @@ SupplierOrderSaveError=Sauvegarde de la commande fournisseur en erreur
 ProductType=Type
 SupplierOrderCreated=Commande fournisseur créée
 TimePlannedTheoretical=Temps d'immobilisation théorique
-TimePlannedForced=Temps d'immobilisation forcé
+TimePlannedForced=Temps de mise a disposition du véhicule
 WarningORTimePlannedF=OR existant et associé non modifié
 planned_date_help=Date de plannification de la réparation/entretiens
 PlannedDate=Date de planification
@@ -185,6 +187,8 @@ OperationOrderLineAdded=ligne ajoutée l'ordre de réparation
 LineNotFound=Ligne introuvable
 
 QtyOrdered=Quantité commandé
+QtyPlanned=Quantité prévue
+QtyUsed=Quantité utilisé
 ExpectedWorkload=Charge de travail prévue
 HoursPlanned=Temps Plannifié
 HoursSpent=Temps consommé
@@ -275,7 +279,6 @@ errNoPlanning=Pas de planning défini pour l'utilisateur ou le groupe
 OperationOrderHistoryList=Historique
 OperationOrderHistory=Historique
 #manager
-operationorder_manager_read=Accéder au manager d'atelier
 productUsedForOorder=Produit utilisé pour Ordre de réparation %s
 ErrorNoGroupForPlanning=Aucun groupe d'utilisateur n'est défini pour l'atelier
 ErrorNoUserInGroupForPlanning=Aucun utilisateur présent dans le groupe atelier sur cette entité
@@ -320,3 +323,4 @@ OperationOrderRelated = Ordres de réparations liés
 LeftMenuOperationOrderORPlanning=Activités journalières
 
 ErrorNoUserInGroupOrNoGroup=Pas d'utilisateur dans le "Groupe d'utilisateurs à prendre en compte pour le planning OR" ou pas de groupe configuré
+ClotureEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, le champ date de clôture est peuplé

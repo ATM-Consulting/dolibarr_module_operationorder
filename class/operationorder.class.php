@@ -81,7 +81,7 @@ class OperationOrder extends SeedObject
         'fk_soc' => array('type'=>'integer:Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label'=>'ThirdParty', 'enabled'=>1, 'position'=>50, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'help'=>"LinkToThirparty"),
         'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>1, 'position'=>52, 'notnull'=>0, 'visible'=>1, 'index'=>1),
         'date_valid' => array('type'=>'datetime', 'label'=>'DateValid', 'enabled'=>1, 'position'=>56, 'notnull'=>0, 'visible'=>-2,),
-        'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2,),
+        'date_cloture' => array('type'=>'datetime', 'label'=>'DateClose', 'enabled'=>1, 'position'=>57, 'notnull'=>0, 'visible'=>-2),
         'date_operation_order' => array('type'=>'datetime', 'label'=>'DateOperationOrder', 'enabled'=>1, 'position'=>58, 'notnull'=>1, 'visible'=>-1, 'noteditable' => 0),
         'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>1, 'position'=>61, 'notnull'=>0, 'visible'=>0),
         'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>1, 'position'=>62, 'notnull'=>0, 'visible'=>0),
@@ -192,7 +192,7 @@ class OperationOrder extends SeedObject
 
 		$this->status = 0;
 		$this->entity = $conf->entity;
-
+		$this->date_cloture = null;
 		$this->lines = &$this->TOperationOrderDet;
 		$this->modelpdf = &$this->model_pdf;
 		$this->socid = &$this->fk_soc; // Compatibility with select ajax on formadd product
@@ -775,7 +775,10 @@ class OperationOrder extends SeedObject
 					$this->planned_date = '';
 					$sql .= " , planned_date = NULL ";
 				}
-
+				if(!empty($newStatus->save_date_cloture)){
+					$this->date_cloture = time();
+					$sql .= " , date_cloture = '".$this->db->idate($this->date_cloture)."'";
+				}
 				$sql .= " WHERE rowid = ".$this->id;
 
 				if ($this->db->query($sql))
@@ -844,6 +847,35 @@ class OperationOrder extends SeedObject
 
         return 0;
     }
+
+    public function getAlreadyUsedQtyLines() {
+	    $alreadyUsed = array();
+	    $sql = "SELECT mvt.fk_product, SUM(mvt.value) as total FROM ".MAIN_DB_PREFIX."stock_mouvement as mvt";
+	    $sql.= " WHERE mvt.origintype = 'operationorder'";
+	    $sql.= " AND mvt.fk_origin = ".$this->id;
+	    $sql.= " GROUP BY mvt.fk_product";
+
+	    $resql = $this->db->query($sql);
+	    if ($resql)
+	    {
+		    while ($obj = $this->db->fetch_object($resql))
+		    {
+			    $alreadyUsed[$obj->fk_product] = abs($obj->total);
+		    }
+	    }
+	    return $alreadyUsed;
+    }
+	public function getLastLinesByProduct() {
+		$TLastLines = array();
+		foreach ($this->lines as $line)
+		{
+			if ($line->fk_product)
+			{
+				$TLastLines[$line->fk_product] = $line->id;
+			}
+		}
+		return $TLastLines;
+	}
 
 
     /**
@@ -1513,13 +1545,19 @@ class OperationOrder extends SeedObject
 
     public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
     {
-
+		global $user;
         if ($key == 'time_planned_f')
         {
             $out = '<input  name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.convertSecondToTime($value).'" >';
         }
         else
         {
+        	if ($key == 'fk_c_operationorder_type') {
+		        $nonewbutton=!($user->admin);
+	        }
+	        if ($key == 'fk_soc') {
+		        $nonewbutton=!($user->rights->societe->creer);
+	        }
             $out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
         }
 
@@ -1978,27 +2016,56 @@ class OperationOrderDet extends SeedObject
         return '';
     }
 
+    public function getQtyUsed(&$TLineQtyUsed, &$TLastLinesByProduct) {
+    	$qtyUsed = 0;
+	    if (isset($TLineQtyUsed[$this->fk_product]))
+	    {
+		    if ($TLineQtyUsed[$this->fk_product] > $this->qty) //s'il y a plus de quantité utilisé que ce qu'il y a dans la ligne
+		    {
+			    if ($TLastLinesByProduct[$this->fk_product] != $this->id) //Si on n'est pas sur la dernière ligne mais que tout ne rentre pas
+			    {
+				    $qtyUsed = $this->qty;
+				    $TLineQtyUsed[$this->fk_product] -= $this->qty;
+			    }
+			    else // Si on est sur la dernière ligne on met tout
+			    {
+				    $qtyUsed = $TLineQtyUsed[$this->fk_product];
+				    unset($TLineQtyUsed[$this->fk_product]);
+			    }
+		    }
+		    else // Si ça rentre on met dans la ligne actuelle
+		    {
+			    $qtyUsed = $TLineQtyUsed[$this->fk_product];
+			    unset($TLineQtyUsed[$this->fk_product]);
+		    }
+	    }
+	    return $qtyUsed;
+    }
+
     function calcPrices(){
 
-    	/* Sur spéc
-    	 * Règle de calcul du Total HT
-    	 * Si Quantité/Temps utilisé = 0(vide)
-    	 * Total HT = Quantité commandée * P.U. H.T.
-    	 * Sinon
-    	 * Total HT = Quantité/Temps utilisé * P.U. H.T.
+    	/* Si je n'ai pas d'enfant et que j'ai un temps saisie
+    	    total HT = temps saisie * PU HT
+    	    Sinon total HT  = Somme des totaux HT des enfants
     	 */
-		$hours = 0;
-		if(!empty($this->time_spent)) {
-			$hours = round($this->time_spent / 3600, 2);
-		}
 
-		if($hours>0){
-
-			$this->total_ht = $hours * $this->price;
-		}
-		else{
-			$this->total_ht = $this->qty * $this->price;
-		}
+	    $Tlines = $this->fetch_all_children_lines(0,0,1);
+	    if (empty($Tlines)) {
+		    $hours = 0;
+		    if (!empty($this->time_spent)) {
+			    $hours = round($this->time_spent / 3600, 2);
+		    }
+		    if ($hours > 0) {
+			    $this->total_ht = $hours * $this->price;
+		    } else {
+			    $this->total_ht = $this->qty * $this->price;
+		    }
+	    } else {
+		    $this->total_ht=0;
+	    	foreach($Tlines  as $line) {
+			    $this->total_ht += $line->total_ht;
+		    }
+	    }
 	}
 
 
@@ -2140,7 +2207,7 @@ class OperationOrderDet extends SeedObject
 				$out.= $this->showOutputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss);
 			}
 			else{
-				$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, $nonewbutton);
+				$out = parent::showInputField($val, $key, $value, $moreparam, $keysuffix, $keyprefix, $morecss, !$user->rights->produit->creer);
 
 				$out.= '<script type="text/javascript">
 					$(function()
@@ -2171,8 +2238,6 @@ class OperationOrderDet extends SeedObject
 										   $("[name=' . $keyprefix . 'time_plannedhour' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timehour\' value=\'"+data.time_plannedhour+"\' />");
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").val(data.time_plannedmin);
 										   $("[name=' . $keyprefix . 'time_plannedmin' . $keysuffix . ']").after("<input type=\'hidden\' id=\'unitaire_timemin\' value=\'"+data.time_plannedmin+"\' />");
-
-
 										}
 										else{
 										   // nothing to do ?
@@ -2245,7 +2310,7 @@ class OperationOrderDet extends SeedObject
 				/**
 				 * @var $line OperationOrderDet
 				 */
-				if(!empty($this->parent))$line->parent = $this->parent;
+				if(!empty($this->parent)) $line->parent = $this->parent;
 				$res = $line->delete($user, $notrigger);
 				if($res < 0){
 					return -2;

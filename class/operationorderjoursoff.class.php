@@ -68,9 +68,10 @@ class OperationOrderJoursOff extends SeedObject
 	 */
 	public function fetchAll($limit = 0, $loadChild = true, $TFilter = array())
 	{
+		global $conf;
 		$TRes = array();
 
-		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE 1';
+		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE 1=1';
 		if (!empty($TFilter))
 		{
 			foreach ($TFilter as $field => $value)
@@ -82,10 +83,13 @@ class OperationOrderJoursOff extends SeedObject
 				}
 			}
 		}
+		$sql.= " AND entity IN (0,".(! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode)?"1,":"").$conf->entity.")";
+
 		if ($limit) $sql.= ' LIMIT '.$limit;
 
 		$sql.= ' ORDER BY date DESC';
 
+		dol_syslog(get_class($this).'::'.__METHOD__);
 		$resql = $this->db->query($sql);
 		if ($resql)
 		{
@@ -173,7 +177,7 @@ class OperationOrderJoursOff extends SeedObject
 	function isOff($date) {
 		global $conf, $TCacheTFerie;
 
-		if(empty($TCacheTFerie))$TCacheTFerie=array();
+		if(empty($TCacheTFerie)) $TCacheTFerie=array();
 
 		if(!empty($TCacheTFerie[$date])) return $TCacheTFerie[$date];
 

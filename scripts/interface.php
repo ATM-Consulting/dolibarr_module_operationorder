@@ -127,7 +127,7 @@ if(GETPOST('action'))
 						$durationHours = UnitsTools::unitConverteur($product->duration_value, $fk_duration_unit, $fk_unit_hours);
 
 						$data['time_plannedhour'] = floor($durationHours);
-						$data['time_plannedmin'] = floor(($durationHours-floor($durationHours)) * 60);
+						$data['time_plannedmin'] = round($durationHours-floor($durationHours),2)*60;
 					}
 					else{
 						$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
@@ -450,23 +450,44 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 		$ret = $schedule->save($user);
 		if ($ret > 0) {
 
-			if ($schedule->fk_orDet)
+			if (!empty($schedule->fk_orDet))
 			{
 				$addTime = $schedule->task_duration - $oldDuration;
 				$det = new OperationOrderDet($db);
 				$det->fetch($schedule->fk_orDet);
 
-				$det->time_spent += $addTime;
-
-				$res = $det->update($user);
+				$or = new OperationOrder($db);
+				if (!empty($det->fk_operation_order)) {
+					$or->fetch($det->fk_operation_order);
+					$res = $or->updateline($det->id,
+						$det->description,
+						$det->qty,
+						$det->price,
+						$det->fk_warehouse,
+						$det->pc,
+						$det->time_planned,
+						($det->time_spent + $addTime),
+						$det->fk_product,
+						0,
+						$det->date_start,
+						$det->date_end,
+						$det->type,
+						$det->fk_parent_line,
+						$det->label,
+						$det->special_code,
+						$det->array_options);
+				}
+			} else {
+				$out = true;
 			}
-			if ($res > 0)
+
+			if (($res > 0) || $out)
 			{
 				setEventMessage($langs->trans('RecordSaved'));
 				$db->commit();
 				$out = true;
 			}
-			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), 'errors');
+			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
 
 		}
 		else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");
@@ -966,7 +987,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 	$TRes = array();
 
 	$sql = 'SELECT o.rowid id, oa.dated, oa.datef, oa.rowid actionid  FROM '.MAIN_DB_PREFIX.$sOperationOrder->table_element.' o ';
-	$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
+	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.$sOperationOrderAction->table_element.' oa ON (o.rowid = oa.fk_operationorder) ';
 	//$sql.= ' JOIN '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' os ON (o.status = s.rowid) ';
 
 	$sql.= ' WHERE 1 = 1 ';
@@ -992,7 +1013,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
             $event->title	= '';
             $event->msg = '';
 			$operationOrder = new OperationOrder($db);
-			$operationOrder->fetch($obj->id);
+			$operationOrder->fetch($obj->id, false);
 			$operationOrder->loadStatusObj();
             if($conf->stock->enabled && !empty($conf->global->OPODER_DISPLAY_STOCK_ON_PLANNING)) {
                 $isStockAvailable = $operationOrder->isStockAvailable();
@@ -1051,9 +1072,10 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
 
 			$event->msg.= implode('<br/>',$T);
-			if ($operationOrder->getTimePlannedT() > 0)
+			$ope_planned=$operationOrder->getTimePlannedT();
+			if ($ope_planned > 0)
 			{
-				$event->ope_planned = $operationOrder->getTimePlannedT();
+				$event->ope_planned = $ope_planned;
 				$event->ope_spent = $operationOrder->getTimeSpent();
 				$event->ope_percent = round(($event->ope_spent / $event->ope_planned )*100);
 			}

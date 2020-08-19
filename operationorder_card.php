@@ -630,7 +630,7 @@ if (empty($reshook))
 										}
 
 										$ret = $supplieroder->fetch($supplieroder->id); // Reload to get new records
-										$supplieroder->generateDocument($supplieroder->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+										$supplieroder->generateDocument($supplieroder->modelpdf, $outputlangs);
 							}
 						}
 					}
@@ -1430,13 +1430,16 @@ function _displayDialogSupplierOrder($lineid){
 function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planned_date = ''){
 	global $langs, $user, $extrafields, $conf, $object;
 	if(!empty($TNested) && is_array($TNested)){
+		$TLineQtyUsed = $object->getAlreadyUsedQtyLines();
+		$TLastLinesByProduct = $object->getLastLinesByProduct();
 		$out = '<ul id="'.$htmlId.'" class="operation-order-sortable-list" >';
 		foreach ($TNested as $k => $v) {
 			$line = $v['object'];
 			/**
 			 * @var $line OperationOrderDet
 			 */
-			$line->calcPrices();
+			//Comment because already done into class fetch call...
+			//$line->calcPrices();
 
 			if (empty($line->id)) $line->id = $line->rowid;
 
@@ -1488,12 +1491,19 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			$out .= '		</div>';
 
 			// QTY ORDERED
+			//Repris d'interface manager
+			$qtyUsed = $line->getQtyUsed($TLineQtyUsed, $TLastLinesByProduct);
+			if ($qtyUsed > $line->qty) {
+				$textClass = "text-danger paddingrightonly";
+				$iconInfo= '<i class="fa fa-caret-up"></i>';
+			} else {
+				$textClass = "";
+				$iconInfo="";
+			}
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -qty-ordered">';
-			$out .= '			<span class="classfortooltip" title="' . $langs->trans("QtyOrdered") . '" >';
-			$out .= '				<i class="fas fa-box-open"></i> ' . $line->qty;
-			$out .= '			</span>';
+			if(!empty($qtyUsed))  $out .= '<span class="'.$textClass.'classfortooltip" title="' . $langs->trans("QtyUsed") . '" >'.$iconInfo.'<i class="fas fa-box-open"></i>'.$qtyUsed.'</span> / ';
+			$out .= '		<span class=" classfortooltip" title="' . $langs->trans("QtyPlanned") . '" ><i class="fas fa-box-open"></i>'.$line->qty.'</span>';
 			$out .= '		</div>';
-
 
 			// TIME SPENT AND PLANNED
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -time-spent">';

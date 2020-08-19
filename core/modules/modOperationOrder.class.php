@@ -243,13 +243,6 @@ class modOperationOrder extends DolibarrModules
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
-		$this->rights[$r][1] = 'operationorder_read';	// Permission label
-		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
-		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
-		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
-		$r++;
-
-		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'operationorder_status_read';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'status';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
@@ -278,7 +271,7 @@ class modOperationOrder extends DolibarrModules
         $r++;
 
         // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
-        $r++;$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+        $this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
         $this->rights[$r][1] = 'operationorder_usergroupplanning_write';	// Permission label
         $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
         $this->rights[$r][4] = 'usergroupplanning';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
@@ -286,7 +279,7 @@ class modOperationOrder extends DolibarrModules
         $r++;
 
         // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
-        $r++;$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
+        $this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
         $this->rights[$r][1] = 'operationorder_manager_read';	// Permission label
         $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
         $this->rights[$r][4] = 'manager';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)

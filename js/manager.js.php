@@ -332,10 +332,12 @@ class Application
 			}
 
 			let infoTask = $('#infoTask');
+			let infoOR = $('#infoOR');
 
 			if (data.courantTask.length > 0)
 			{
 				infoTask.html(data.courantTask);
+				infoOR.html(data.courantOR);
 			}
 			else
 			{
