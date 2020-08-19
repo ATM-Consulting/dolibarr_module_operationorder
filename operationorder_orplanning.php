@@ -35,7 +35,7 @@ $hookmanager->initHooks(array('operationorderORplanning'));
 
 $action = GETPOST('action');
 $date = GETPOSTISSET('date') ? strtotime(GETPOST('dateyear').'-'.GETPOST('datemonth').'-'.GETPOST('dateday')) : dol_now();
-$entity = GETPOSTISSET('entity') ? GETPOST('entity', 'int') : $conf->entity;
+$entity = GETPOST('entity', 'int') ? GETPOST('entity', 'int') : $conf->entity;
 
 $title = $langs->trans("LeftMenuOperationOrderORPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
@@ -364,7 +364,7 @@ if (!empty($TSchedules))
 								popin.html(response.result);
 								popin.dialog("open");
 								popin.dialog({height: 'auto', width: 'auto'}); // resize to content
-								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"200px"});
+								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"400px"});
 							}
 						});
 						// création de la popin
