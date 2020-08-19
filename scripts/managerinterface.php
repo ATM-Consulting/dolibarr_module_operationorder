@@ -141,6 +141,7 @@ if (empty($reshook) && !empty($action))
 		$sql.= " WHERE ooa.datef >= '".date("Y-m-d 00:00:00")."'";
 		$sql.= " AND ooa.dated <= '".date("Y-m-d 23:59:59")."'";
 		$sql.= ' AND oorder.status IN ( SELECT s.rowid FROM '.MAIN_DB_PREFIX.$sOperationOrderStatus->table_element.' as s WHERE or_pointable > 0 ) ';
+		$sql.= ' AND oorder.entity IN ('.getEntity('operationorder', 1).') ';
 
 		$data['oOrders']=array();
 
