@@ -249,7 +249,7 @@ if (!empty($TSchedules))
 				autoOpen: false,
 				autoResize:true,
 				close: function( event, ui ) {
-					$('form[name="filters"]').submit();
+					// $('form[name="filters"]').submit();
 				}
 			});
 

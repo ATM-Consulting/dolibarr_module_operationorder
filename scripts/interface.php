@@ -176,10 +176,73 @@ if(GETPOST('action'))
 	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
 	else if ($action == 'getCreateScheduleForm') $data['result'] = _getCreateScheduleForm($data['userid'], $data['date'], $data['minHour'], $data['maxHour'], $data['selectedHour'], $data['entity']);
 	else if ($action == 'createSchedule') $data['result'] = _createSchedule($data['fk_user'], $data['entity'], $data['fk_orDet'], $data['startTime'], $data['endTime'], $data['label']);
+	else if ($action == 'deleteSchedule') $data['result'] = _deleteSchedule($data['scheduleId']);
 
 }
 
 echo json_encode($data);
+
+function _deleteSchedule($scheduleId)
+{
+	global $user, $db, $langs;
+
+	if (empty($user->rights->operationorder->counter->delete))
+	{
+		setEventMessage($langs->trans('NotEnoughPermissions'), 'errors');
+		return false;
+	}
+
+	$schedule = new OperationOrderTaskTime($db);
+	$schedule->fetch($scheduleId);
+
+	$db->begin();
+	$out = false;
+	$ret = $schedule->delete($user);
+	if ($ret > 0)
+	{
+		if (!empty($schedule->fk_orDet))
+		{
+			$det = new OperationOrderDet($db);
+			$det->fetch($schedule->fk_orDet);
+
+			$or = new OperationOrder($db);
+			if (!empty($det->fk_operation_order)) {
+				$or->fetch($det->fk_operation_order);
+				$res = $or->updateline($det->id,
+					$det->description,
+					$det->qty,
+					$det->price,
+					$det->fk_warehouse,
+					$det->pc,
+					$det->time_planned,
+					($det->time_spent - $schedule->task_duration),
+					$det->fk_product,
+					0,
+					$det->date_start,
+					$det->date_end,
+					$det->type,
+					$det->fk_parent_line,
+					$det->label,
+					$det->special_code,
+					$det->array_options);
+			}
+		}
+		else $out = true;
+
+		if ($res > 0 || $out)
+		{
+			setEventMessage($langs->trans('RecordDeleted'));
+			$db->commit();
+			$out = true;
+		}
+		else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), 'errors');
+	}
+
+	if (!$out) $db->rollback();
+
+	return $out;
+
+}
 
 function _createSchedule($fk_user, $entity, $fk_orDet, $startTime, $endTime, $label)
 {
@@ -201,16 +264,36 @@ function _createSchedule($fk_user, $entity, $fk_orDet, $startTime, $endTime, $la
 	$ret = $schedule->save($user);
 	if ($ret > 0) {
 
-		if ($schedule->fk_orDet)
+		if (!empty($schedule->fk_orDet))
 		{
 			$det = new OperationOrderDet($db);
 			$det->fetch($schedule->fk_orDet);
 
-			$det->time_spent += $schedule->task_duration;
-
-			$res = $det->update($user);
+			$or = new OperationOrder($db);
+			if (!empty($det->fk_operation_order)) {
+				$or->fetch($det->fk_operation_order);
+				$res = $or->updateline($det->id,
+					$det->description,
+					$det->qty,
+					$det->price,
+					$det->fk_warehouse,
+					$det->pc,
+					$det->time_planned,
+					($det->time_spent + $schedule->task_duration),
+					$det->fk_product,
+					0,
+					$det->date_start,
+					$det->date_end,
+					$det->type,
+					$det->fk_parent_line,
+					$det->label,
+					$det->special_code,
+					$det->array_options);
+			}
 		}
-		if ($res > 0)
+		else $out = true;
+
+		if ($res > 0 || $out)
 		{
 			setEventMessage($langs->trans('RecordSaved'));
 			$db->commit();
@@ -414,7 +497,8 @@ function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHou
 									endTime: endDate.getTime() / 1000
 								}
 							}).done(function(response){
-								$("#schedulePopin").dialog("close")
+								$("form[name=\'filters\']").submit();
+//								$("#schedulePopin").dialog("close")
 							});
 						}
 					});
@@ -487,7 +571,10 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 				$db->commit();
 				$out = true;
 			}
-			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
+			else
+			{
+				setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
+			}
 
 		}
 		else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");
@@ -500,7 +587,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 
 function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 {
-	global $db, $langs;
+	global $db, $langs, $user;
 
 	$out = '';
 
@@ -513,6 +600,35 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 	$ret = $schedule->fetch($scheduleId);
 	if ($ret > 0)
 	{
+		// si le user a le droit de supprimer des saisies
+		if (!empty($user->rights->operationorder->counter->delete))
+		{
+			$out.='<button class="butActionDelete pull-right" id="del">'.$langs->trans("Delete").'</button>';
+			$out.='<p class="question">'.$langs->trans('askDeleteCounter').'</p>';
+			$out.='<div class="question"><button id="yes">'.$langs->trans('Yes').'</button>&nbsp;<button id="no">'.$langs->trans('No').'</button></div>';
+			$out.='<br />';
+			$out.='<script type="text/javascript">
+				$(function (){
+					$(".question").hide();
+
+					$("#del").on("click", function(){$(".question").show();});
+					$("#no").on("click", function(){$(".question").hide();});
+					$("#yes").on("click", function (){
+						$.ajax({
+							url:"'.dol_buildpath('/operationorder/scripts/interface.php', 1).'",
+							method:"POST",
+							data: {
+								action: "deleteSchedule",
+								scheduleId: '.$schedule->id.'
+							}
+						}).done(function(data){
+							$("form[name=\'filters\']").submit();
+//									$("#schedulePopin").dialog("close")
+						});
+					});
+				});
+			</script>';
+		}
 		if (!empty($or->id))
 		{
 			$out.= $or->getNomUrl(1);
@@ -529,11 +645,13 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 			$out.= '<br /><br />'.implode('<br />', $T);
 		}
+		else
+		$out.= $schedule->label;
 
 		$TFieldToDisplay = array('task_datehour_d', 'task_datehour_f');
 		$T = array();
 
-		$out.= '<br /><br /><div id="alert"></div>';
+		$out.= '<br /><div id="alert"></div>';
 		$out.= '<input type="hidden" id="minHour" value="'.$minHour.'">';
 		$out.= '<input type="hidden" id="minDate" value="'.date("Y-m-d\T".$minHour.":00", $schedule->task_datehour_d).'">';
 		$out.= '<input type="hidden" id="maxHour" value="'.$maxHour.'">';
@@ -557,7 +675,7 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 						$("#save").on("click", function() {
 							var errorMsg ="";
-							$("#alert")
+							$("#alert, .alert")
 								.hide()
 								.css("color","#721c24")
 								.css("background-color","#f8d7da")
@@ -611,7 +729,8 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 										endTime: endDate.getTime() / 1000
 									}
 								}).done(function(data){
-									$("#schedulePopin").dialog("close")
+									$("form[name=\'filters\']").submit();
+//									$("#schedulePopin").dialog("close")
 								});
 							}
 						});
