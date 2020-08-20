@@ -123,7 +123,7 @@ if (empty($reshook) && !empty($action))
 					$sql = "SELECT oorder.ref FROM " . MAIN_DB_PREFIX . "operationorder oorder";
 					$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "operationorderdet ordet ON ordet.fk_operation_order = oorder.rowid";
 					$sql .= " WHERE ordet.rowid = " . $counter->fk_orDet;
-					$sql .= ' AND oorder.status IN ( SELECT s.rowid FROM ' . MAIN_DB_PREFIX . $sOperationOrderStatus->table_element . ' as s WHERE  or_pointable > 0 ) ';
+				//	$sql .= ' AND oorder.status IN ( SELECT s.rowid FROM ' . MAIN_DB_PREFIX . $sOperationOrderStatus->table_element . ' as s WHERE  or_pointable > 0 ) ';
 
 					$resql = $db->query($sql);
 					if ($resql) {
