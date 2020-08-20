@@ -667,6 +667,10 @@ if (empty($reshook) && !empty($action))
 						}
 					}
 				}
+				else
+				{
+					$data['data']['errorMsg'] = $langs->trans('ErrorORNeedAtLeast1Line');
+				}
 			}
 			else
 			{
