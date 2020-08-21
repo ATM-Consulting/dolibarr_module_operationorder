@@ -1041,6 +1041,7 @@ class OperationOrder extends SeedObject
             $qty = price2num($qty);
             $time_planned = price2num($time_planned);
             $time_spent = price2num($time_spent);
+	        $price = price2num($price, 'MU');
             $label = trim($label);
             $desc = trim($desc);
 
