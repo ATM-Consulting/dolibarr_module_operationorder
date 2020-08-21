@@ -35,6 +35,15 @@ if (!empty($search_by)) {
     }
 }
 
+$addFilterStatus='';
+$search_overshootMultiStatus = GETPOST('search_status', 'array');
+if (!empty($search_overshootMultiStatus)) {
+	$addFilterStatus='&';
+	foreach($search_overshootMultiStatus as $key=>$item) {
+		$addFilterStatus .= 'search_status[]=' . $item.'&';
+	}
+}
+
 $object = new OperationOrder($db);
 
 $hookmanager->initHooks(array('operationorderlist'));
@@ -106,8 +115,6 @@ if (!empty($object->isextrafieldmanaged))
 
 $listViewName = 'operationorder';
 $inputPrefix  = 'Listview_'.$listViewName.'_search_';
-
-$search_overshootMultiStatus = GETPOST('search_status', 'array');
 
 // Search value
 $search_overshootStatus = GETPOST($inputPrefix.'overshootstatus', 'int');
@@ -218,7 +225,7 @@ $listViewConfig = array(
 		,'massactions'=>array(
 			'delete'  => $langs->trans('Delete')
 		)
-		,'param_url' => '&limit='.$nbLine
+		,'param_url' => '&limit='.$nbLine.$addFilterStatus
 	)
 	,'subQuery' => array()
 	,'link' => array()
