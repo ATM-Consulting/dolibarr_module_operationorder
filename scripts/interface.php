@@ -521,6 +521,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 
 	$out = false;
 
+
 	$schedule = new OperationOrderTaskTime($db);
 	$ret = $schedule->fetch($scheduleId);
 	if ($ret > 0)
@@ -665,7 +666,11 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 		$out.= '<br />'.implode('<br />', $T).'<br />';
 
-		$out.= '<br /><div align="center"><button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;<button id="cancel" class="button">'.$langs->trans('Cancel').'</button></div>';
+		$out.= '<br /><div align="center">';
+		if (!empty($user->rights->operationorder->counter->update)) $out.= '<button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;';
+		else $out.= '<button title="'.$langs->trans('NotEnoughPermissions').'" class="button"  disabled>'.$langs->trans('Save').'</button>&nbsp;';
+		$out.= '<button id="cancel" class="button">'.$langs->trans('Cancel').'</button>';
+		$out.= '</div>';
 
 		$out.= '<script type="text/javascript">
 					$(function() {
@@ -856,7 +861,13 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
  */
 
 function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
-    global $db, $user;
+    global $db, $user, $langs;
+
+	if (empty($user->rights->operationorder->counter->update))
+	{
+		setEventMessage($langs->trans('NotEnoughPermissions'), 'errors');
+		return false;
+	}
 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');

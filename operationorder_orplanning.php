@@ -378,8 +378,6 @@ if (!empty($TSchedules))
 					}
 					else console.log("userid not found on node")
 
-
-
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);
