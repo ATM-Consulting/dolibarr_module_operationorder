@@ -162,7 +162,7 @@ ProductType=Type
 SupplierOrderCreated=Commande fournisseur créée
 TimePlannedTheoretical=Temps d'immobilisation théorique
 TimePlannedForced=Temps de mise a disposition du véhicule
-WarningORTimePlannedF=OR existant et associé non modifié
+WarningORTimePlannedF=OR déjà présent sur le planning
 planned_date_help=Date de plannification de la réparation/entretiens
 PlannedDate=Date de planification
 
