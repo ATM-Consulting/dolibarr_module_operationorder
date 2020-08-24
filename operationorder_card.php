@@ -229,6 +229,15 @@ if (empty($reshook))
 					$statusAllowed = new OperationOrderStatus($db);
 					$res = $statusAllowed->fetch($fk_status);
 					if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+						$sqlPlannedDate = 'SELECT require_planned_date';
+						$sqlPlannedDate .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
+						$sqlPlannedDate .= ' WHERE rowid='.$fk_status;
+						$resqlPlannedDate = $db->query($sqlPlannedDate);
+						$plannedDate = $db->fetch_object($resqlPlannedDate);
+						if($plannedDate == 1 && empty($object->planned_date)){
+							setEventMessage($langs->trans('PlannedDateMustBeFilledToPassAtThisStatus'), 'errors');
+							break;
+						}
 						if($object->setStatus($user, $fk_status)>0){
 							setEventMessage($langs->trans('StatusChanged'));
 						}
@@ -813,6 +822,7 @@ else
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
+
             print '</table>';
 
             dol_fiche_end();
@@ -846,7 +856,7 @@ else
             // Thirdparty
             $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $object->thirdparty->getNomUrl(1);
 
-            // Project
+			// Project
             if (!empty($conf->projet->enabled))
             {
                 $langs->load("projects");
@@ -878,6 +888,17 @@ else
                     }
                 }
             }
+//Création de l'OR en vue planning si statut = Planned
+            $plannedStatus = array(6,196,197,198,199);
+			if(in_array($object->status,$plannedStatus)){
+				if (!empty($object->planned_date)){
+					$endTime = '';
+					$allDay = '';
+					$id_operationorder = $object->id;
+					$planned_date = $object->planned_date;
+					createOperationOrderAction($planned_date,$endTime,$allDay, $id_operationorder);
+				}
+
 
             // Contrat
             if (!empty($conf->contrat->enabled))

@@ -211,6 +211,14 @@ class OperationOrderStatus extends SeedObject
 			'notnull'=>1,
 			'visible'=>0,
 		),
+		'require_planned_date' => array(
+			'type'=>'boolean',
+			'label'=>'RequirePlannedDate',
+			'enabled'=>1,
+			'default'=>0,
+			'visible'=> -1,
+			'position'=>110,
+		)
 	);
 
 	public $code;
