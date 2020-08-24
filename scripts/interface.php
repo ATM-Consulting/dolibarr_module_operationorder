@@ -815,7 +815,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 			}
 
 
-			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
+			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $obj->datef);
 
 			$event->msg.= implode('<br/>',$T);
 			$ope_planned=$operationOrder->getTimePlannedT();
