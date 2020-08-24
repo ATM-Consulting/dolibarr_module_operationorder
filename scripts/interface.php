@@ -814,6 +814,7 @@ function  _getOperationOrderEvents($start = 0, $end = 0, $agendaType = 'orPlanne
 				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$operationOrder->showOutputFieldQuick($fieldKey);
 			}
 
+
 			$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $operationOrder->planned_date + (!empty($operationOrder->time_planned_f) ? $operationOrder->time_planned_f : $operationOrder->time_planned_t));
 
 			$event->msg.= implode('<br/>',$T);
