@@ -888,9 +888,22 @@ else
                     }
                 }
             }
-//Création de l'OR en vue planning si statut = Planned
-            $plannedStatus = array(6,196,197,198,199);
-			if(in_array($object->status,$plannedStatus)){
+
+//Create ORaction if status = planned
+			//To collect each rowid where require_planned_date=1
+			$sqlIDStatusPlanned = 'SELECT rowid';
+			$sqlIDStatusPlanned .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
+			$sqlIDStatusPlanned .= ' WHERE require_planned_date=1';
+			$resqlIDStatusPlanned = $db->query($sqlIDStatusPlanned);
+			$cpt = 0;
+			while ($cpt < $resqlIDStatusPlanned->num_rows){
+				//To fill the array
+				$plannedRowId =$db->fetch_object($resqlIDStatusPlanned);
+				$IDStatusPlanned[] = $plannedRowId->rowid;
+				$cpt+=1;
+			}
+			//If status = planned
+			if(in_array($object->status,$IDStatusPlanned)){
 				if (!empty($object->planned_date)){
 					$endTime = '';
 					$allDay = '';
@@ -899,6 +912,7 @@ else
 					createOperationOrderAction($planned_date,$endTime,$allDay, $id_operationorder);
 				}
 
+			}
 
             // Contrat
             if (!empty($conf->contrat->enabled))

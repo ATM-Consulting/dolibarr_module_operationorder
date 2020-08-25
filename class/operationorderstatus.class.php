@@ -218,6 +218,7 @@ class OperationOrderStatus extends SeedObject
 			'default'=>0,
 			'visible'=> -1,
 			'position'=>110,
+			'required'=>0,
 		)
 	);
 
