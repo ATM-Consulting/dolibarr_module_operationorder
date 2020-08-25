@@ -135,6 +135,14 @@ if (empty($reshook))
                 } elseif ($attribute == 'planned_date')
                 {
                     $object->planned_date = dol_mktime(GETPOST('planned_datehour'), GETPOST('planned_datemin'), 0, GETPOST('planned_datemonth'), GETPOST('planned_dateday'), GETPOST('planned_dateyear'));
+					$date = new DateTime();
+					$date->setTimestamp($object->planned_date);
+					$date->setTime(0,0,0);
+					$date = $date->getTimestamp();
+                    if (isJourFull($date)){
+               			setEventMessage('OverloadReachedForThisDay', 'errors');
+					}
+//                    var_dump(isJourFull($date));exit();
                 }
                 else
                 {
@@ -914,7 +922,7 @@ else
 
 			}
 
-            // Contrat
+			// Contrat
             if (!empty($conf->contrat->enabled))
             {
                 $langs->load("contrat");
