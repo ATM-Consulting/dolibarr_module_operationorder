@@ -325,3 +325,4 @@ ClotureEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, le 
 
 RequirePlannedDate =Seuls les OR possédant une date de plannification peuvent passer à ce statut
 PlannedDateMustBeFilledToPassAtThisStatus =La date de planification doit être renseignée pour passer à ce statut
+OverloadReachedForThisDay =La surcharge est atteinte pour ce jour 
