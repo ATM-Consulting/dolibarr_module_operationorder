@@ -345,7 +345,7 @@ if (!empty($TSchedules))
 						let entity = $('#entity').val();
 						let date = $('#date').val();
 
-						// appel pour aller chercher le formulaire à foutre dans la popin
+						// appel pour aller chercher le formulaire à mettre dans la popin
 						$.ajax({
 							url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getCreateScheduleForm',
 							method: 'POST',
