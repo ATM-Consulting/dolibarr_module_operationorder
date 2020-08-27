@@ -367,14 +367,7 @@ if (!empty($TSchedules))
 								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"400px"});
 							}
 						});
-						// création de la popin
-						// input liste des OR affiché sur la planification
-						// input lignes de l'OR séléctionné
-						// heure début / heure fin avec heure de début prérempli par la donné dans la variable "data"
 
-						// retour d'appel => afficher la popin
-
-						// à la fermeture de la popin reload la page
 					}
 					else console.log("userid not found on node")
 
