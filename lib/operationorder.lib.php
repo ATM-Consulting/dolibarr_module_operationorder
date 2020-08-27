@@ -962,6 +962,11 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             if($operationorder->time_planned_f) $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_f);
             else $action_or->datef = calculateEndTimeEventByBusinessHours($startTime, $operationorder->time_planned_t);
 
+            //si il n'y a pas de date de fin disponible, alors on ne créé pas l'événement
+            if($action_or->datef <= 0) {
+                $error++;
+            }
+
             $action_or->fk_operationorder = $id_operationorder;
             $action_or->fk_user_author = $user->id;
 
@@ -1218,6 +1223,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         $usergroup = new UserGroupOperationOrder($db);
         $res = $usergroup->fetch($fk_groupuser);
         $TUsers = $usergroup->listUsersForGroup();
+
         //userplanning en fonction des utilisateurs
         foreach ($TUsers as $user)
         {
@@ -1371,6 +1377,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
         }
     }
 	$planningSchedulCache[$startTimeWeek][$endTimeWeek]=$TSchedules;
+
     return $TSchedules;
 }
 
@@ -1426,7 +1433,7 @@ function getOperationOrderTUserPlanningFromGroup($fk_groupuser)
  * Calcule la date de fin d'un événement OR en fonction du début de l'événement, de sa durée et des BusinessHours
  * @param timestamp $startTime
  * @param string (seconds) $duration
- * @return timestamp $endTime
+ * @return timestamp $endTime  or -1 if KO
  */
 function calculateEndTimeEventByBusinessHours($startTime, $duration){
 
@@ -1440,6 +1447,7 @@ function calculateEndTimeEventByBusinessHours($startTime, $duration){
 
     //créneaux suivants
     $TNextSchedules = getNextSchedules($startTime);
+    if(empty($TNextSchedules)) return -1;           //cas où il n'y a pas de créneaux disponibles (pas d'utilisateurs paramétrés ou pas de businessHours libres)
 
     //tant qu'il reste du temps pas traité
     while($durationRest > 0)

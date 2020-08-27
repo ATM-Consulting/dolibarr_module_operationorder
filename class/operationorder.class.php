@@ -1041,6 +1041,7 @@ class OperationOrder extends SeedObject
             $qty = price2num($qty);
             $time_planned = price2num($time_planned);
             $time_spent = price2num($time_spent);
+	        $price = price2num($price, 'MU');
             $label = trim($label);
             $desc = trim($desc);
 
@@ -1392,7 +1393,7 @@ class OperationOrder extends SeedObject
 										$durationHours = UnitsTools::unitConverteur($childLineProduct->duration_value, $fk_duration_unit, $fk_unit_hours);
 
 										$time_plannedhour = floor($durationHours);
-										$time_plannedmin = floor(($durationHours-floor($durationHours)) * 60);
+										$time_plannedmin = round($durationHours-floor($durationHours),2) * 60;
 									}
 									else{
 										$this->errors[] = $langs->transnoentities('UnitCodeNotFound', 'H');

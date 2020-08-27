@@ -35,6 +35,15 @@ if (!empty($search_by)) {
     }
 }
 
+$addFilterStatus='';
+$search_overshootMultiStatus = GETPOST('search_status', 'array');
+if (!empty($search_overshootMultiStatus)) {
+	$addFilterStatus='&';
+	foreach($search_overshootMultiStatus as $key=>$item) {
+		$addFilterStatus .= 'search_status[]=' . $item.'&';
+	}
+}
+
 $object = new OperationOrder($db);
 
 $hookmanager->initHooks(array('operationorderlist'));
@@ -106,8 +115,6 @@ if (!empty($object->isextrafieldmanaged))
 
 $listViewName = 'operationorder';
 $inputPrefix  = 'Listview_'.$listViewName.'_search_';
-
-$search_overshootMultiStatus = GETPOST('search_status', 'array');
 
 // Search value
 $search_overshootStatus = GETPOST($inputPrefix.'overshootstatus', 'int');
@@ -218,7 +225,7 @@ $listViewConfig = array(
 		,'massactions'=>array(
 			'delete'  => $langs->trans('Delete')
 		)
-		,'param_url' => '&limit='.$nbLine
+		,'param_url' => '&limit='.$nbLine.$addFilterStatus
 	)
 	,'subQuery' => array()
 	,'link' => array()
@@ -383,6 +390,33 @@ if ($reshook>0)
 	$listViewConfig = $hookmanager->resArray;
 }
 echo $r->render($sql, $listViewConfig);
+if (!empty($_POST)){
+	$addUrl=array();
+	$TExclude = array('token','massaction','button_search_x');
+	foreach ($_POST as $key => $v) {
+		if (!in_array($key, $TExclude)
+			&& preg_match('/search/', $key)
+			&& !empty($v)
+			&& $v != -1
+		){
+			if (is_array($v)){
+				foreach ($v as $item) $addUrl[]=$key.'[]='.$item;
+			}else{
+				$addUrl[]=$key.'='.$v;
+			}
+		}
+	}
+}
+
+?>
+<script>
+	// var url =
+	let url = '/client/theobald/dolibarr/htdocs/bookmarks/card.php?action=create&url='
+	url+="<?php	echo urlencode($_SERVER['PHP_SELF'].'?'.implode("&",$addUrl)); ?>"
+	$('#boxbookmark option[value="newbookmark"]').attr('rel', url);
+	console.log(url)
+</script>
+<?php
 
 $parameters=array('sql'=>$sql);
 $reshook=$hookmanager->executeHooks('printFieldListFooter', $parameters, $object);    // Note that $action and $object may have been modified by hook
