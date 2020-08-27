@@ -311,6 +311,11 @@ ErrorDateToLow=la date de début ne peut pas être inférieure à : %s
 ErrorDateToHigh=la date de fin ne peut pas être supérieure à : %s
 ErrorUpdateSchedule=Erreur la sauvegarde
 ErrorOrDetNotUpdated=Erreur lors de la mise à jour de la ligne d'OR
+ErrorNoORSelected=Pas d'ordre de réparaton sélectionné
+ErrorNoORLineSelected=Vous n'avez sélectionné aucune ligne d'ordre de réparation
+operationorder_counter_delete=Pouvoir supprimer une saisie de temps
+operationorder_counter_update=Pouvoir modifier les saisies de temps sur l'écran éactivités journalières"
+askDeleteCounter=Voulez-vous vraiment supprimer cette saisie ?
 ErrorORNeedAtLeast1Line=Erreur : il vous faut au moins une ligne dans l'OR pour faire un mouvement de stock
 
 ORRef=Ref OR

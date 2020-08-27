@@ -35,7 +35,7 @@ $hookmanager->initHooks(array('operationorderORplanning'));
 
 $action = GETPOST('action');
 $date = GETPOSTISSET('date') ? strtotime(GETPOST('dateyear').'-'.GETPOST('datemonth').'-'.GETPOST('dateday')) : dol_now();
-$entity = GETPOSTISSET('entity') ? GETPOST('entity', 'int') : $conf->entity;
+$entity = GETPOST('entity', 'int') ? GETPOST('entity', 'int') : $conf->entity;
 
 $title = $langs->trans("LeftMenuOperationOrderORPlanning");
 //if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name." - ".$title;
@@ -103,12 +103,14 @@ if (!empty($TSchedules))
 		if ($dated_matin > $date_min)
 		{
 			$tempTT = new stdClass;
+			$tempTT->userid = $id_user;
 			$tempTT->start = $minHour;
 			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"};
 			$tempTT->text = "indispo";
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
 			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+			$tempTT->data->fk_user = $id_user;
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
@@ -123,6 +125,7 @@ if (!empty($TSchedules))
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
 			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+			$tempTT->data->fk_user = $id_user;
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
@@ -135,6 +138,7 @@ if (!empty($TSchedules))
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
 			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+			$tempTT->data->fk_user = $id_user;
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 			continue;
@@ -149,6 +153,7 @@ if (!empty($TSchedules))
 			$tempTT->data = new stdClass;
 			$tempTT->data->title = "plage non-travaillé";
 			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+			$tempTT->data->fk_user = $id_user;
 
 			$TSchedules[$id_user]->schedule[] = $tempTT;
 		}
@@ -157,6 +162,7 @@ if (!empty($TSchedules))
 }
 
 $TSchedules = getCountersForPlanning($TSchedules, $date, $entity);
+
 
 // Hook d'ajout d'événements supplémentaires
 $parameters = array(
@@ -243,7 +249,7 @@ if (!empty($TSchedules))
 				autoOpen: false,
 				autoResize:true,
 				close: function( event, ui ) {
-					$('form[name="filters"]').submit();
+					// $('form[name="filters"]').submit();
 				}
 			});
 
@@ -264,10 +270,11 @@ if (!empty($TSchedules))
 				},
 				onInitRow: function(node, data){
 					// addLog('onInitRow', data);
+					// console.log("init", node, data);
+					node.attr('data-userId', data.userId);
 				},
 				onClick: function(node, data){ // quand on clique sur un événement
 					// addLog('onClick', data);
-
 					// console.log(data);
 					// console.log($sc.timeSchedule('scheduleData'));
 					let counterID 	= data.data.counterID;
@@ -275,40 +282,15 @@ if (!empty($TSchedules))
 					let fk_or		= data.data.fk_or;
 					let fk_user		= data.data.fk_user;
 
-					let scheduleData = $sc.timeSchedule('scheduleData');
-					let schedulesByUser = $sc.timeSchedule('timelineData');
-
-					oldTL = 0;
-					for (i in schedulesByUser)
-					{
-						for (j in scheduleData)
-						{
-							if (parseInt(scheduleData[j].timeline) < oldTL) break;
-							else schedulesByUser[i].schedule.push(scheduleData.shift());
-						}
-					}
+					// récupération des emplois du temps par user
+					let schedulesByUser = _getScheduleByUser();
 
 					if (counterID)
 					{
-						var minDate = '';
-						var minDateTime = 0;
-						var maxDate = '';
-						var maxDateTime = 0;
-
-						for (i in schedulesByUser[fk_user].schedule)
-						{
-							let temptt = schedulesByUser[fk_user].schedule[i];
-							if (temptt.endTime <= data.startTime && temptt.endTime > minDateTime)
-							{
-								minDate = temptt.end;
-								minDateTime = temptt.endTime
-							}
-							if (temptt.startTime >= data.endTime)
-							{
-								maxDate = temptt.start;
-								maxDateTime = temptt.startTime;
-							}
-						}
+						// limites horaires à respecter
+						let hourRange = _getHoursLimitRange(schedulesByUser[fk_user].schedule, data.startTime, data.endTime);
+						let minHour = hourRange.min;
+						let maxHour = hourRange.max;
 
 						$.ajax({
 							url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getScheduleInfos',
@@ -317,8 +299,8 @@ if (!empty($TSchedules))
 								scheduleId: counterID,
 								det: fk_ordet,
 								oOrder: fk_or,
-								minHour: minDate,
-								maxHour: maxDate
+								minHour: minHour,
+								maxHour: maxHour
 							},
 							dataType: 'json',
 							// La fonction à apeller si la requête aboutie
@@ -334,7 +316,61 @@ if (!empty($TSchedules))
 
 				},
 				onScheduleClick: function(node, data){ // quand on clique sur un endroit vide
-					console.log(node, data);
+					// console.log(node, data);
+
+					// récupération de l'id user au premier clic sur un espace vide
+					if ($(node).parent().data('userid') == undefined)
+					{
+						var scroll = $('.sc_data_scroll .timeline');
+						var main = $(".sc_main .timeline");
+						// console.log(scroll);
+						scroll.each(function (index, el) {
+							$(main[index]).data('userid', $(el).data('userid'))
+						});
+						// console.log(main);
+					}
+
+					let userid = $(node).parent().data('userid');
+					if (userid != undefined)
+					{
+						let schedulesByUser = _getScheduleByUser();
+
+						let start = calcStringTime(data);
+						let end = start + 600;
+
+						// limites horaires à respecter
+						let hourRange = _getHoursLimitRange(schedulesByUser[userid].schedule, start, end);
+						let minHour = hourRange.min;
+						let maxHour = hourRange.max;
+						let entity = $('#entity').val();
+						let date = $('#date').val();
+
+						// appel pour aller chercher le formulaire à mettre dans la popin
+						$.ajax({
+							url: '<?php echo dol_buildpath('/operationorder/scripts/interface.php', 1); ?>?action=getCreateScheduleForm',
+							method: 'POST',
+							data: {
+								userid: userid,
+								date: date,
+								minHour: minHour,
+								maxHour: maxHour,
+								selectedHour: data,
+								entity: entity
+							},
+							dataType: 'json',
+							// La fonction à apeller si la requête aboutie
+							success: function (response) {
+								// console.log(response);
+								popin.html(response.result);
+								popin.dialog("open");
+								popin.dialog({height: 'auto', width: 'auto'}); // resize to content
+								popin.parent().css({"top":"20%", "min-height":"150px", "min-width":"400px"});
+							}
+						});
+
+					}
+					else console.log("userid not found on node")
+
 				},
 				onAppendRow: function(node, data){
 					// addLog('onAppendRow', data);
@@ -375,6 +411,63 @@ if (!empty($TSchedules))
 					}
 				},
 			});
+
+			function _getScheduleByUser()
+			{
+				let scheduleData = $sc.timeSchedule('scheduleData').slice();
+				let schedulesByUser = $sc.timeSchedule('timelineData').slice();
+
+				oldTL = 0;
+				while (scheduleData.length)
+				{
+					if (scheduleData[0].data.fk_user != undefined)
+					{
+						schedulesByUser[scheduleData[0].data.fk_user].schedule.push(scheduleData.shift())
+					}
+					else scheduleData.shift();
+				}
+
+				return schedulesByUser;
+			}
+
+			function _getHoursLimitRange(schedules = [], start, end)
+			{
+				var minHour = '';
+				var minDateTime = 0;
+				var maxHour = '';
+				var maxDateTime = 86400;
+
+				if (schedules.length > 0)
+				{
+					for (i in schedules)
+					{
+						let temptt = schedules[i];
+
+						if (temptt.endTime <= start && temptt.endTime > minDateTime)
+						{
+							minHour = temptt.end;
+							minDateTime = temptt.endTime;
+						}
+						if (temptt.startTime >= end && temptt.startTime < maxDateTime)
+						{
+							maxHour = temptt.start;
+							maxDateTime = temptt.startTime;
+						}
+					}
+				}
+
+				if (minHour == '') minHour = '<?php echo $minHour; ?>';
+				if (maxHour == '') maxHour = '<?php echo $maxHour; ?>';
+
+				return {min:minHour, max:maxHour};
+			}
+
+			function calcStringTime(str) {
+				var slice = str.split(':');
+				var h = Number(slice[0]) * 60 * 60;
+				var i = Number(slice[1]) * 60;
+				return h + i;
+			}
 
 			// je garde ces trucs venant de la doc de base pour infos si on a besoin d'interair avec le schedule
 			/*$('#event_timelineData').on('click', function(){
