@@ -1977,9 +1977,14 @@ function isJourFull($date){
 
 	$isfull = false;
 
-	$res_TimePlanned = getTimePlannedByDate($date);
+	$timeStamp = new DateTime();
+	$timeStamp->setTimestamp($date);
+	$timeStamp->setTime(0,0,0);
+	$timeStamp = $timeStamp->getTimestamp();
+
+	$res_TimePlanned = getTimePlannedByDate($timeStamp);
 	//temps plannifié par date
-	$res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($date);    //temps disponible en fonction de la capacité de chaque utilisateur
+	$res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($timeStamp);    //temps disponible en fonction de la capacité de chaque utilisateur
 	//on calcule le pourcentage de temps plannifié par rapport au temps disponible
 	$percentage = 0;
 	if(!empty($res_TimeUserCapacity))

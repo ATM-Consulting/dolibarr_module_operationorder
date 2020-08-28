@@ -135,11 +135,7 @@ if (empty($reshook))
                 } elseif ($attribute == 'planned_date')
                 {
                     $object->planned_date = dol_mktime(GETPOST('planned_datehour'), GETPOST('planned_datemin'), 0, GETPOST('planned_datemonth'), GETPOST('planned_dateday'), GETPOST('planned_dateyear'));
-					$date = new DateTime();
-					$date->setTimestamp($object->planned_date);
-					$date->setTime(0,0,0);
-					$date = $date->getTimestamp();
-                    if (isJourFull($date)){
+                    if (isJourFull($object->planned_date)){
                			setEventMessage('OverloadReachedForThisDay', 'errors');
 					}
 //                    var_dump(isJourFull($date));exit();
@@ -237,12 +233,16 @@ if (empty($reshook))
 					$statusAllowed = new OperationOrderStatus($db);
 					$res = $statusAllowed->fetch($fk_status);
 					if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
-						$sqlPlannedDate = 'SELECT require_planned_date';
-						$sqlPlannedDate .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
-						$sqlPlannedDate .= ' WHERE rowid='.$fk_status;
-						$resqlPlannedDate = $db->query($sqlPlannedDate);
-						$plannedDate = $db->fetch_object($resqlPlannedDate);
-						if($plannedDate == 1 && empty($object->planned_date)){
+						$sql = 'SELECT require_planned_date';
+						$sql .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
+						$sql .= ' WHERE rowid='.$fk_status;
+						$resql = $db->query($sql);
+						if ($resql){
+							$obj = $db->fetch_object($resql);
+						} else{
+							dol_print_error($this->db);
+						}
+						if($obj == 1 && empty($object->planned_date)){
 							setEventMessage($langs->trans('PlannedDateMustBeFilledToPassAtThisStatus'), 'errors');
 							break;
 						}
@@ -899,28 +899,35 @@ else
 
 //Create ORaction if status = planned
 			//To collect each rowid where require_planned_date=1
-			$sqlIDStatusPlanned = 'SELECT rowid';
-			$sqlIDStatusPlanned .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
-			$sqlIDStatusPlanned .= ' WHERE require_planned_date=1';
-			$resqlIDStatusPlanned = $db->query($sqlIDStatusPlanned);
-			$cpt = 0;
-			while ($cpt < $resqlIDStatusPlanned->num_rows){
-				//To fill the array
-				$plannedRowId =$db->fetch_object($resqlIDStatusPlanned);
-				$IDStatusPlanned[] = $plannedRowId->rowid;
-				$cpt+=1;
-			}
-			//If status = planned
-			if(in_array($object->status,$IDStatusPlanned)){
-				if (!empty($object->planned_date)){
-					$endTime = '';
-					$allDay = '';
-					$id_operationorder = $object->id;
-					$planned_date = $object->planned_date;
-					createOperationOrderAction($planned_date,$endTime,$allDay, $id_operationorder);
+			$sql = 'SELECT rowid';
+			$sql .= ' FROM '.MAIN_DB_PREFIX.'operationorder_status';
+			$sql .= ' WHERE require_planned_date=1';
+			$resql = $db->query($sql);
+			if ($resql){
+				$cpt = 0;
+				while ($cpt < $db->num_rows($resql)){
+					//To fill the array
+					$plannedRowId =$db->fetch_object($resql);
+					$TPlannedStatus[] = $plannedRowId->rowid;
+					$cpt++;
 				}
-
+				//If status = planned
+				if(in_array($object->status,$TPlannedStatus)){
+					if (!empty($object->planned_date)){
+						$endTime = '';
+						$allDay = '';
+						$id_operationorder = $object->id;
+						$planned_date = $object->planned_date;
+						$res = createOperationOrderAction($planned_date,$endTime,$allDay, $id_operationorder);
+						if ($res<0){
+							setEventMessage('OperationOrderActionNotCreated', 'errors');
+						}
+					}
+				}
+			} else {
+				dol_print_error($this->db);
 			}
+
 
 			// Contrat
             if (!empty($conf->contrat->enabled))
