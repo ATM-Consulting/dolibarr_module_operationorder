@@ -2177,12 +2177,17 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 										}
 									}
 
-									$class = "in-time";
-									if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
-									{
-										$class = "late";
-									}
-								}
+									if(!$inProgress)
+                                    {
+                                        $class = "in-time";
+                                        if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
+                                        {
+                                            $class = "late";
+                                        }
+                                    } else {
+                                        $class = 'inprogress';
+                                    }
+                                }
 							}
 
 							$tempTT = new stdClass;
