@@ -2092,7 +2092,7 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationordertasktime";
 				$sql.= " WHERE fk_user = ".$u->id;
 				$sql.= " AND task_datehour_d < '".date("Y-m-d 23:59:59", $date)."'";
-				$sql.= " AND task_datehour_f > '".date("Y-m-d 00:00:00", $date)."'";
+				$sql.= " AND (task_datehour_f > '".date("Y-m-d 00:00:00", $date)."' OR task_datehour_f IS NULL)";
 				$sql.= " AND entity = ".$entity;
 
 				$resql = $db->query($sql);
@@ -2106,6 +2106,14 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 						$res = $tt->fetch($obj->rowid);
 						if ($res > 0)
 						{
+
+						    $inProgress = 0;
+
+						    if(empty($tt->task_datehour_f)) {
+						        $tt->task_datehour_f = dol_now();
+						        $inProgress = 1;
+                            }
+
 							$label = $tt->label;
 							$title = $tt->label . '<br />' . date("H:i", $tt->task_datehour_d) . ' - ' . date("H:i", $tt->task_datehour_f);
 
@@ -2144,8 +2152,10 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 											$T[$fieldKey] = $langs->trans($field['label']) .' : '.$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->showOutputFieldQuick($fieldKey);
 										}
 
-										$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
-
+										if(empty($inProgress))
+                                        {
+                                            $T['datef'] = $langs->trans('DateEnd').' : '.date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
+                                        }
 										$title.= '<br/><br/>'.implode('<br/>',$T);
 
 										if (is_object($hookmanager))
