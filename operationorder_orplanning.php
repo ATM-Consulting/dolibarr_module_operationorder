@@ -132,7 +132,7 @@ if (!empty($TSchedules))
 		else // fin de matinée > début aprem = ne travaille pas l'aprem...
 		{
 			$tempTT = new stdClass;
-			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+			$tempTT->start = !empty($planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"}) ? $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"} : $minHour;
 			$tempTT->end = $maxHour;
 			$tempTT->text = "indispo";
 			$tempTT->data = new stdClass;
@@ -512,4 +512,5 @@ else
 	print $langs->trans('ErrorNoUserInGroupOrNoGroup');
 }
 llxFooter();
+
 
