@@ -1979,6 +1979,31 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
 
 }
 
+
+function isJourFull($date){
+	global $conf;
+
+	$isfull = false;
+
+	$timeStamp = new DateTime();
+	$timeStamp->setTimestamp($date);
+	$timeStamp->setTime(0,0,0);
+	$timeStamp = $timeStamp->getTimestamp();
+
+	$res_TimePlanned = getTimePlannedByDate($timeStamp);
+	//temps plannifié par date
+	$res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($timeStamp);    //temps disponible en fonction de la capacité de chaque utilisateur
+	//on calcule le pourcentage de temps plannifié par rapport au temps disponible
+	$percentage = 0;
+	if(!empty($res_TimeUserCapacity))
+	{
+		$percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+		if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+	}
+	return $isfull;
+}
+
+
 function daysAvailableBetween($dated, $datef){
 
 
