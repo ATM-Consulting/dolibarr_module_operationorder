@@ -936,7 +936,7 @@ function getTHoraire()
  * @param int $id_operationorder
  * @return  int         1 if OK, -1 if KO
  */
-function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder){
+function createOperationOrderAction($startTime, $endTime, $allDay, $id_operationorder, $setstatus = false){
 
     global $langs, $db, $user, $conf;
 
@@ -972,18 +972,22 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             if(empty($operationorder->array_options)) $operationorder->fetch_optionals();
             $operationorder->planned_date = intval($action_or->dated);
             $operationorder->save($user);
-            $fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
+            if ($setstatus == true)
+			{
+				$fk_status = $conf->global->OPODER_STATUS_ON_PLANNED;
 
-            $statusAllowed = new OperationOrderStatus($db);
-            $res = $statusAllowed->fetch($fk_status);
-            if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
-            {
-                $res = $operationorder->setStatus($user, $fk_status);
+				$statusAllowed = new OperationOrderStatus($db);
+				$res = $statusAllowed->fetch($fk_status);
+				if ($res > 0 && $statusAllowed->userCan($user, 'changeToThisStatus'))
+				{
+					$res = $operationorder->setStatus($user, $fk_status);
 
-                if($res < 0) $error++;
-            } else {
-                $error++;
-            }
+					if($res < 0) $error++;
+				} else {
+					$error++;
+				}
+			}
+
         }
         else
         {

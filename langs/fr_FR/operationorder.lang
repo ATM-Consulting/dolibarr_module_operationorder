@@ -326,4 +326,5 @@ ClotureEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, le 
 RequirePlannedDate =Seuls les OR possédant une date de plannification peuvent passer à ce statut
 PlannedDateMustBeFilledToPassAtThisStatus=Merci de saisir une date de plannification
 OverloadReachedForThisDay =La surcharge est atteinte pour ce jour
-OperationOrderActionNotCreated =LA vue planning de l'OR ne s'est pas correctement crée
+OperationOrderActionNotCreated =La vue planning de l'OR ne s'est pas correctement crée
+OpActionCantBeCreatedBecauseOfPlannedDate=La vue planning de cet OR ne peut pas être crée car la date de planification est vide
