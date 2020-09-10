@@ -242,7 +242,7 @@ if (empty($reshook))
 						} else{
 							dol_print_error($this->db);
 						}
-						if($obj->required_planned_date == 1 && empty($object->planned_date)){
+						if($obj->require_planned_date == 1 && empty($object->planned_date)){
 							setEventMessage($langs->trans('PlannedDateMustBeFilledToPassAtThisStatus'), 'errors');
 							break;
 						}
