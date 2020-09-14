@@ -207,6 +207,9 @@ $selectArray = array(
 $formOvershootStatus = $form->selectarray($inputPrefix.$htmlName , $selectArray, $search_overshootStatus, 1);
 $formOvershootMultiStatus = $form->multiselectarray('search_status' , $TStatusSearchList, $search_overshootMultiStatus);
 
+$TMassactions = array();
+if (! empty($user->rights->operationorder->delete)) $TMassactions['delete']  = $langs->trans('Delete');
+
 // List configuration
 $listViewConfig = array(
 	'view_type' => 'list' // default = [list], [raw], [chart]
@@ -222,9 +225,7 @@ $listViewConfig = array(
 		,'noheader' => 0
 		,'messageNothing' => $langs->trans('NoOperationOrder')
 		,'picto_search' => img_picto('', 'search.png', '', 0)
-		,'massactions'=>array(
-			'delete'  => $langs->trans('Delete')
-		)
+		,'massactions'=> $TMassactions
 		,'param_url' => '&limit='.$nbLine.$addFilterStatus
 	)
 	,'subQuery' => array()
