@@ -1593,6 +1593,9 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
                         if(is_callable(array($linkedObject, 'getNomUrl'))){
                             $out .= $linkedObject->getNomUrl(1).' ';
                         }
+						if(is_callable(array($linkedObject, 'getLibStatut'))){
+							$out .= $linkedObject->getLibStatut(3).' ';
+						}
                     }
                 }
                 $out .= '		</div>';
