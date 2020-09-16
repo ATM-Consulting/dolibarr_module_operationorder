@@ -101,11 +101,11 @@ class OperationOrder extends SeedObject
         'time_planned_f' => array ('type' => 'integer', 'label' => 'TimePlannedForced', 'enabled' => 1, 'position' => 1400, 'notnull' => 0, 'visible' => 1, 'help'=>"HoursMinFormat"),
         'planned_date' => array ('type' => 'datetime', 'label' => 'PlannedDate', 'enabled' => 1, 'position' => 1500, 'notnull' => 0, 'visible' => 1),
 		'date_creation' => array ('type' => 'datetime', 'label' => 'DateCreationOperationOrder', 'enabled' => 1, 'position' => 1600, 'notnull' => 1, 'visible' => 4,'noteditable'=>'1'),
-		'total_ht_reimbursement' => array ('type' => 'real', 'label' => 'TotalHTReimbursement', 'enabled' => 1, 'position' => 1700, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
-		'total_ht_part' => array ('type' => 'real', 'label' => 'TotalHTPart', 'enabled' => 1, 'position' => 1800, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
-		'total_ht_external' => array ('type' => 'real', 'label' => 'TotalHTExternal', 'enabled' => 1, 'position' => 1900, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
-		'total_ht_mo' => array ('type' => 'real', 'label' => 'TotalHTMO', 'enabled' => 1, 'position' => 2000, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
-		'total_ht' => array ('type' => 'real', 'label' => 'TotalHT', 'enabled' => 1, 'position' => 2100, 'notnull' => 0, 'required' => 0, 'visible' => 5,'noteditable'=>'1'),
+		'total_ht_reimbursement' => array ('type' => 'real', 'label' => 'TotalHTReimbursement', 'enabled' => 1, 'position' => 1700, 'notnull' => 0, 'required' => 0, 'visible' => 1,'noteditable'=>'1'),
+		'total_ht_part' => array ('type' => 'real', 'label' => 'TotalHTPart', 'enabled' => 1, 'position' => 1800, 'notnull' => 0, 'required' => 0, 'visible' => 1,'noteditable'=>'1'),
+		'total_ht_external' => array ('type' => 'real', 'label' => 'TotalHTExternal', 'enabled' => 1, 'position' => 1900, 'notnull' => 0, 'required' => 0, 'visible' => 1,'noteditable'=>'1'),
+		'total_ht_mo' => array ('type' => 'real', 'label' => 'TotalHTMO', 'enabled' => 1, 'position' => 2000, 'notnull' => 0, 'required' => 0, 'visible' => 1,'noteditable'=>'1'),
+		'total_ht' => array ('type' => 'real', 'label' => 'TotalHT', 'enabled' => 1, 'position' => 2100, 'notnull' => 0, 'required' => 0, 'visible' => 1,'noteditable'=>'1'),
 
     );
 
