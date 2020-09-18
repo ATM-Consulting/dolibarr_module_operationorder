@@ -135,6 +135,10 @@ if (empty($reshook))
                 } elseif ($attribute == 'planned_date')
                 {
                     $object->planned_date = dol_mktime(GETPOST('planned_datehour'), GETPOST('planned_datemin'), 0, GETPOST('planned_datemonth'), GETPOST('planned_dateday'), GETPOST('planned_dateyear'));
+                    if (isJourFull($object->planned_date)){
+               			setEventMessage('OverloadReachedForThisDay', 'errors');
+					}
+//                    var_dump(isJourFull($date));exit();
                 }
                 else
                 {
@@ -229,6 +233,19 @@ if (empty($reshook))
 					$statusAllowed = new OperationOrderStatus($db);
 					$res = $statusAllowed->fetch($fk_status);
 					if($res>0 && $statusAllowed->userCan($user, 'changeToThisStatus')){
+						$sql = 'SELECT require_planned_date';
+						$sql .= ' FROM '.MAIN_DB_PREFIX. 'operationorder_status';
+						$sql .= ' WHERE rowid='.$fk_status;
+						$resql = $db->query($sql);
+						if ($resql){
+							$obj = $db->fetch_object($resql);
+						} else{
+							dol_print_error($this->db);
+						}
+						if($obj->required_planned_date == 1 && empty($object->planned_date)){
+							setEventMessage($langs->trans('PlannedDateMustBeFilledToPassAtThisStatus'), 'errors');
+							break;
+						}
 						if($object->setStatus($user, $fk_status)>0){
 							setEventMessage($langs->trans('StatusChanged'));
 						}
@@ -813,6 +830,7 @@ else
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
+
             print '</table>';
 
             dol_fiche_end();
@@ -846,7 +864,7 @@ else
             // Thirdparty
             $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $object->thirdparty->getNomUrl(1);
 
-            // Project
+			// Project
             if (!empty($conf->projet->enabled))
             {
                 $langs->load("projects");
@@ -879,7 +897,39 @@ else
                 }
             }
 
-            // Contrat
+//Create ORaction if status = planned
+			//To collect each rowid where require_planned_date=1
+			$sql = 'SELECT rowid';
+			$sql .= ' FROM '.MAIN_DB_PREFIX.'operationorder_status';
+			$sql .= ' WHERE require_planned_date=1';
+			$resql = $db->query($sql);
+			if ($resql){
+				$cpt = 0;
+				while ($cpt < $db->num_rows($resql)){
+					//To fill the array
+					$plannedRowId =$db->fetch_object($resql);
+					$TPlannedStatus[] = $plannedRowId->rowid;
+					$cpt++;
+				}
+				//If status = planned
+				if(in_array($object->status,$TPlannedStatus)){
+					if (!empty($object->planned_date)){
+						$endTime = '';
+						$allDay = '';
+						$id_operationorder = $object->id;
+						$planned_date = $object->planned_date;
+						$res = createOperationOrderAction($planned_date,$endTime,$allDay, $id_operationorder);
+						if ($res<0){
+							setEventMessage('OperationOrderActionNotCreated', 'errors');
+						}
+					}
+				}
+			} else {
+				dol_print_error($this->db);
+			}
+
+
+			// Contrat
             if (!empty($conf->contrat->enabled))
             {
                 $langs->load("contrat");

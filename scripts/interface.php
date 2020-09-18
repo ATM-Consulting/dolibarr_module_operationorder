@@ -113,6 +113,7 @@ if(GETPOST('action'))
 			$data['time_plannedhour'] = 0;
 			$data['time_plannedmin'] = 0;
 
+
 			if(!empty($product->duration_unit))
 			{
 				$fk_duration_unit = UnitsTools::getUnitFromCode($product->duration_unit, 'short_label');
@@ -131,6 +132,7 @@ if(GETPOST('action'))
 					else{
 						$data['errorMsg'].=  (!empty($data['errorMsg'])?'<br/>':'').$langs->transnoentities('UnitCodeNotFound', 'H');
 					}
+
 				}
 			}
 
@@ -168,20 +170,357 @@ if(GETPOST('action'))
 			$data['result'] = 0;
 		}
 	}
-	if($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
-	elseif($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
-	elseif ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
-	elseif ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
+	if ($action=='getTableDialogPlanable') $data['result'] = _getTableDialogPlanable($data['startTime'], $data['endTime'], $data['allDay'], $data['url'], '', '', $data['beginOfWeek'], $data['endOfWeek']);
+	else if ($action=='updateOperationOrderAction') $data['result'] = _updateOperationOrderAction($data['startTime'], $data['endTime'], $data['fk_action'], $data['action'], $data['allDay']);
+	else if ($action=='getScheduleInfos') $data['result'] = _getScheduleInfos($data['scheduleId'], $data['oOrder'], $data['det'], $data['minHour'], $data['maxHour']);
+	else if ($action=='updateSchedule') $data['result'] = _updateSchedule($data['scheduleId'], $data['startTime'], $data['endTime']);
+	else if ($action == 'getCreateScheduleForm') $data['result'] = _getCreateScheduleForm($data['userid'], $data['date'], $data['minHour'], $data['maxHour'], $data['selectedHour'], $data['entity']);
+	else if ($action == 'createSchedule') $data['result'] = _createSchedule($data['fk_user'], $data['entity'], $data['fk_orDet'], $data['startTime'], $data['endTime'], $data['label']);
+	else if ($action == 'deleteSchedule') $data['result'] = _deleteSchedule($data['scheduleId']);
 
 }
 
 echo json_encode($data);
+
+function _deleteSchedule($scheduleId)
+{
+	global $user, $db, $langs;
+
+	if (empty($user->rights->operationorder->counter->delete))
+	{
+		setEventMessage($langs->trans('NotEnoughPermissions'), 'errors');
+		return false;
+	}
+
+	$schedule = new OperationOrderTaskTime($db);
+	$schedule->fetch($scheduleId);
+
+	$db->begin();
+	$out = false;
+	$ret = $schedule->delete($user);
+	if ($ret > 0)
+	{
+		if (!empty($schedule->fk_orDet))
+		{
+			$det = new OperationOrderDet($db);
+			$det->fetch($schedule->fk_orDet);
+
+			$or = new OperationOrder($db);
+			if (!empty($det->fk_operation_order)) {
+				$or->fetch($det->fk_operation_order);
+				$res = $or->updateline($det->id,
+					$det->description,
+					$det->qty,
+					$det->price,
+					$det->fk_warehouse,
+					$det->pc,
+					$det->time_planned,
+					($det->time_spent - $schedule->task_duration),
+					$det->fk_product,
+					0,
+					$det->date_start,
+					$det->date_end,
+					$det->type,
+					$det->fk_parent_line,
+					$det->label,
+					$det->special_code,
+					$det->array_options);
+			}
+		}
+		else $out = true;
+
+		if ($res > 0 || $out)
+		{
+			setEventMessage($langs->trans('RecordDeleted'));
+			$db->commit();
+			$out = true;
+		}
+		else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), 'errors');
+	}
+
+	if (!$out) $db->rollback();
+
+	return $out;
+
+}
+
+function _createSchedule($fk_user, $entity, $fk_orDet, $startTime, $endTime, $label)
+{
+	global $langs, $db, $user;
+
+	$schedule = new OperationOrderTaskTime($db);
+
+	$schedule->label = $label;
+	$schedule->fk_user = $fk_user;
+	$schedule->entity = $entity;
+	$schedule->fk_orDet = $fk_orDet;
+	$schedule->task_datehour_d = $startTime;
+	$schedule->task_datehour_f = $endTime;
+	$schedule->task_duration = $endTime - $startTime;
+
+	$db->begin();
+
+	$out = false;
+	$ret = $schedule->save($user);
+	if ($ret > 0) {
+
+		if (!empty($schedule->fk_orDet))
+		{
+			$det = new OperationOrderDet($db);
+			$det->fetch($schedule->fk_orDet);
+
+			$or = new OperationOrder($db);
+			if (!empty($det->fk_operation_order)) {
+				$or->fetch($det->fk_operation_order);
+				$res = $or->updateline($det->id,
+					$det->description,
+					$det->qty,
+					$det->price,
+					$det->fk_warehouse,
+					$det->pc,
+					$det->time_planned,
+					($det->time_spent + $schedule->task_duration),
+					$det->fk_product,
+					0,
+					$det->date_start,
+					$det->date_end,
+					$det->type,
+					$det->fk_parent_line,
+					$det->label,
+					$det->special_code,
+					$det->array_options);
+			}
+		}
+		else $out = true;
+
+		if ($res > 0 || $out)
+		{
+			setEventMessage($langs->trans('RecordSaved'));
+			$db->commit();
+			$out = true;
+		}
+		else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), 'errors');
+
+	}
+	else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");
+
+	if (!$out) $db->rollback();
+
+	return $schedule;
+}
+
+function _getCreateScheduleForm($userid, $date, $minHour, $maxHour, $selectedHour, $entity)
+{
+	global $db, $langs, $conf;
+
+	$out = '';
+	$TOR = $TORDet = array();
+	$or = new OperationOrder($db);
+	$orDet = new OperationOrderDet($db);
+	$schedule = new OperationOrderTaskTime($db);
+	$form = new Form($db);
+	$u = new User($db);
+
+	$switchEntity = false;
+	if ($entity != $conf->entity && !empty($entity))
+	{
+		$switchEntity = true;
+
+		$oldEntity = $conf->entity;
+		$conf->entity = $entity;
+		$conf->setValues($db);
+	}
+
+	$resUser = $u->fetch($userid);
+	if ($resUser <= 0)
+	{
+		$out.= "utilisateur $userid non trouvé";
+		return $out;
+		exit;
+	}
+	$out.= $langs->trans('User').' : ' . $u->getNomUrl(1)."<br />";
+	$out.= "<input type='hidden' id='entity' name='entity' value='".$conf->entity."'/>";
+	$out.= "<input type='hidden' id='fk_user' name='fk_user' value='".$userid."'/>";
+
+
+	$arrDate = explode('/',$date);
+	$sqlDate = strtotime($arrDate[2].'-'.$arrDate[1].'-'.$arrDate[0].' 00:00:00');
+	$sqlDate = date("Y-m-d 00:00:00", strtotime('-3 months', $sqlDate));
+
+	// liste des OR qui ont un statut dont le champs "Afficher les ordres de réparation sur ce statut dans le planning" à 1
+	// et qui on une date de création > date - 3 mois
+	// de l'entité spécifiée
+	$sql = "SELECT oo.rowid, oo.ref FROM ".MAIN_DB_PREFIX."operationorder oo";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorder_status os ON os.rowid = oo.status";
+	$sql.= " WHERE os.display_on_planning = 1";
+	$sql.= " AND oo.entity = ".$conf->entity;
+	$sql.= " AND oo.date_creation > '".$db->idate($sqlDate)."'";
+	$resql = $db->query($sql);
+	if ($resql)
+	{
+		while ($obj = $db->fetch_object($resql))
+		{
+			$TOR[$obj->rowid] = $obj->ref;
+		}
+	}
+
+	if (!empty($TOR))
+	{
+		$out.= $langs->trans('OperationOrder').' : ';
+		$out.= $form->selectArray('oOrderId', $TOR, "", 1,0,0,'',0,0,0,'','',1).'<br />';
+
+		// récupération des lignes d'OR concernées
+		$sql = "SELECT ood.fk_operation_order, ood.rowid, ood.fk_parent_line, p.ref, p.label, p2.ref as parent_ref, p2.label as parent_label FROM ".MAIN_DB_PREFIX."operationorderdet ood";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p ON p.rowid = ood.fk_product";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_extrafields pe ON pe.fk_object = p.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."operationorderdet parentDet ON parentDet.rowid=ood.fk_parent_line";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p2 ON p2.rowid = parentDet.fk_product";
+		$sql.= " WHERE pe.or_scan = 1";
+		$sql.= " AND ood.fk_operation_order IN ('".implode("','", array_keys($TOR))."')";
+
+		$resql = $db->query($sql);
+		if ($resql)
+		{
+			while ($obj = $db->fetch_object($resql))
+			{
+				$TORDet[$obj->fk_operation_order][$obj->rowid] = $obj->label.(!empty($obj->parent_label) ? " - ".$obj->parent_label : "");
+			}
+		}
+		if (!empty($TORDet))
+		{
+			// dans une div cachée, créer un select par OR avec ses lignes en option
+			// au changement du champ OR on viendra copier le contenu du bon select dans le selectarray visible
+			$out.= "<div id='orLines' style='display: none;'>";
+			foreach ($TORDet as $or_id => $Tdet)
+			{
+				$out.="<select id='".$or_id."_lines'>";
+				$out.="<option>&nbsp;</option>";
+				foreach ($Tdet as $det_id => $label)
+				{
+					$out.= "<option value='".$det_id."' data-label='".$label."'>".$label."</option>";
+				}
+				$out.="</select><br />";
+			}
+			$out.= "</div>";
+			$out.= $langs->trans('SearchIntoTasks')." : ";
+			$out.= $form->selectArray('fk_orDet', array(), "", 1,0,0,'style="width:80%"',0,0,0,'','',1).'<br />';
+
+			$TFieldToDisplay = array('task_datehour_d', 'task_datehour_f');
+			$T = array();
+
+			// début du créneau à l'heure cliquée
+			$schedule->task_datehour_d = strtotime($arrDate[2].'-'.$arrDate[1].'-'.$arrDate[0].' '.$selectedHour.':00');
+			// fin du créneau 5 minutes plus tard
+			$schedule->task_datehour_f = $schedule->task_datehour_d + 300;
+
+			$out.= '<br /><div id="alert"></div>';
+			$out.= '<input type="hidden" id="minHour" value="'.$minHour.'">';
+			$out.= '<input type="hidden" id="maxHour" value="'.$maxHour.'">';
+			$out.= '<input type="hidden" id="minDate" value="'.date("Y-m-d\T".$minHour.":00", $schedule->task_datehour_d).'">';
+			$out.= '<input type="hidden" id="maxDate" value="'.date("Y-m-d\T".$maxHour.":00", $schedule->task_datehour_f).'">';
+
+			foreach ($schedule->fields as $fieldKey => $field){
+				if (!in_array($fieldKey, $TFieldToDisplay)) continue;
+
+				$T[$fieldKey] = $langs->trans($field['label']) .' : '.$schedule->showInputField($schedule->fields[$fieldKey], $fieldKey, $schedule->{$fieldKey});//$schedule->showOutputFieldQuick($fieldKey);
+			}
+
+			$out.= '<br />'.implode('<br />', $T).'<br />';
+
+			$out.= '<br /><div align="center"><button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;<button id="cancel" class="button">'.$langs->trans('Cancel').'</button></div>';
+
+			$out.= '<script type="text/javascript">
+				$(function(){
+					$("#oOrderId").on("change", function(){
+						let orId = $(this).val();
+						$("#fk_orDet").html($("#"+orId+"_lines").html());
+					});
+
+					$("#cancel").on("click", function() {
+						$("#schedulePopin").dialog("close")
+					});
+
+					$("#save").on("click", function() {
+						var errorMsg ="";
+						$("#alert")
+							.hide()
+							.css("color","#721c24")
+							.css("background-color","#f8d7da")
+							.css("border-color","#f5c6cb");
+
+						if ($("#oOrderId").val() <= 0)
+							errorMsg += "<p>'.$langs->trans('ErrorNoORSelected').'</p>";
+						if ($("#fk_ordet").val() <= 0)
+							errorMsg += "<p>'.$langs->trans('ErrorNoORLineSelected').'</p>";
+
+						let minDate = new Date($("#minDate").val());
+						let maxDate = new Date($("#maxDate").val());
+
+
+						let startDate = new Date(
+							$("#task_datehour_dyear").val()+"-"+
+							$("#task_datehour_dmonth").val()+"-"+
+							$("#task_datehour_dday").val()+"T"+
+							$("#task_datehour_dhour").val()+":"+
+							$("#task_datehour_dmin").val()+":00"
+						);
+						let endDate = new Date(
+							$("#task_datehour_fyear").val()+"-"+
+							$("#task_datehour_fmonth").val()+"-"+
+							$("#task_datehour_fday").val()+"T"+
+							$("#task_datehour_fhour").val()+":"+
+							$("#task_datehour_fmin").val()+":00"
+						);
+
+						if (startDate.getTime() > endDate.getTime())
+							errorMsg += "<p>'.$langs->trans('ErrorInvertedDates').'</p>";
+
+						if (startDate.getTime() < minDate.getTime())
+							errorMsg += "<p>'.$langs->trans('ErrorDateToLow', date('d/m/Y '.$minHour, $schedule->task_datehour_d)).'</p>";
+
+						if (endDate.getTime() > maxDate.getTime())
+							errorMsg += "<p>'.$langs->trans('ErrorDateToHigh', date('d/m/Y '.$maxHour, $schedule->task_datehour_f)).'</p>";
+
+						if (errorMsg.length) $("#alert").html(errorMsg).show();
+						else
+						{
+							$.ajax({
+								url:"'.dol_buildpath('/operationorder/scripts/interface.php', 1).'",
+								method:"POST",
+								data: {
+									action: "createSchedule",
+									label: $("#fk_orDet option:selected").attr("data-label"),
+									fk_user: $("#fk_user").val(),
+									entity: $("#entity").val(),
+									fk_orDet: $("#fk_orDet").val(),
+									startTime: startDate.getTime() / 1000,
+									endTime: endDate.getTime() / 1000
+								}
+							}).done(function(response){
+								$("form[name=\'filters\']").submit();
+//								$("#schedulePopin").dialog("close")
+							});
+						}
+					});
+				});
+			</script>';
+		}
+	}
+
+	if ($switchEntity)
+	{
+		$conf->entity = $oldEntity;
+		$conf->setValues($db);
+	}
+	return $out;
+}
 
 function _updateSchedule($scheduleId, $startTime, $endTime)
 {
 	global $db, $langs, $user;
 
 	$out = false;
+
 
 	$schedule = new OperationOrderTaskTime($db);
 	$ret = $schedule->fetch($scheduleId);
@@ -233,7 +572,10 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 				$db->commit();
 				$out = true;
 			}
-			else setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
+			else
+			{
+				setEventMessage($langs->trans('ErrorOrDetNotUpdated'), "errors");
+			}
 
 		}
 		else setEventMessage($langs->trans('ErrorUpdateSchedule'),"errors");
@@ -246,7 +588,7 @@ function _updateSchedule($scheduleId, $startTime, $endTime)
 
 function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 {
-	global $db, $langs;
+	global $db, $langs, $user;
 
 	$out = '';
 
@@ -259,6 +601,35 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 	$ret = $schedule->fetch($scheduleId);
 	if ($ret > 0)
 	{
+		// si le user a le droit de supprimer des saisies
+		if (!empty($user->rights->operationorder->counter->delete))
+		{
+			$out.='<button class="butActionDelete pull-right" id="del">'.$langs->trans("Delete").'</button>';
+			$out.='<p class="question">'.$langs->trans('askDeleteCounter').'</p>';
+			$out.='<div class="question"><button id="yes">'.$langs->trans('Yes').'</button>&nbsp;<button id="no">'.$langs->trans('No').'</button></div>';
+			$out.='<br />';
+			$out.='<script type="text/javascript">
+				$(function (){
+					$(".question").hide();
+
+					$("#del").on("click", function(){$(".question").show();});
+					$("#no").on("click", function(){$(".question").hide();});
+					$("#yes").on("click", function (){
+						$.ajax({
+							url:"'.dol_buildpath('/operationorder/scripts/interface.php', 1).'",
+							method:"POST",
+							data: {
+								action: "deleteSchedule",
+								scheduleId: '.$schedule->id.'
+							}
+						}).done(function(data){
+							$("form[name=\'filters\']").submit();
+//									$("#schedulePopin").dialog("close")
+						});
+					});
+				});
+			</script>';
+		}
 		if (!empty($or->id))
 		{
 			$out.= $or->getNomUrl(1);
@@ -275,11 +646,13 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 			$out.= '<br /><br />'.implode('<br />', $T);
 		}
+		else
+		$out.= $schedule->label;
 
 		$TFieldToDisplay = array('task_datehour_d', 'task_datehour_f');
 		$T = array();
 
-		$out.= '<br /><br /><div id="alert"></div>';
+		$out.= '<br /><div id="alert"></div>';
 		$out.= '<input type="hidden" id="minHour" value="'.$minHour.'">';
 		$out.= '<input type="hidden" id="minDate" value="'.date("Y-m-d\T".$minHour.":00", $schedule->task_datehour_d).'">';
 		$out.= '<input type="hidden" id="maxHour" value="'.$maxHour.'">';
@@ -293,7 +666,11 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 		$out.= '<br />'.implode('<br />', $T).'<br />';
 
-		$out.= '<br /><div align="center"><button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;<button id="cancel" class="button">'.$langs->trans('Cancel').'</button></div>';
+		$out.= '<br /><div align="center">';
+		if (!empty($user->rights->operationorder->counter->update)) $out.= '<button id="save" class="button">'.$langs->trans('Save').'</button>&nbsp;';
+		else $out.= '<button title="'.$langs->trans('NotEnoughPermissions').'" class="button"  disabled>'.$langs->trans('Save').'</button>&nbsp;';
+		$out.= '<button id="cancel" class="button">'.$langs->trans('Cancel').'</button>';
+		$out.= '</div>';
 
 		$out.= '<script type="text/javascript">
 					$(function() {
@@ -303,7 +680,7 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 						$("#save").on("click", function() {
 							var errorMsg ="";
-							$("#alert")
+							$("#alert, .alert")
 								.hide()
 								.css("color","#721c24")
 								.css("background-color","#f8d7da")
@@ -311,6 +688,7 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 
 							let minDate = new Date($("#minDate").val());
 							let maxDate = new Date($("#maxDate").val());
+
 
 							let startDate = new Date(
 								$("#task_datehour_dyear").val()+"-"+
@@ -356,7 +734,8 @@ function _getScheduleInfos($scheduleId, $fk_or, $fk_ordet, $minHour, $maxHour)
 										endTime: endDate.getTime() / 1000
 									}
 								}).done(function(data){
-									$("#schedulePopin").dialog("close")
+									$("form[name=\'filters\']").submit();
+//									$("#schedulePopin").dialog("close")
 								});
 							}
 						});
@@ -482,7 +861,13 @@ function _getTableDialogPlanable($startTime, $endTime, $allDay, $url, $id = 'cre
  */
 
 function _updateOperationOrderAction($startTime, $endTime, $fk_action, $action,  $allDay){
-    global $db, $user;
+    global $db, $user, $langs;
+
+	if (empty($user->rights->operationorder->counter->update))
+	{
+		setEventMessage($langs->trans('NotEnoughPermissions'), 'errors');
+		return false;
+	}
 
     dol_include_once('/operationorder/class/operationorder.class.php');
     dol_include_once('/operationorder/class/operationorderaction.class.php');
@@ -876,7 +1261,7 @@ function  _getJourOff($start = 0, $end = 0){
 			'operator' => '<=',
 			'value' => date('Y-m-d H:i:s', $end),
 			'field' => 'date',
-		),
+		)
 	);
 
 	$TDayOff = $dayOff->fetchAll(0, false, $TFilter);
