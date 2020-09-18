@@ -29,7 +29,11 @@
 dol_include_once('operationorder/class/operationorderuserplanning.class.php');
 dol_include_once('/operationorder/class/operationorderjoursoff.class.php');
 dol_include_once('/operationorder/class/usergroupoperationorder.class.php');
-if($conf->absence->enabled) dol_include_once('/absence/class/absence.class.php');
+if($conf->absence->enabled) {
+    dol_include_once('/absence/class/absence.class.php');
+    dol_include_once('/absence/lib/absence.lib.php');
+}
+
 
 
 
@@ -1246,6 +1250,7 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
 
             //On récupère toutes les absences de l'utilisateur pour la semaine
             $TAbsences = array();
+            $TPresences = array();
 
             if($conf->absence->enabled)
             {
@@ -1277,6 +1282,18 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                                 {
                                     $TAbsences[] = $absenceDateTimestamp.'_pm';
                                 }
+                            } else {
+
+                                //TODO : DEV à continuer à l'occasion pour gérer si c'est une présence
+                                // A NOTER : lunchbreak est une durée et non une date !!
+                                $PDOdb = new TPDOdb;
+
+                                $presence = new TRH_Absence;
+                                $res = $presence->load($PDOdb, $absence->idAbsence);
+
+                                $absenceDateTimestamp = strtotime($absence->date);
+
+
                             }
                         }
                     }
