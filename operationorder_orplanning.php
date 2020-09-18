@@ -99,59 +99,124 @@ if (!empty($TSchedules))
 		$dated_aprem = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"}.":00", $date));
 		$datef_aprem = strtotime(date("Y-m-d ".$planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"}.":00", $date));
 
-		// planning journalier débute après l'heure début affichée
-		if ($dated_matin > $date_min)
-		{
-			$tempTT = new stdClass;
-			$tempTT->start = $minHour;
-			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"};
-			$tempTT->text = "indispo";
-			$tempTT->data = new stdClass;
-			$tempTT->data->title = "plage non-travaillé";
-			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
-			$TSchedules[$id_user]->schedule[] = $tempTT;
-		}
 
-		if ($datef_matin < $dated_aprem)
-		{
+        //erreur planning mal rempli
+		if(!empty($dated_matin) && empty($datef_matin) && empty($dated_aprem) && !empty($datef_aprem)
+                    || empty($dated_matin) && !empty($datef_matin) && !empty($dated_aprem) && empty($datef_aprem)
+                    || (!empty($dated_matin) && empty($datef_matin))
+                    || (empty($dated_aprem) && !empty($datef_aprem))){
 
-			$tempTT = new stdClass;
-			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
-			$tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
-			$tempTT->text = "indispo";
-			$tempTT->data = new stdClass;
-			$tempTT->data->title = "plage non-travaillé";
-			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+            $tempTT = new stdClass;
+            $tempTT->start = $minHour;
+            $tempTT->end = $maxHour;
+            $tempTT->text = "[ERREUR] Planning utilisateur incomplet";
+            $tempTT->data = new stdClass;
+            $tempTT->data->title = "erreur";
+            $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
-			$TSchedules[$id_user]->schedule[] = $tempTT;
-		}
-		else // fin de matinée > début aprem = ne travaille pas l'aprem...
-		{
-			$tempTT = new stdClass;
-			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
-			$tempTT->end = $maxHour;
-			$tempTT->text = "indispo";
-			$tempTT->data = new stdClass;
-			$tempTT->data->title = "plage non-travaillé";
-			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+            $TSchedules[$id_user]->schedule[] = $tempTT;
+        }
+		//planning bien rempli
+		else {
 
-			$TSchedules[$id_user]->schedule[] = $tempTT;
-			continue;
-		}
+            //demi-journées pas travaillées ou journée entière non travaillée
+            if(empty($dated_matin) && empty($datef_matin) && !empty($dated_aprem) && !empty($datef_aprem)) {
+                $tempTT = new stdClass;
+                $tempTT->start = $minHour;
+                $tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
+                $tempTT->text = "indispo";
+                $tempTT->data = new stdClass;
+                $tempTT->data->title = "plage non-travaillé";
+                $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
-		if ($datef_aprem < $date_max)
-		{
-			$tempTT = new stdClass;
-			$tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"};
-			$tempTT->end = $maxHour;
-			$tempTT->text = "indispo";
-			$tempTT->data = new stdClass;
-			$tempTT->data->title = "plage non-travaillé";
-			$tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+                $TSchedules[$id_user]->schedule[] = $tempTT;
+            } elseif(!empty($dated_matin) && !empty($datef_matin) && empty($dated_aprem) && empty($datef_aprem)) {
+                $tempTT = new stdClass;
+                $tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+                $tempTT->end = $maxHour;
+                $tempTT->text = "indispo";
+                $tempTT->data = new stdClass;
+                $tempTT->data->title = "plage non-travaillé";
+                $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
 
-			$TSchedules[$id_user]->schedule[] = $tempTT;
-		}
+                $TSchedules[$id_user]->schedule[] = $tempTT;
+            } elseif(empty($dated_matin) && empty($datef_matin) && empty($dated_aprem) && empty($datef_aprem)) {
+                $tempTT = new stdClass;
+                $tempTT->start = $minHour;
+                $tempTT->end = $maxHour;
+                $tempTT->text = "indispo";
+                $tempTT->data = new stdClass;
+                $tempTT->data->title = "plage non-travaillé";
+                $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+
+                $TSchedules[$id_user]->schedule[] = $tempTT;
+            }
+
+            // plusieurs créneaux travaillés dans la journée
+            if(!empty($dated_matin))
+            {
+                if ($dated_matin > $date_min)
+                {
+                    $tempTT = new stdClass;
+                    $tempTT->start = $minHour;
+                    $tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredam"};
+                    $tempTT->text = "indispo";
+                    $tempTT->data = new stdClass;
+                    $tempTT->data->title = "plage non-travaillé";
+                    $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+
+                    $TSchedules[$id_user]->schedule[] = $tempTT;
+                }
+            }
+
+            if(!empty($datef_matin) && !empty($dated_aprem))
+            {
+                if ($datef_matin < $dated_aprem)
+                {
+
+                    $tempTT = new stdClass;
+                    $tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+                    $tempTT->end = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heuredpm"};
+                    $tempTT->text = "indispo";
+                    $tempTT->data = new stdClass;
+                    $tempTT->data->title = "plage non-travaillé";
+                    $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+
+                    $TSchedules[$id_user]->schedule[] = $tempTT;
+                }
+                elseif ($datef_matin > $dated_aprem) // fin de matinée > début aprem = ne travaille pas l'aprem...
+                {
+                    $tempTT = new stdClass;
+                    $tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefam"};
+                    $tempTT->end = $maxHour;
+                    $tempTT->text = "indispo";
+                    $tempTT->data = new stdClass;
+                    $tempTT->data->title = "plage non-travaillé";
+                    $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+
+                    $TSchedules[$id_user]->schedule[] = $tempTT;
+                    continue;
+                }
+            }
+
+            if(!empty($datef_aprem))
+            {
+                if ($datef_aprem < $date_max)
+                {
+                    $tempTT = new stdClass;
+                    $tempTT->start = $planningUser[$id_user]->{$joursDeLaSemaine[$dow]."_heurefpm"};
+                    $tempTT->end = $maxHour;
+                    $tempTT->text = "indispo";
+                    $tempTT->data = new stdClass;
+                    $tempTT->data->title = "plage non-travaillé";
+                    $tempTT->data->style = 'background-color:#d7d7d7;color:black;';
+
+                    $TSchedules[$id_user]->schedule[] = $tempTT;
+                }
+            }
+
+        }
 
 	}
 }
