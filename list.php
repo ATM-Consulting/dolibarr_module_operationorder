@@ -412,8 +412,8 @@ if (!empty($_POST)){
 ?>
 <script>
 	// var url =
-	let url = '/client/theobald/dolibarr/htdocs/bookmarks/card.php?action=create&url='
-	url+="<?php	echo urlencode($_SERVER['PHP_SELF'].'?'.implode("&",$addUrl)); ?>"
+	let url = '<?php echo DOL_URL_ROOT?>/bookmarks/card.php?action=create&url='
+	url+="<?php echo urlencode($_SERVER['PHP_SELF'].'?'.implode("&",$addUrl)); ?>"
 	$('#boxbookmark option[value="newbookmark"]').attr('rel', url);
 	console.log(url)
 </script>

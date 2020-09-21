@@ -43,6 +43,7 @@ OPERATION_ORDER_BARCODE_TYPE = Type de codes-barres à utiliser
 OR_ACTIVITYPLANNING_IMPROD_COLOR=Couleur utilisée dans l'écran "Activités journalières" pour afficher les activités improductives
 OR_ACTIVITYPLANNING_INTIME_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche a été effectuée dans les temps
 OR_ACTIVITYPLANNING_LATE_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en dépassement (temps passé > temps prévu)
+OR_ACTIVITYPLANNING_INPROGRESS_COLOR=Couleur utilisée dans l'écran "Activités journalières" lorsque la tâche est en cours
 OORDER_HIDE_TIME_SPENT_IF_CHILD=Cacher le champs "Temps passé" sur l'ajout ou l'édition de lignes si la ligne à des lignes enfants
 OORDER_HIDE_TIME_PLANNED_IF_CHILD=Cacher le champs "Temps planifié" sur l'ajout ou l'édition de lignes si la ligne a des lignes enfants
 
@@ -311,6 +312,11 @@ ErrorDateToLow=la date de début ne peut pas être inférieure à : %s
 ErrorDateToHigh=la date de fin ne peut pas être supérieure à : %s
 ErrorUpdateSchedule=Erreur la sauvegarde
 ErrorOrDetNotUpdated=Erreur lors de la mise à jour de la ligne d'OR
+ErrorNoORSelected=Pas d'ordre de réparaton sélectionné
+ErrorNoORLineSelected=Vous n'avez sélectionné aucune ligne d'ordre de réparation
+operationorder_counter_delete=Pouvoir supprimer une saisie de temps
+operationorder_counter_update=Pouvoir modifier les saisies de temps sur l'écran éactivités journalières"
+askDeleteCounter=Voulez-vous vraiment supprimer cette saisie ?
 ErrorORNeedAtLeast1Line=Erreur : il vous faut au moins une ligne dans l'OR pour faire un mouvement de stock
 
 ORRef=Ref OR
@@ -323,3 +329,8 @@ LeftMenuOperationOrderORPlanning=Activités journalières
 
 ErrorNoUserInGroupOrNoGroup=Pas d'utilisateur dans le "Groupe d'utilisateurs à prendre en compte pour le planning OR" ou pas de groupe configuré
 ClotureEventOnThisStatus=Lorsqu'un ordre de réparation passe sur ce statut, le champ date de clôture est peuplé
+
+RequirePlannedDate =Seuls les OR possédant une date de plannification peuvent passer à ce statut
+PlannedDateMustBeFilledToPassAtThisStatus =La date de planification doit être renseignée pour passer à ce statut
+OverloadReachedForThisDay =La surcharge est atteinte pour ce jour
+OperationOrderActionNotCreated =LA vue planning de l'OR ne s'est pas correctement crée

@@ -1979,6 +1979,31 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
 
 }
 
+
+function isJourFull($date){
+	global $conf;
+
+	$isfull = false;
+
+	$timeStamp = new DateTime();
+	$timeStamp->setTimestamp($date);
+	$timeStamp->setTime(0,0,0);
+	$timeStamp = $timeStamp->getTimestamp();
+
+	$res_TimePlanned = getTimePlannedByDate($timeStamp);
+	//temps plannifié par date
+	$res_TimeUserCapacity = getTimeAvailableByDateByUsersCapacity($timeStamp);    //temps disponible en fonction de la capacité de chaque utilisateur
+	//on calcule le pourcentage de temps plannifié par rapport au temps disponible
+	$percentage = 0;
+	if(!empty($res_TimeUserCapacity))
+	{
+		$percentage = ($res_TimePlanned * 100) / $res_TimeUserCapacity;
+		if($percentage >= $conf->global->OPERATION_ORDER_PERCENTAGECAPACITY_ALERTPLANNINGOR) $isfull = true;
+	}
+	return $isfull;
+}
+
+
 function daysAvailableBetween($dated, $datef){
 
 
@@ -2046,6 +2071,7 @@ function initSchedule($entity = 1)
 				$TSchedules[$u->id] = new stdClass;
 				$TSchedules[$u->id]->title = $u->getFullName($langs);
 				$TSchedules[$u->id]->schedule = array();
+				$TSchedules[$u->id]->userId = $u->id;
 			}
 		}
 	}
@@ -2091,7 +2117,7 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."operationordertasktime";
 				$sql.= " WHERE fk_user = ".$u->id;
 				$sql.= " AND task_datehour_d < '".date("Y-m-d 23:59:59", $date)."'";
-				$sql.= " AND task_datehour_f > '".date("Y-m-d 00:00:00", $date)."'";
+				$sql.= " AND (task_datehour_f > '".date("Y-m-d 00:00:00", $date)."' OR task_datehour_f IS NULL)";
 				$sql.= " AND entity = ".$entity;
 
 				$resql = $db->query($sql);
@@ -2105,6 +2131,14 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 						$res = $tt->fetch($obj->rowid);
 						if ($res > 0)
 						{
+
+						    $inProgress = 0;
+
+						    if(empty($tt->task_datehour_f)) {
+						        $tt->task_datehour_f = dol_now();
+						        $inProgress = 1;
+                            }
+
 							$label = $tt->label;
 							$title = $tt->label . '<br />' . date("H:i", $tt->task_datehour_d) . ' - ' . date("H:i", $tt->task_datehour_f);
 
@@ -2143,8 +2177,10 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 											$T[$fieldKey] = $langs->trans($field['label']) .' : '.$TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->showOutputFieldQuick($fieldKey);
 										}
 
-										$T['datef'] = $langs->trans('DateEnd') . ' : ' . date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
-
+										if(empty($inProgress))
+                                        {
+                                            $T['datef'] = $langs->trans('DateEnd').' : '.date('d/m/Y H:i:s', $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->planned_date + (!empty($TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f) ? $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_f : $TOr[$TOrDet[$tt->fk_orDet]->fk_operation_order]->time_planned_t));
+                                        }
 										$title.= '<br/><br/>'.implode('<br/>',$T);
 
 										if (is_object($hookmanager))
@@ -2166,12 +2202,17 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 										}
 									}
 
-									$class = "in-time";
-									if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
-									{
-										$class = "late";
-									}
-								}
+									if(!$inProgress)
+                                    {
+                                        $class = "in-time";
+                                        if ($TOrDet[$tt->fk_orDet]->time_spent > $TOrDet[$tt->fk_orDet]->time_planned)
+                                        {
+                                            $class = "late";
+                                        }
+                                    } else {
+                                        $class = 'inprogress';
+                                    }
+                                }
 							}
 
 							$tempTT = new stdClass;
