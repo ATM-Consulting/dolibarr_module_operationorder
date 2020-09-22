@@ -242,7 +242,7 @@ if (empty($reshook))
 						} else{
 							dol_print_error($this->db);
 						}
-						if($obj->required_planned_date == 1 && empty($object->planned_date)){
+						if($obj->require_planned_date == 1 && empty($object->planned_date)){
 							setEventMessage($langs->trans('PlannedDateMustBeFilledToPassAtThisStatus'), 'errors');
 							break;
 						}
@@ -901,7 +901,7 @@ else
 			//To collect each rowid where require_planned_date=1
 			$sql = 'SELECT rowid';
 			$sql .= ' FROM '.MAIN_DB_PREFIX.'operationorder_status';
-			$sql .= ' WHERE require_planned_date=1';
+			$sql .= ' WHERE display_on_planning=1';
 			$resql = $db->query($sql);
 			if ($resql){
 				$cpt = 0;
@@ -922,6 +922,8 @@ else
 						if ($res<0){
 							setEventMessage('OperationOrderActionNotCreated', 'errors');
 						}
+					} else {
+						setEventMessage('OpActionCantBeCreatedBecauseOfPlannedDate', 'warnings');
 					}
 				}
 			} else {
