@@ -231,6 +231,7 @@ $listViewConfig = array(
 	,'link' => array()
 	,'type' => array(
 		'date_creation' => 'date' // [datetime], [hour], [money], [number], [integer]
+		,'planned_date' => 'date' // [datetime], [hour], [money], [number], [integer]
 		,'tms' => 'date'
 	)
 	,'search' => array(
