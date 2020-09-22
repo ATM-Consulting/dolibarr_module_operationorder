@@ -971,7 +971,6 @@ function createOperationOrderAction($startTime, $endTime, $allDay, $id_operation
             $action_or->fk_user_author = $user->id;
 
             $res = $action_or->save($user);
-
             $operationorder = new OperationOrder($db);
             $res = $operationorder->fetch($id_operationorder);
             if(empty($operationorder->array_options)) $operationorder->fetch_optionals();

@@ -92,7 +92,7 @@ class Application
 		this.resetState();
 	}
 
-	resetState()
+	 resetState()
 	{
 		console.log('resetState');
 
@@ -255,6 +255,7 @@ class Application
 		if (this.state.oOrder !== null)
 		{
 			this.getORLines(this.state.oOrder);
+			this.getORList(this.state.oOrder);
 		}
 
 	}
@@ -317,10 +318,14 @@ class Application
 			let orList = $('#orList tbody');
 			orList.empty();
 
+			let isInList = false;
 			if (data.oOrders.length > 0) {
 				data.oOrders.forEach(function(item) {
 					let classes = "oorder";
-					if (selectedOr == item.barcode) classes+= " active";
+					if (selectedOr == item.barcode) {
+						classes+= " active";
+						isInList = true;
+					}
 					var tr = '<tr class="'+classes+'" onclick="javascript:setParam(\'' + item.barcode + '\')" data-barcode="' + item.barcode + '">';
 					tr+= '<td>'+item.client+'</td>';
 					tr+= '<td>'+item.ref+'</td>';
@@ -342,6 +347,12 @@ class Application
 			else
 			{
 				infoTask.html('');
+			}
+
+			if(!isInList) {
+				infoOR.html("");
+				let orLines = $('#tableLines tbody');
+				$('#tableLines tbody').empty();
 			}
 		});
 	}
