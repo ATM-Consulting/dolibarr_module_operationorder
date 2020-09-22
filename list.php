@@ -235,7 +235,7 @@ $listViewConfig = array(
 		,'tms' => 'date'
 	)
 	,'search' => array(
-		'date_creation' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		'date_creation' => array('search_type' => 'calendars', 'allow_is_null' => true, 'table' => 't')
 		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
         ,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
         ,'ref_client' => array('search_type' => true, 'table' => 't', 'field' => 'ref_client')
@@ -244,7 +244,7 @@ $listViewConfig = array(
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
 		,'status' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootMultiStatus) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
         ,'overshootstatus' => array('search_type' => 'override', 'no-auto-sql-search'=>1, 'override' => $formOvershootStatus)
-		,'planned_date' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		,'planned_date' => array('search_type' => 'calendars', 'allow_is_null' => true, 'table' => 't')
 	)
 	,'translate' => array()
 	,'hide' => array(
