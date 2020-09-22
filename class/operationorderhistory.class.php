@@ -123,6 +123,7 @@ class OperationOrderHistory extends SeedObject
         if(strpos($object->element, 'det') !== false) $this->title = $langs->transnoentitiesnoconv('OOLineUpdate', OperationOrder::getStaticRef($object->fk_operation_order), $object->getProductRef());
         else $this->title = $langs->transnoentitiesnoconv('OOUpdate', $object->ref);
         $this->description = '';
+        if($object->is_clone) return;
         $TDiff = $this->recursiveArrayDiff((array) $oldcopy, (array) $object);
         if(!empty($TDiff)) {
             if(array_key_exists('array_options', $TDiff)) {
