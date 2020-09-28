@@ -2096,10 +2096,10 @@ class OperationOrderDet extends SeedObject
 				$params['attr']['title']=$tooltipLabel;
 			}
 
-			if($this->product->stock_reel >= $this->qty){
+			if($stock_reel >= $this->qty){
 				$out .= dolGetBadge($langs->trans('StockAvailable').' '.$stock_reel, '','success classfortooltip', $mode, $url, $params);
 			}
-			elseif($this->product->stock_reel < $this->qty && $this->product->stock_theorique >= $this->qty){
+			elseif($stock_reel < $this->qty && $this->product->stock_theorique >= $this->qty){
 				$out .= dolGetBadge($langs->trans('VirtualStockAvailable').' '.$stock_reel, '', 'warning classfortooltip', $mode, $url, $params);
 			}
 			else{
