@@ -2083,7 +2083,13 @@ class OperationOrderDet extends SeedObject
             if(!empty($params['planned_date'])) $this->isVirtualStockAvailableForDate($params['planned_date']);
 
 
-            $tooltipLabel = $langs->trans('RealStock').' : '.$this->product->stock_reel.'</br>';
+            if(!empty($params['fk_warehouse'])) {
+                $stock_reel = $this->product->stock_warehouse[$params['fk_warehouse']]->real;
+            } else {
+                $stock_reel = $this->product->stock_reel;
+            }
+
+            $tooltipLabel = $langs->trans('RealStock').' : '.$stock_reel.'</br>';
 			$tooltipLabel.= $langs->trans('VirtualStock').' : '.$this->product->stock_theorique;
 
 			if(empty($params['attr']['title'])){
@@ -2091,13 +2097,13 @@ class OperationOrderDet extends SeedObject
 			}
 
 			if($this->product->stock_reel >= $this->qty){
-				$out .= dolGetBadge($langs->trans('StockAvailable').' '.$this->product->stock_reel, '','success classfortooltip', $mode, $url, $params);
+				$out .= dolGetBadge($langs->trans('StockAvailable').' '.$stock_reel, '','success classfortooltip', $mode, $url, $params);
 			}
 			elseif($this->product->stock_reel < $this->qty && $this->product->stock_theorique >= $this->qty){
-				$out .= dolGetBadge($langs->trans('VirtualStockAvailable').' '.$this->product->stock_reel, '', 'warning classfortooltip', $mode, $url, $params);
+				$out .= dolGetBadge($langs->trans('VirtualStockAvailable').' '.$stock_reel, '', 'warning classfortooltip', $mode, $url, $params);
 			}
 			else{
-				$out .= dolGetBadge($langs->trans('NotEnoughStockAvailable').' '.$this->product->stock_reel,'', 'danger classfortooltip', $mode, $url, $params);
+				$out .= dolGetBadge($langs->trans('NotEnoughStockAvailable').' '.$stock_reel,'', 'danger classfortooltip', $mode, $url, $params);
 			}
 		}
 
