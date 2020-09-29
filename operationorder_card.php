@@ -1627,7 +1627,7 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 
 			// STOCK
 			$out .= '		<div class="operation-order-sortable-list__item__title__col -stock-status">';
-			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date));
+			$out .= $line->stockStatus('', '', array('planned_date' => $planned_date, 'fk_warehouse' => $line->fk_warehouse));
 
 			// display object linked on line
 			if (! isset($conf->operationorderdet->enabled))
