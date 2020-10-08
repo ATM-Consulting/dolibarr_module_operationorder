@@ -166,6 +166,7 @@ TimePlannedForced=Temps de mise a disposition du véhicule
 WarningORTimePlannedF=OR déjà présent sur le planning
 planned_date_help=Date de plannification de la réparation/entretiens
 PlannedDate=Date de planification
+ErrorPriceLineORMin=Prix inférieur au prix minimum du produit
 
 OperationOrderModify=Modifier
 OperationOrderClone=Cloner
