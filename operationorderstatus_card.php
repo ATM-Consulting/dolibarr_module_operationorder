@@ -115,6 +115,7 @@ if (empty($reshook))
 			$object->clean_event = GETPOST('clean_event', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 			$object->save_date_cloture = GETPOST('save_date_cloture', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 			$object->planable = GETPOST('planable', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
+			$object->require_planned_date = GETPOST('require_planned_date', 'int'); // Lorsque la checkbox est décochée, le $_REQUEST ne contient pas l'élément ce qui fait la value n'est pas setté
 
 
 			$object->TGroupCan = $TGroupCan;
@@ -187,7 +188,6 @@ if (empty($reshook))
 
 			header('Location: '.dol_buildpath('/operationorder/operationorderstatus_card.php', 1).'?id='.$object->id);
 			exit;
-
 		case 'modif':
 		case 'activate':
 			if (!empty($user->rights->operationorder->status->write)) $object->setActive($user);
@@ -371,6 +371,22 @@ else
 			print '</div>';
 
 			print '</form>';
+
+			?>
+			<script>
+				let cb_req_planned_date = $('#require_planned_date');
+				let cb_clean_event = $('#clean_event');
+
+				cb_req_planned_date.on('click', function (){
+					if ($(this).prop('checked')) cb_clean_event.prop('checked', false)
+				})
+
+				cb_clean_event.on('click', function (){
+					if ($(this).prop('checked')) cb_req_planned_date.prop('checked', false)
+				})
+			</script>
+			<?php
+
 		}
 		elseif ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create')))
 		{

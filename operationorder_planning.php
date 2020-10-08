@@ -64,7 +64,7 @@ if($action == "createOperationOrderAction"){
 
     global $langs;
 
-    $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder);
+    $res = createOperationOrderAction($startTime, $endTime,$allDay, $id_operationorder, true);
 
     if($res < 0){
         setEventMessage($langs->trans('ErrorORActionCreation'), 'errors');
