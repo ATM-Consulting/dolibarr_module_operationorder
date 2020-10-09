@@ -2051,6 +2051,16 @@ class OperationOrderDet extends SeedObject
     	 */
 
 	    $Tlines = $this->fetch_all_children_lines(0,0,1);
+
+	    $operationOrder = new OperationOrder($this->db);
+	    $res = $operationOrder->fetch($this->fk_operation_order, false);
+
+	    if($res)
+        {
+            $TLineQtyUsed = $operationOrder->getAlreadyUsedQtyLines();
+            $qtyUsed = $TLineQtyUsed[$this->fk_product];
+        }
+
 	    if (empty($Tlines)) {
 		    $hours = 0;
 		    if (!empty($this->time_spent)) {
@@ -2059,7 +2069,8 @@ class OperationOrderDet extends SeedObject
 		    if ($hours > 0) {
 			    $this->total_ht = $hours * $this->price;
 		    } else {
-			    $this->total_ht = $this->qty * $this->price;
+		        if(!empty($qtyUsed))  $this->total_ht = $qtyUsed * $this->price;
+			    else $this->total_ht = $this->qty * $this->price;
 		    }
 	    } else {
 		    $this->total_ht=0;
