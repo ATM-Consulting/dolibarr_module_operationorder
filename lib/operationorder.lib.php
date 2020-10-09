@@ -1252,7 +1252,6 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                 $absence = new TRH_Absence($db);
 
                 $TPlanning = $absence->requetePlanningAbsence2($PDOdb, '', $user->id, $dateStart->format('Y-m-d'), $dateEnd->format('Y-m-d'));
-
                 foreach ($TPlanning as $t_current => $TAbsence) {
                     foreach ($TAbsence as $fk_user => $TRH_absenceDay) {
                         foreach ($TRH_absenceDay as $absence) {
@@ -1276,6 +1275,20 @@ function getOperationOrderUserPlanningSchedule($startTimeWeek = 0, $endTimeWeek 
                                 {
                                     $TAbsences[] = $absenceDateTimestamp.'_pm';
                                 }
+                            } else {
+	                            $datetime = new DateTime($absence->date);
+	                            $day = $datetime->format('D');
+	                            $day = $TDaysConvert[$day];
+	                            $hourMorningStart = date('H:i', strtotime($absence->date_hourStart));
+	                            $hourMorningEnd = date('H:i', strtotime($absence->date_hourMorningEnd));
+	                            $hourAfternoonStart = date('H:i', strtotime($absence->date_hourAfternoonStart));
+	                            $hourAfternoonEnd = date('H:i', strtotime($absence->date_hourEnd));
+	                            $pos = count($TSchedulesByUser);
+	                            $TSchedulesByUser[$pos] = new OperationOrderUserPlanning($db);
+	                            $TSchedulesByUser[$pos]->{$day.'_heuredam'} = $hourMorningStart;
+	                            $TSchedulesByUser[$pos]->{$day.'_heurefam'} = $hourMorningEnd;
+	                            $TSchedulesByUser[$pos]->{$day.'_heuredpm'} = $hourAfternoonStart;
+	                            $TSchedulesByUser[$pos]->{$day.'_heurefpm'} = $hourAfternoonEnd;
                             }
                         }
                     }
@@ -1882,6 +1895,16 @@ function getTimeAvailableByDateByUsersCapacity($date_timestamp, $forWeek=false)
                                     {
                                         $absencepm = true;
                                     }
+                                }
+                                else {
+	                                $hourMorningStart = date('H:i', strtotime($absence->date_hourStart));
+	                                $hourMorningEnd = date('H:i', strtotime($absence->date_hourMorningEnd));
+	                                $hourAfternoonStart = date('H:i', strtotime($absence->date_hourAfternoonStart));
+	                                $hourAfternoonEnd = date('H:i', strtotime($absence->date_hourEnd));
+	                                if($userplanning->{$day.'_heuredam'} > $hourMorningStart || empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heuredam'} = $hourMorningStart;
+	                                if($userplanning->{$day.'_heurefam'} < $hourMorningEnd || empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heurefam'} = $hourMorningEnd;
+	                                if($userplanning->{$day.'_heuredpm'} > $hourAfternoonStart || empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heuredpm'} = $hourAfternoonStart;
+	                                if($userplanning->{$day.'_heurefpm'} > $hourAfternoonEnd || empty($userplanning->{$day.'_heurefpm'})) $userplanning->{$day.'_heurefpm'} = $hourAfternoonEnd;
                                 }
                             }
                         }

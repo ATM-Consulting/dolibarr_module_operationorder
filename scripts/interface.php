@@ -76,7 +76,7 @@ if(GETPOST('action'))
             unset($data[$date]);
         }
 
-        print json_encode($data);
+		print json_encode($data);
         exit;
     }
 	elseif($action=='setOperationOrderlevelHierarchy'){
