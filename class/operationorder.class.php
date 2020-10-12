@@ -1792,6 +1792,24 @@ class OperationOrder extends SeedObject
         }
         return $return;
     }
+
+    public function fetchOperationOrderCache($fk_operationorder, $forceFetch = false){
+        global $db, $operationOrderCache;
+
+        if(empty($fk_operationorder) || $fk_operationorder < 0) return false;
+
+        if(!empty($operationOrderCache) && !$forceFetch) return $operationOrderCache;
+        else {
+            $operationOrderCache = new OperationOrder($db);
+            $res = $operationOrderCache->fetch($fk_operationorder, false);
+            if($res){
+                return $operationOrderCache;
+            }
+        }
+
+        return false;
+
+    }
 }
 
 
@@ -2044,7 +2062,7 @@ class OperationOrderDet extends SeedObject
     }
 
     function calcPrices(){
-
+        global $db, $TOperationOrderWithLastLinesCache;
     	/* Si je n'ai pas d'enfant et que j'ai un temps saisie
     	    total HT = temps saisie * PU HT
     	    Sinon total HT  = Somme des totaux HT des enfants
@@ -2052,10 +2070,12 @@ class OperationOrderDet extends SeedObject
 
 	    $Tlines = $this->fetch_all_children_lines(0,0,1);
 
-	    $operationOrder = new OperationOrder($this->db);
-	    $res = $operationOrder->fetch($this->fk_operation_order, false);
+	    if(empty($TOperationOrderWithLastLinesCache)){
+	        $operationOrder = new OperationOrder($db);
+            $operationOrder = $operationOrder->fetchOperationOrderCache($this->fk_operation_order);
+        }
 
-	    if($res)
+	    if($operationOrder)
         {
             $TLineQtyUsed = $operationOrder->getAlreadyUsedQtyLines();
             $qtyUsed = $TLineQtyUsed[$this->fk_product];
