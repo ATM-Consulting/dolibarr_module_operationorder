@@ -1792,6 +1792,24 @@ class OperationOrder extends SeedObject
         }
         return $return;
     }
+
+    public function fetchOperationOrderCache($fk_operationorder, $forceFetch = false){
+        global $db, $operationOrderCache;
+
+        if(empty($fk_operationorder) || $fk_operationorder < 0) return false;
+
+        if(!empty($operationOrderCache) && !$forceFetch && $operationOrderCache->id == $fk_operationorder) return $operationOrderCache;
+        else {
+            $operationOrderCache = new OperationOrder($db);
+            $res = $operationOrderCache->fetch($fk_operationorder, false);
+            if($res){
+                return $operationOrderCache;
+            }
+        }
+
+        return false;
+
+    }
 }
 
 
@@ -2044,13 +2062,25 @@ class OperationOrderDet extends SeedObject
     }
 
     function calcPrices(){
-
+        global $db, $operationOrderCache;
     	/* Si je n'ai pas d'enfant et que j'ai un temps saisie
     	    total HT = temps saisie * PU HT
     	    Sinon total HT  = Somme des totaux HT des enfants
     	 */
 
 	    $Tlines = $this->fetch_all_children_lines(0,0,1);
+
+	    if(empty($operationOrderCache)){
+	        $operationOrder = new OperationOrder($db);
+            $operationOrder->fetchOperationOrderCache($this->fk_operation_order);
+        }
+
+	    if($operationOrderCache)
+        {
+            $TLineQtyUsed = $operationOrderCache->getAlreadyUsedQtyLines();
+            $qtyUsed = $TLineQtyUsed[$this->fk_product];
+        }
+
 	    if (empty($Tlines)) {
 		    $hours = 0;
 		    if (!empty($this->time_spent)) {
@@ -2059,7 +2089,8 @@ class OperationOrderDet extends SeedObject
 		    if ($hours > 0) {
 			    $this->total_ht = $hours * $this->price;
 		    } else {
-			    $this->total_ht = $this->qty * $this->price;
+		        if(!empty($qtyUsed))  $this->total_ht = $qtyUsed * $this->price;
+			    else $this->total_ht = $this->qty * $this->price;
 		    }
 	    } else {
 		    $this->total_ht=0;
