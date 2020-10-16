@@ -2117,7 +2117,7 @@ class OperationOrderDet extends SeedObject
             if(!empty($params['fk_warehouse'])) {
                 $stock_reel = $this->product->stock_warehouse[$params['fk_warehouse']]->real;
             } else {
-                $stock_reel = $this->product->stock_reel;
+                $stock_reel = 0;
             }
 
             $tooltipLabel = $langs->trans('RealStock').' : '.$stock_reel.'</br>';
