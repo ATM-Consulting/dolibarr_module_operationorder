@@ -1199,7 +1199,7 @@ class OperationOrder extends SeedObject
             $this->line->qty=$qty;
             $this->line->fk_warehouse=$fk_warehouse;
             $this->line->pc=$pc;
-            $this->line->price= ($price < $this->line->product->price_min) ? $this->line->product->price_min : $price;
+            $this->line->price= ($price < $this->line->product->price_min && !$user->admin) ? $this->line->product->price_min : $price;
 			$this->line->fk_product = $fk_product;
 
 

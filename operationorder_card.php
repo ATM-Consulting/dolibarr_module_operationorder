@@ -602,7 +602,7 @@ if (empty($reshook))
 
 			$result = $object->updateline(GETPOST('lineid'), $description, GETPOST('qty'), $price, $fk_warehouse, $pc, $time_planned, $time_spent,$productid, $info_bits, $date_start, $date_end, $type, GETPOST('fk_parent_line'), $label, $special_code, $array_options);
 
-			if($price < $object->line->product->price_min ) setEventMessage($langs->trans('ErrorPriceLineORMin'), 'warnings');
+			if($price < $object->line->product->price_min && !$user->admin) setEventMessage($langs->trans('ErrorPriceLineORMin'), 'warnings');
 
             if ($result >= 0) {
 
