@@ -1663,7 +1663,7 @@ class OperationOrder extends SeedObject
 
         $total_time = 0;
 
-        $this->fetchLines();
+        if(empty($this->lines)) $this->fetchLines();
 
         foreach ($this->lines as $line)
         {
