@@ -314,7 +314,10 @@ if (empty($reshook))
                     , $date_start
                     , $date_end
                     , $label
+					, true
                 );
+
+                $object->update($user); //Pour update une seule fois à la fin plutôt que d'update à chaque ajout recursif de ligne (TK12165)
 
                 if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
                 {
