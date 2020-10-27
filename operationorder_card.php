@@ -54,6 +54,7 @@ $object = new OperationOrder($db);
 
 if (!empty($id) || !empty($ref))  {
     $object->fetch($id, true, $ref);
+    $object->calcTotal();
 }
 
 //fk_projet non disponible si le module n'est pas activé
