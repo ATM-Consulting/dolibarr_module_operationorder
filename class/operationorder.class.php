@@ -994,29 +994,30 @@ class OperationOrder extends SeedObject
     }
 
 	/**
-	 * @param $desc
-	 * @param $qty
-	 * @param $price
-	 * @param $fk_warehouse
-	 * @param $pc
-	 * @param $time_planned
-	 * @param $time_spent
-	 * @param int $fk_product
-	 * @param int $info_bits
+	 * @param        $desc
+	 * @param        $qty
+	 * @param        $price
+	 * @param        $fk_warehouse
+	 * @param        $pc
+	 * @param        $time_planned
+	 * @param        $time_spent
+	 * @param int    $fk_product
+	 * @param int    $info_bits
 	 * @param string $date_start
 	 * @param string $date_end
-	 * @param int $type
-	 * @param int $rang
-	 * @param int $special_code
-	 * @param int $fk_parent_line
+	 * @param int    $type
+	 * @param int    $rang
+	 * @param int    $special_code
+	 * @param int    $fk_parent_line
 	 * @param string $label
-	 * @param int $array_options
+	 * @param int    $array_options
 	 * @param string $origin
-	 * @param int $origin_id
+	 * @param int    $origin_id
+	 * @param bool   $dontUpdateObj
 	 * @return int
 	 * @throws Exception
 	 */
-    public function addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0)
+    public function addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product = 0, $info_bits = 0, $date_start = '', $date_end = '', $type = 0, $rang = -1, $special_code = 0, $fk_parent_line = 0, $label = '', $array_options = 0, $origin = '', $origin_id = 0, $dontUpdateObj = false)
     {
         global $user;
 
@@ -1103,7 +1104,7 @@ class OperationOrder extends SeedObject
                 if ($result > 0)
                 {
                     $this->db->commit();
-                    $this->setTimePlannedT();
+                    $this->setTimePlannedT($dontUpdateObj);
                     return $this->line->id;
                 }
                 else
@@ -1354,7 +1355,7 @@ class OperationOrder extends SeedObject
 		return parent::clear();;
 	}
 
-	public function recurciveAddChildLines($fk_line_parent, $fk_product, $qty){
+	public function recurciveAddChildLines($fk_line_parent, $fk_product, $qty, $dontUpdateObj = false){
 		global $conf, $langs, $hookmanager;
 
 		if (!empty($conf->global->PRODUIT_SOUSPRODUITS) && !empty($fk_line_parent) && !empty($fk_product))
@@ -1443,12 +1444,13 @@ class OperationOrder extends SeedObject
 									'',
 									array(),
 									'',
-									0
+									0,
+									$dontUpdateObj
 								);
 
 
 								if($newLineRes>0){
-									$recusiveRes = $this->recurciveAddChildLines($newLineRes, $childLineProduct->id, $newLineQty);
+									$recusiveRes = $this->recurciveAddChildLines($newLineRes, $childLineProduct->id, $newLineQty, $dontUpdateObj);
 									if($recusiveRes<0){
 										$this->errors[] = $langs->transnoentities('RecurciveLineaddFail');
 										return -2;
@@ -1658,7 +1660,7 @@ class OperationOrder extends SeedObject
         return $TPlanableOO;
     }
 
-    public function setTimePlannedT(){
+    public function setTimePlannedT($onlyUpdateTimePlannedT = false){
         global $user;
 
         $total_time = 0;
@@ -1672,7 +1674,12 @@ class OperationOrder extends SeedObject
 
         $this->time_planned_t = $total_time;
 
-        $res = $this->update($user);
+	    if(!$onlyUpdateTimePlannedT) $res = $this->update($user);
+	    else {
+	    	$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element.' SET time_planned_t = '.$this->time_planned_t.' WHERE rowid = '.$this->id;
+	    	$res = $this->db->query($sql);
+
+	    }
 
         return $res;
     }

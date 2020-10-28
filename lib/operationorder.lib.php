@@ -666,24 +666,28 @@ function getFieldCardOutputByOperationOrder($object, $key, $moreparam = '', $key
 /**
  * Add line and reccursive child to an OR
  *
- * @param  OperationOrder  $object
- * @param  int  $fk_product
- * @param  int  $qty
- * @param  int  $type
- * @param  string  $product_desc
- * @param  mixed   $predef
- * @param  int	   $time_plannedhour
- * @param  int	   $time_plannedmin
- * @param  int	   $time_spenthour
- * @param  int	   $time_spentmin
- * @param  int	   $fk_warehouse
- * @param  int	   $date_start
- * @param  int	   $date_end
- * @param  string  $product_label
+ * @param OperationOrder $object
+ * @param int            $fk_product
+ * @param int            $qty
+ * @param                $price
+ * @param int            $type
+ * @param string         $product_desc
+ * @param mixed          $predef
+ * @param string         $time_plannedhour
+ * @param string         $time_plannedmin
+ * @param string         $time_spenthour
+ * @param string         $time_spentmin
+ * @param string         $fk_warehouse
+ * @param string         $pc
+ * @param int            $date_start
+ * @param int            $date_end
+ * @param string         $product_label
+ * @param bool           $dontUpdateObj
  * @return int > 0 if OK, < 0 if KO
+ * @throws Exception
  */
 
-function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $product_label = ''){
+function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $product_desc = '', $predef = '', $time_plannedhour = '', $time_plannedmin = '', $time_spenthour = '', $time_spentmin = '', $fk_warehouse = '', $pc = '', $date_start, $date_end, $product_label = '', $dontUpdateObj = false){
 
     global $langs, $db, $conf;
 
@@ -755,11 +759,11 @@ function addLineAndChildToOR ($object, $fk_product, $qty, $price, $type, $produc
         $info_bits = 0;
 
         // Insert line
-        $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0);
+        $result = $object->addline($desc, $qty, $price, $fk_warehouse, $pc, $time_planned, $time_spent, $fk_product, $info_bits, $date_start, $date_end, $type, -1, 0, GETPOST('fk_parent_line'), $label, $array_options, '', 0, $dontUpdateObj);
 
         if ($result > 0) {
 
-            $recusiveAddResult = $object->recurciveAddChildLines($result,$fk_product, $qty);
+            $recusiveAddResult = $object->recurciveAddChildLines($result,$fk_product, $qty, $dontUpdateObj);
 
             if($recusiveAddResult<0)
             {
