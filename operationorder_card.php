@@ -911,6 +911,7 @@ else
 			$resql = $db->query($sql);
 			if ($resql){
 				$cpt = 0;
+				$TPlannedStatus = array();
 				while ($cpt < $db->num_rows($resql)){
 					//To fill the array
 					$plannedRowId =$db->fetch_object($resql);
