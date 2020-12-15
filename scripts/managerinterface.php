@@ -268,7 +268,12 @@ if (empty($reshook) && !empty($action))
 		$ret = $counter->fetchCourantCounter($usr->id);
 		if ($ret > 0)
 		{
-			$counter->task_datehour_f = dol_now();
+			$task_datehour_d = new DateTime($counter->task_datehour_d);
+			if ($task_datehour_d->setTime(8, 30, 59) < dol_now()){
+				$counter->task_datehour_f = $task_datehour_d->setTime(23, 59, 59);
+			} else {
+				$counter->task_datehour_f = dol_now();
+			}
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$ret = $counter->update($usr);
 			if ($ret > 0 && $counter->fk_orDet > 0)
@@ -356,7 +361,12 @@ if (empty($reshook) && !empty($action))
 
 		if ($ret > 0)
 		{
-			$counter->task_datehour_f = dol_now();
+			$task_datehour_d = new DateTime($counter->task_datehour_d);
+			if ($task_datehour_d->setTime(8, 30, 59) < dol_now()){
+				$counter->task_datehour_f = $task_datehour_d->setTime(23, 59, 59);
+			} else {
+				$counter->task_datehour_f = dol_now();
+			}
 			$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 			$retupd = $counter->update($usr);
 
@@ -450,7 +460,12 @@ if (empty($reshook) && !empty($action))
 			$ret = $counter->fetchCourantCounter($usr->id);
 			if ($ret > 0)
 			{
-				$counter->task_datehour_f = dol_now();
+				$task_datehour_d = new DateTime($counter->task_datehour_d);
+				if ($task_datehour_d->setTime(8, 30, 59) < dol_now()){
+					$counter->task_datehour_f = $task_datehour_d->setTime(23, 59, 59);
+				} else {
+					$counter->task_datehour_f = dol_now();
+				}
 				$counter->task_duration = $counter->task_datehour_f - $counter->task_datehour_d;
 				$ret = $counter->update($usr);
 
