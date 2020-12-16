@@ -860,7 +860,7 @@ class OperationOrder extends SeedObject
 	    {
 		    while ($obj = $this->db->fetch_object($resql))
 		    {
-			    $alreadyUsed[$obj->fk_product] = abs($obj->total);
+			    $alreadyUsed[$obj->fk_product] =$obj->total*-1;
 		    }
 	    }
 	    return $alreadyUsed;
