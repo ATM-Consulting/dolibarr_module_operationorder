@@ -1553,7 +1553,10 @@ function _displaySortableNestedItems($TNested, $htmlId='', $open = true, $planne
 			if ($qtyUsed > $line->qty) {
 				$textClass = "text-danger paddingrightonly";
 				$iconInfo= '<i class="fa fa-caret-up"></i>';
-			} else {
+			}elseif($qtyUsed <0){
+			    $textClass = "text-danger paddingrightonly";
+			    $iconInfo= '<i class="fa fa-bolt"></i>';
+			}else {
 				$textClass = "";
 				$iconInfo="";
 			}
