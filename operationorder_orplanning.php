@@ -562,7 +562,6 @@ if (!empty($TSchedules))
 
 <?php
 	print '<div id="schedulePopin" title="'.$langs->trans('UpdateTasktime').'"></div>';
-	var_dump($_POST);
 }
 else
 {
