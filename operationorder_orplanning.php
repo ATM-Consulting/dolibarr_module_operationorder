@@ -282,6 +282,7 @@ if (!empty($TSchedules))
 	print load_fiche_titre($langs->trans("Planning"), '', 'calendar');
 
 ?>
+	<div id="container">
 	<div id="schedule"></div>
 <!--	<div id="logs"></div>-->
 
@@ -557,8 +558,14 @@ if (!empty($TSchedules))
 						$sc.timeSchedule('setRows', data);
 					});
 			});*/
+
+			//correction TK12357 : redimension du planning lors de la diminution de la fenêtre du navigateur
+			var widthfiche = $('.fiche').width();
+			$("#container").css("width", widthfiche + "px");
 		});
 	</script>
+
+	</div>
 
 <?php
 	print '<div id="schedulePopin" title="'.$langs->trans('UpdateTasktime').'"></div>';
