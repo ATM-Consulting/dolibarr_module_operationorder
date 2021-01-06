@@ -1278,7 +1278,7 @@ else
 							$res = $statusAllowed->fetch($fk_status);
 							if($res>0){
 								$userCan = $object->checkNegativeProductVentilation($statusAllowed->code) ? $statusAllowed->userCan($user, 'changeToThisStatus') : false;
-								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $userCan);
+								print dolGetButtonAction($statusAllowed->label, '', 'default', $actionUrl . 'setStatus&fk_status='.$fk_status, '', $object->userCan($user, 'edit'));
 							}
 						}
 					}
