@@ -2243,7 +2243,11 @@ function getCountersForPlanning($TSchedules, $date, $entity = 1)
 
 							$tempTT = new stdClass;
 							$tempTT->start = date("H:i", $tt->task_datehour_d);
-							$tempTT->end = date("H:i", $tt->task_datehour_f);
+							if (date("d", $tt->task_datehour_f)!=date("d", $tt->task_datehour_d)){
+								$tempTT->end = '23:59';
+							} else {
+								$tempTT->end = date("H:i", $tt->task_datehour_f);
+							}
 							$tempTT->text = $label;
 							$tempTT->data = new stdClass;
 							$tempTT->data->title = $title;
